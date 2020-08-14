@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "654e80c9004c18f27b51b861e11c96df",
+    "content-hash": "e57ca4189c33fa7f45cbfb3d3eb980e4",
     "packages": [
         {
             "name": "composer/package-versions-deprecated",
@@ -4743,23 +4743,23 @@
         },
         {
             "name": "symfony/orm-pack",
-            "version": "v1.1.0",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/orm-pack.git",
-                "reference": "7dd2ed9ba6d7af79f90bdc77522605d40463e533"
+                "reference": "46aa731f213140388ee11ff3d2b6776a3b4a0d90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/orm-pack/zipball/7dd2ed9ba6d7af79f90bdc77522605d40463e533",
-                "reference": "7dd2ed9ba6d7af79f90bdc77522605d40463e533",
+                "url": "https://api.github.com/repos/symfony/orm-pack/zipball/46aa731f213140388ee11ff3d2b6776a3b4a0d90",
+                "reference": "46aa731f213140388ee11ff3d2b6776a3b4a0d90",
                 "shasum": ""
             },
             "require": {
                 "composer/package-versions-deprecated": "*",
-                "doctrine/doctrine-bundle": "^2",
-                "doctrine/doctrine-migrations-bundle": "^2",
-                "doctrine/orm": "^2"
+                "doctrine/doctrine-bundle": "*",
+                "doctrine/doctrine-migrations-bundle": "*",
+                "doctrine/orm": "*"
             },
             "type": "symfony-pack",
             "notification-url": "https://packagist.org/downloads/",
@@ -4781,7 +4781,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-07-08T14:31:54+00:00"
+            "time": "2020-07-14T14:34:28+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
@@ -7942,16 +7942,16 @@
         },
         {
             "name": "symfony/maker-bundle",
-            "version": "v1.19.1",
+            "version": "v1.20.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/maker-bundle.git",
-                "reference": "51c48ca9df84c16ed522a7781866900edf7c99f8"
+                "reference": "b048c7b2be5bce9024ae3b0db97d44a107029c27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/maker-bundle/zipball/51c48ca9df84c16ed522a7781866900edf7c99f8",
-                "reference": "51c48ca9df84c16ed522a7781866900edf7c99f8",
+                "url": "https://api.github.com/repos/symfony/maker-bundle/zipball/b048c7b2be5bce9024ae3b0db97d44a107029c27",
+                "reference": "b048c7b2be5bce9024ae3b0db97d44a107029c27",
                 "shasum": ""
             },
             "require": {
@@ -7967,6 +7967,7 @@
                 "symfony/http-kernel": "^3.4|^4.0|^5.0"
             },
             "require-dev": {
+                "composer/semver": "^3.0@dev",
                 "doctrine/doctrine-bundle": "^1.8|^2.0",
                 "doctrine/orm": "^2.3",
                 "friendsofphp/php-cs-fixer": "^2.8",
@@ -8020,7 +8021,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-07-06T00:27:41+00:00"
+            "time": "2020-07-14T11:22:04+00:00"
         },
         {
             "name": "symfony/phpunit-bridge",
