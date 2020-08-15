@@ -305,7 +305,7 @@
 
                         this.error = '';
 
-                        console.log('data', data);
+                        // console.log('data', data);
                         if (data) {
                             this.coub = {
                                 image: data['picture'] ? data['picture'] : '',

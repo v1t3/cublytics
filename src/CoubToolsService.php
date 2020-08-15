@@ -308,7 +308,7 @@ class CoubToolsService
             trigger_error($e);
         }
 
-        return json_encode($result);
+        return $result;
     }
 
     /**

@@ -124,7 +124,7 @@
 
                         this.error = '';
 
-                        console.log('data', data);
+                        // console.log('data', data);
                         if (data) {
                             if (data['avatar_versions'] && data['avatar_versions']['template']) {
                                 let avatar = data['avatar_versions']['template'];

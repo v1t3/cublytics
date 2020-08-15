@@ -127,7 +127,7 @@
                             this.error = '';
                             this.showLoader = false;
 
-                            console.log('data', data);
+                            // console.log('data', data);
 
                             //todo Добавить блокировку формы
 

@@ -20,7 +20,7 @@ class CoubToolsController extends AbstractController
      */
     public static function getData(Request $request)
     {
-        $data = [];
+        $data = '';
 
         if ($request->isMethod('post')) {
             $params = $request->request->get('params');
@@ -45,7 +45,7 @@ class CoubToolsController extends AbstractController
                 }
 
                 if (is_array($coubContent) && count($coubContent) > 0) {
-                    $data = $coubContent;
+                    $data = json_encode($coubContent);
                 } elseif ('' !== (string)$coubContent) {
                     $data = $coubContent;
                 }
