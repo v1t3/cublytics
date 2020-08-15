@@ -1,0 +1,90 @@
+@import "variables";
+
+.main-block {
+    padding-top: $header-height;
+    padding-left: $left-menu-width;
+}
+
+.loader {
+    display: block;
+    width: 100%;
+    padding: 50px 100px;
+}
+
+.component {
+    background: $componentBckgnd;
+    padding: 1em;
+    margin: 0 auto 1em;
+    min-height: 300px;
+    border-radius: .5em;
+}
+
+.charts-types {
+    margin: 1em 0;
+}
+
+.views {
+    img {
+        max-width: 100%;
+    }
+}
+
+#user-info {
+    .views {
+        img {
+            border-radius: 50%;
+        }
+    }
+}
+
+.form {
+    form {
+        span {
+            display: block;
+        }
+
+        input {
+            padding: .2em .4em;
+            border: 0;
+            box-shadow: none;
+            border-radius: .5em;
+            background: #dadada;
+            margin: .5em 0;
+        }
+
+        button {
+            padding: .2em .4em;
+            margin: .5em;
+            box-shadow: none;
+            border-radius: .5em;
+            background: #ffffff;
+            //color: #000;
+            border: 1px solid #000;
+
+            &:hover {
+                background: #598bff;
+                border: 1px solid #598bff;
+                color: #fff;
+            }
+        }
+    }
+}
+
+.form-group {
+    &--error {
+        &-text {
+            display: none;
+            color: red;
+            margin-top: 0;
+            font-size: .85em;
+        }
+    }
+
+    &--error &--error-text {
+        display: block;
+    }
+
+    input.error {
+        border: 1px solid red;
+    }
+}

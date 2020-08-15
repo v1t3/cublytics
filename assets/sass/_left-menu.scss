@@ -1,0 +1,10 @@
+@import "variables";
+
+.left-menu-block {
+    position: fixed;
+    z-index: 1;
+    top: $header-height;
+    width: $left-menu-width;
+    height: calc(100% - #{$header-height});
+    background-color: $header-bg;
+}

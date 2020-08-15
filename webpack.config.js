@@ -1,5 +1,6 @@
 // webpack.config.js
-var Encore = require('@symfony/webpack-encore');
+const Encore = require('@symfony/webpack-encore');
+const CopyPlugin = require('copy-webpack-plugin');
 
 Encore
     // каталог проекта , где будут храниться все скомпилированные ресурсы
@@ -14,9 +15,6 @@ Encore
     // позволит обработку файлов sass/scss
     .enableSassLoader()
 
-    // позволить приложениям наследования использовать $/jQuery в качестве глобальной переменной
-    .autoProvidejQuery()
-
     .enableSourceMaps(!Encore.isProduction())
 
     // очистить outputPath dir перед каждым построением
@@ -24,6 +22,14 @@ Encore
 
     // показать уведомления ОС при окончании/неудаче построения
     .enableBuildNotifications()
+
+    .enableVueLoader()
+
+    .addPlugin(new CopyPlugin({
+        patterns: [
+            {from: './assets/img', to: 'img'}
+        ]
+    }))
 
 // создать хешированные имена файлов (например, app.abc123.css)
 // .enableVersioning()

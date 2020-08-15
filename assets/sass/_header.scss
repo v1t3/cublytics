@@ -1,0 +1,26 @@
+@import "variables";
+
+.header {
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    justify-content: space-between;
+    display: flex;
+    width: 100%;
+    min-height: $header-height;
+    background-color: $header-bg;
+}
+
+.logo {
+    display: block;
+    height: auto;
+    width: $left-menu-width;
+    min-width: $left-menu-width;
+    background-color: $logo-bg;
+}
+
+.top-menu {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
