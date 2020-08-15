@@ -16,4 +16,5 @@
 ###< symfony/phpunit-bridge ###
 
 #others
-.idea
+/.idea/
+/node_modules/
