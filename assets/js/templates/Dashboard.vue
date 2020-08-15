@@ -24,7 +24,10 @@
                         <router-link :to="{ name: 'Statistic' }">Статистика</router-link>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'Coubdata' }">Данные</router-link>
+                        <router-link :to="{ name: 'Coubdata' }">Данные коуба</router-link>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'UserData' }">Данные пользователя</router-link>
                     </li>
                     <li>
                         <router-link :to="{ name: 'Settings' }">Настройки</router-link>
