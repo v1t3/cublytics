@@ -1,0 +1,24 @@
+###
+# авторизация приложения
+###
+GET http://coub.com/oauth/authorize?response_type=code&redirect_uri=https://99c7c06da7ae.ngrok.io&client_id=aacc18fab5f36846a96d8ba5ecd7247bfe42bb508445cd66ca3d7ca8b13d719c
+
+###
+
+###
+# получение токена
+###
+POST http://coub.com/oauth/token
+Content-Type: application/x-www-form-urlencoded;
+
+grant_type=authorization_code&client_id=aacc18fab5f36846a96d8ba5ecd7247bfe42bb508445cd66ca3d7ca8b13d719c&redirect_uri=https://99c7c06da7ae.ngrok.io&client_secret=3d261951c6a45a788a3a59201a0284efaf6c7158325346a0071acc6f0edd01d6&code=68a2560760824066de61dbc282e33bb71bca9f51017a383123122edce839961f
+
+###{
+###    "access_token": "1e9d01f1536b1c697c8fd1bcc8762604f9276f16e37522c35728fd60c8c265c7",
+###    "token_type": "bearer",
+###    "expires_in": 31104000,
+###    "scope": "logged_in",
+###    "created_at": 1597604136
+###}
+
+###
