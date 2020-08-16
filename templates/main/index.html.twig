@@ -24,8 +24,13 @@
                 <a href="/" class="top-menu-link">Главная</a>
             </div>
             <div class="top-right links">
-                <a href="{{ path('app_login') }}" class="top-menu-link">Войти</a>
-                <a href="{{ path('app_register') }}" class="top-menu-link">Регистрация</a>
+                {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                    <a href="{{ path('spa') }}" class="top-menu-link">Кабинет</a>
+                    <a href="{{ path('app_logout') }}" class="top-menu-link">Выйти</a>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="top-menu-link">Войти</a>
+                    <a href="{{ path('app_register') }}" class="top-menu-link">Регистрация</a>
+                {% endif %}
             </div>
         </div>
     </div>
