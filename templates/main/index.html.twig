@@ -20,9 +20,13 @@
     <div class="header">
         <div class="logo"></div>
         <div class="top-menu">
-            <a href="/" class="top-menu-link">Главная</a>
-            <a href="/dashboard" class="top-menu-link">Войти</a>
-            <a href="/register" class="top-menu-link">Регистрация</a>
+            <div class="top-left links">
+                <a href="/" class="top-menu-link">Главная</a>
+            </div>
+            <div class="top-right links">
+                <a href="{{ path('app_login') }}" class="top-menu-link">Войти</a>
+                <a href="{{ path('app_register') }}" class="top-menu-link">Регистрация</a>
+            </div>
         </div>
     </div>
 
