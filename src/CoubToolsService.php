@@ -41,6 +41,16 @@ class CoubToolsService
     public const TIMELINE_ORDER_BY = 'newest_popular';
 
     /**
+     *
+     */
+    public const REDIRECT_CALLBACK = 'https://86380a471dfc.ngrok.io/api/coub/callback';
+
+    /**
+     *
+     */
+    public const REQUEST_ACCESS_TOKEN = 'http://coub.com/oauth/token';
+
+    /**
      * @param string $coubId
      *
      * @return bool|string
@@ -503,5 +513,40 @@ class CoubToolsService
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $code
+     *
+     * @return bool|string
+     * @throws Exception
+     */
+    public function getUserToken(string $code)
+    {
+        if (
+            (string)$_ENV['COUB_KEY'] !== ''
+            && (string)$_ENV['COUB_SECRET'] !== ''
+            && $code !== ''
+        ) {
+            $postfields = 'grant_type=authorization_code'
+                . '&redirect_uri=' . self::REDIRECT_CALLBACK
+                . '&client_id=' . $_ENV['COUB_KEY']
+                . '&client_secret=' . $_ENV['COUB_SECRET']
+                . '&code=' . $code;
+
+            //todo Сделать на response
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, self::REQUEST_ACCESS_TOKEN);
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $postfields);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            $out = curl_exec($curl);
+
+            curl_close($curl);
+        } else {
+            throw new \Exception('env or code empty');
+        }
+
+        return $out;
     }
 }
