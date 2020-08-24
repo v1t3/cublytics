@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -43,7 +45,7 @@ class User implements UserInterface
 
     /**
      * @var string The hashed password
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", nullable=true)
      */
     private $password;
 
@@ -55,18 +57,17 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
+    private $token_expired_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
     private $created_at;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $updated_at;
-
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $expired_at;
 
     /**
      * @return int|null
@@ -133,9 +134,12 @@ class User implements UserInterface
     /**
      * A visual identifier that represents this user.
      *
+     * @param string $username
+     *
+     * @return User
      * @see UserInterface
      */
-    public function setUsername(string $username): string
+    public function setUsername(string $username): self
     {
         $this->username = $username;
 
@@ -205,19 +209,53 @@ class User implements UserInterface
     /**
      * @return DateTimeInterface|null
      */
+    public function getTokenExpiredAt(): ?DateTimeInterface
+    {
+        return $this->token_expired_at;
+    }
+
+    /**
+     * @param DateTimeInterface|null $token_expired_at
+     *
+     * @return $this
+     */
+    public function setTokenExpiredAt(int $token_expired_at): self
+    {
+        try {
+            if (0 < (int)$token_expired_at) {
+                $dt = new DateTime();
+                $this->token_expired_at = $dt->setTimestamp((int)$token_expired_at)->format('Y-m-d H:i:s');
+            }
+        } catch (Exception $exception) {
+            trigger_error($exception);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->created_at;
     }
 
     /**
-     * @param DateTimeInterface|null $created_at
+     * @param string $created_at
      *
      * @return $this
      */
-    public function setCreatedAt(?DateTimeInterface $created_at): self
+    public function setCreatedAt(string $created_at): self
     {
-        $this->created_at = $created_at;
+        try {
+            if ('' !== $created_at) {
+                $dateObj = new DateTime($created_at);
+                $this->created_at = $dateObj;
+            }
+        } catch (Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }
@@ -231,33 +269,20 @@ class User implements UserInterface
     }
 
     /**
-     * @param DateTimeInterface|null $updated_at
+     * @param string $updated_at
      *
      * @return $this
      */
-    public function setUpdatedAt(?DateTimeInterface $updated_at): self
+    public function setUpdatedAt(string $updated_at): self
     {
-        $this->updated_at = $updated_at;
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getExpiredAt(): ?DateTimeInterface
-    {
-        return $this->expired_at;
-    }
-
-    /**
-     * @param DateTimeInterface|null $expired_at
-     *
-     * @return $this
-     */
-    public function setExpiredAt(?DateTimeInterface $expired_at): self
-    {
-        $this->expired_at = $expired_at;
+        try {
+            if ('' !== $updated_at) {
+                $dateObj = new DateTime($updated_at);
+                $this->updated_at = $dateObj;
+            }
+        } catch (Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }

@@ -22,3 +22,8 @@ grant_type=authorization_code&client_id=aacc18fab5f36846a96d8ba5ecd7247bfe42bb50
 ###}
 
 ###
+# получение данных пользователя
+###
+GET https://coub.com/api/v2/users/me?access_token=7c53dc92f8f628910bb748aa7d7b379d328ec745bdb71851c8f60468b728f592
+
+###

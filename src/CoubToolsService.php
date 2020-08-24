@@ -43,12 +43,17 @@ class CoubToolsService
     /**
      *
      */
-    public const REDIRECT_CALLBACK = 'https://86380a471dfc.ngrok.io/api/coub/callback';
+    public const REDIRECT_CALLBACK = 'https://a8a2734f0ca4.ngrok.io/api/coub/callback';
 
     /**
      *
      */
     public const REQUEST_ACCESS_TOKEN = 'http://coub.com/oauth/token';
+
+    /**
+     *
+     */
+    public const REQUEST_USER_INFO = 'https://coub.com/api/v2/users/me';
 
     /**
      * @param string $coubId
@@ -548,5 +553,25 @@ class CoubToolsService
         }
 
         return $out;
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return array|mixed
+     */
+    public function getUserInfo(string $token)
+    {
+        $data = [];
+
+        if ('' !== $token) {
+            $temp = $this->getInfo(self::REQUEST_USER_INFO . '?access_token=' . $token);
+
+            if ('' !== (string)$temp) {
+                $data = json_decode($temp, true);
+            }
+        }
+
+        return $data;
     }
 }

@@ -17,13 +17,23 @@ class SecurityController extends AbstractController
     /**
      *
      */
-    public const REDIRECT_CALLBACK = 'https://86380a471dfc.ngrok.io/api/coub/callback';
+    public const REDIRECT_CALLBACK = 'https://a8a2734f0ca4.ngrok.io/api/coub/callback';
+
+    /**
+     *
+     */
+    public const REQUEST_REVOKE_APP = 'http://coub.com/oauth/revoke';
 
     /**
      * @Route("/login", name="app_login")
+     *
+     * @param AuthenticationUtils $authenticationUtils
+     *
+     * @return Response
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        //todo Настроить общую систему авторизации
         if ($this->getUser()) {
             return $this->redirectToRoute('main');
         }
@@ -39,7 +49,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/login-coub", name="app_login_coub")
      */
-    public function loginCoub(AuthenticationUtils $authenticationUtils)
+    public function loginCoub()
     {
         if ((string)$_ENV['COUB_KEY'] !== '') {
             $url = self::REQUEST_AUTHORIZE_APP
@@ -62,4 +72,6 @@ class SecurityController extends AbstractController
 
         return $this->redirectToRoute('main');
     }
+
+    //todo Реализовать сценарий revoke (удаления токена)
 }
