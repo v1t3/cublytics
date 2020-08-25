@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\CoubChannelRepository;
+use App\Repository\ChannelRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=CoubChannelRepository::class)
+ * @ORM\Entity(repositoryClass=ChannelRepository::class)
  */
-class CoubChannel
+class Channel
 {
     /**
      * @ORM\Id()
@@ -40,6 +40,13 @@ class CoubChannel
      * @ORM\Column(type="boolean")
      */
     private $is_watching;
+
+    /**
+     * является ли основным
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_current;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -243,6 +250,18 @@ class CoubChannel
     public function setViewsCount(?int $views_count): self
     {
         $this->views_count = $views_count;
+
+        return $this;
+    }
+
+    public function getIsCurrent(): ?bool
+    {
+        return $this->is_current;
+    }
+
+    public function setIsCurrent(?bool $is_current): self
+    {
+        $this->is_current = $is_current;
 
         return $this;
     }
