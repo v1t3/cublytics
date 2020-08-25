@@ -83,11 +83,11 @@ class CoubToolsController extends AbstractController
         }
 
         $coubTool = new CoubToolsService();
-        $data = $coubTool->getUserToken($code);
-        $data = json_decode($data, true);
+        $tokenData = $coubTool->getUserToken($code);
+        $tokenData = json_decode($tokenData, true);
 
-        if (isset($data['access_token'])) {
-            $userInfo = $coubTool->getUserInfo($data['access_token']);
+        if (isset($tokenData['access_token'])) {
+            $userInfo = $coubTool->getUserInfo($tokenData['access_token']);
 
             if (empty($userInfo)) {
                 throw new Exception(
@@ -95,42 +95,46 @@ class CoubToolsController extends AbstractController
                 );
             }
 
-            if (isset($userInfo['id'])) {
-                $userAccount = $this->entityManager
-                    ->getRepository('App:User')
-                    ->findOneByUserId($userInfo['id']);
+            $this->saveUserInfo($tokenData, $userInfo);
 
-                if (!$userAccount) {
-                    $user = new User();
-                    $user->setToken($data['access_token']);
-                    $user->setTokenExpiredAt((int)$data['expires_in'] + (int)$data['created_at']);
-                    $user->setRoles(['ROLE_USER']);
-                    $user->setUserId($userInfo['id']);
-                    $user->setUsername($userInfo['name']);
-                    $user->setCreatedAt($userInfo['created_at']);
-                    $user->setUpdatedAt($userInfo['updated_at']);
+//            return $this->redirectToRoute('spa');
+        } elseif (isset($tokenData['error'])) {
+            throw new Exception('Error code: ' . $tokenData['error'] . ' description: ' . $tokenData['error_description']);
+        }
 
-                    //todo Добавить таблицу для каналов, добавить сохранение каналов юзера
+        return new Response(json_encode($tokenData));
+    }
 
-                    // todo Реализовать тестовый контур для аутентификации
+    public function saveUserInfo($tokenData, $userInfo)
+    {
+        if (isset($userInfo['id'])) {
+            $userAccount = $this->entityManager
+                ->getRepository('App:User')
+                ->findOneByUserId($userInfo['id']);
 
-                    $this->entityManager->persist($user);
-                } else {
-                    $userAccount->setToken($data['access_token']);
-                    $userAccount->setTokenExpiredAt((int)$data['expires_in']);
-                    $userAccount->setUpdatedAt($userInfo['updated_at']);
+            if (!$userAccount) {
+                $user = new User();
+                $user->setToken($tokenData['access_token']);
+                $user->setTokenExpiredAt((int)$tokenData['expires_in'] + (int)$tokenData['created_at']);
+                $user->setRoles(['ROLE_USER']);
+                $user->setUserId($userInfo['id']);
+                $user->setUsername($userInfo['name']);
+                $user->setCreatedAt($userInfo['created_at']);
+                $user->setUpdatedAt($userInfo['updated_at']);
 
-                    $this->entityManager->persist($userAccount);
-                }
+                //todo Добавить таблицу для каналов, добавить сохранение каналов юзера
+
+                $this->entityManager->persist($user);
+            } else {
+                $userAccount->setToken($tokenData['access_token']);
+                $userAccount->setTokenExpiredAt((int)$tokenData['expires_in']);
+                $userAccount->setUpdatedAt($userInfo['updated_at']);
+
+                $this->entityManager->persist($userAccount);
             }
 
             $this->entityManager->flush();
-
-//            return $this->redirectToRoute('spa');
-        } elseif (isset($data['error'])) {
-            throw new Exception('Error code: ' . $data['error'] . ' description: ' . $data['error_description']);
         }
 
-        return new Response(json_encode($data));
     }
 }

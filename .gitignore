@@ -21,3 +21,5 @@
 /temp/
 /docker/database/data
 /docker/logs/
+/dev/
+/.env
