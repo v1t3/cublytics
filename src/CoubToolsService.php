@@ -43,7 +43,17 @@ class CoubToolsService
     /**
      *
      */
-    public const REDIRECT_CALLBACK = 'https://a8a2734f0ca4.ngrok.io/api/coub/callback';
+    public const REQUEST_AUTHORIZE_APP = 'http://coub.com/oauth/authorize';
+
+    /**
+     *
+     */
+    public const REQUEST_REVOKE_APP = 'http://coub.com/oauth/revoke';
+
+    /**
+     *
+     */
+    public const REDIRECT_CALLBACK = 'https://d4aabb60b869.ngrok.io/api/coub/callback';
 
     /**
      *

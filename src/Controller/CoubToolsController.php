@@ -98,14 +98,14 @@ class CoubToolsController extends AbstractController
             if (isset($userInfo['id'])) {
                 $userAccount = $this->entityManager
                     ->getRepository('App:User')
-                    ->findOneByChannelId($userInfo['id']);
+                    ->findOneByUserId($userInfo['id']);
 
                 if (!$userAccount) {
                     $user = new User();
                     $user->setToken($data['access_token']);
-                    $user->setTokenExpiredAt((int)$data['expires_in']);
+                    $user->setTokenExpiredAt((int)$data['expires_in'] + (int)$data['created_at']);
                     $user->setRoles(['ROLE_USER']);
-                    $user->setChannelId($userInfo['id']);
+                    $user->setUserId($userInfo['id']);
                     $user->setUsername($userInfo['name']);
                     $user->setCreatedAt($userInfo['created_at']);
                     $user->setUpdatedAt($userInfo['updated_at']);

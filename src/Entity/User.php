@@ -26,7 +26,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="integer", unique=true)
      */
-    private $channel_id;
+    private $user_id;
 
     /**
      * @ORM\Column(type="json")
@@ -80,19 +80,19 @@ class User implements UserInterface
     /**
      * @return int|null
      */
-    public function getChannelId(): ?int
+    public function getUserId(): ?int
     {
-        return $this->channel_id;
+        return $this->user_id;
     }
 
     /**
-     * @param int $channel_id
+     * @param int $user_id
      *
      * @return $this
      */
-    public function setChannelId(int $channel_id): self
+    public function setUserId(int $user_id): self
     {
-        $this->channel_id = $channel_id;
+        $this->user_id = $user_id;
 
         return $this;
     }
@@ -223,8 +223,7 @@ class User implements UserInterface
     {
         try {
             if (0 < (int)$token_expired_at) {
-                $dt = new DateTime();
-                $this->token_expired_at = $dt->setTimestamp((int)$token_expired_at)->format('Y-m-d H:i:s');
+                $this->token_expired_at = new DateTime(date('Y-m-d H:i:s', $token_expired_at)) ;
             }
         } catch (Exception $exception) {
             trigger_error($exception);
@@ -251,7 +250,7 @@ class User implements UserInterface
         try {
             if ('' !== $created_at) {
                 $dateObj = new DateTime($created_at);
-                $this->created_at = $dateObj;
+                $this->created_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
             }
         } catch (Exception $exception) {
             trigger_error($exception);
@@ -278,7 +277,7 @@ class User implements UserInterface
         try {
             if ('' !== $updated_at) {
                 $dateObj = new DateTime($updated_at);
-                $this->updated_at = $dateObj;
+                $this->updated_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
             }
         } catch (Exception $exception) {
             trigger_error($exception);
