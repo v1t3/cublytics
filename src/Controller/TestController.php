@@ -82,7 +82,7 @@ class TestController extends AbstractController
         $res = $this->saveTestUserInfo($testTokenData, $testUserInfo);
 
         $response = new Response();
-        $response->setContent(json_encode([$res]));
+        $response->setContent(json_encode([$res, $testUserInfo]));
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
