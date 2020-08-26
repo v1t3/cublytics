@@ -2,14 +2,24 @@
 
 namespace App\Controller;
 
+use App\ChannelService;
 use App\Entity\User;
+use App\UserService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TestController extends AbstractController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
 //    /**
 //     * @Route("/test/oauth/authorize", name="test_authorize")
 //     */
@@ -61,7 +71,7 @@ class TestController extends AbstractController
     /**
      * @Route("/test/coub/callback", name="test_user_info")
      */
-    public function getTestUserInfo(Request $request)
+    public function getTestUserInfo(Request $request, UserService $userService, ChannelService $channelService)
     {
         $token = (string)$request->query->get('access_token');
 
@@ -79,11 +89,18 @@ class TestController extends AbstractController
         $testUserInfo = $_ENV['TEST_DATA'];
         $testUserInfo = json_decode($testUserInfo, true);
 
-        $res = $this->saveTestUserInfo($testTokenData, $testUserInfo);
+//        $userSaved = $this->saveTestUserInfo($testTokenData, $testUserInfo);
+        $userSaved = $userService->saveUser($testTokenData, $testUserInfo);
 
-        $response = new Response();
-        $response->setContent(json_encode([$res, $testUserInfo]));
-        $response->headers->set('Content-Type', 'application/json');
+        if ($userSaved) {
+            if (isset($testUserInfo['channels'])) {
+//                $testSavedCh = $this->saveTestUserChannels($testUserInfo);
+                $channelSaved = $channelService->saveUserChannels($testUserInfo);
+            }
+        }
+
+        $response = new JsonResponse();
+        $response->setContent(json_encode([$userSaved, $channelSaved]));
 
         return $response;
     }
@@ -91,9 +108,7 @@ class TestController extends AbstractController
     public function saveTestUserInfo($tokenData, $userInfo)
     {
         if (isset($userInfo['id'])) {
-            $entityManager = $this->getDoctrine()->getManager();
-
-            $userAccount = $entityManager
+            $userAccount = $this->entityManager
                 ->getRepository('App:User')
                 ->findOneByUserId($userInfo['id']);
 
@@ -109,16 +124,16 @@ class TestController extends AbstractController
 
                 //todo Добавить таблицу для каналов, добавить сохранение каналов юзера
 
-                $entityManager->persist($user);
+                $this->entityManager->persist($user);
             } else {
                 $userAccount->setToken($tokenData['access_token']);
                 $userAccount->setTokenExpiredAt((int)$tokenData['expires_in']);
                 $userAccount->setUpdatedAt($userInfo['updated_at']);
 
-                $entityManager->persist($userAccount);
+                $this->entityManager->persist($userAccount);
             }
 
-            $entityManager->flush();
+            $this->entityManager->flush();
 
             return true;
         }

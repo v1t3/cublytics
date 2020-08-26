@@ -175,9 +175,16 @@ class Channel
         return $this->created_at;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
+    public function setCreatedAt(string $created_at): self
     {
-        $this->created_at = $created_at;
+        try {
+            if ('' !== $created_at) {
+                $dateObj = new \DateTime($created_at);
+                $this->created_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+            }
+        } catch (\Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }
@@ -187,9 +194,16 @@ class Channel
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): self
+    public function setUpdatedAt(string $updated_at): self
     {
-        $this->updated_at = $updated_at;
+        try {
+            if ('' !== $updated_at) {
+                $dateObj = new \DateTime($updated_at);
+                $this->updated_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+            }
+        } catch (\Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }
