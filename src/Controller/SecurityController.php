@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\CoubToolsService;
+use App\AppRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +14,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/login", name="app_login")
      *
+     * @param Request             $request
      * @param AuthenticationUtils $authenticationUtils
      *
      * @return Response
@@ -31,9 +32,9 @@ class SecurityController extends AbstractController
         $loginType = (string)$request->query->get('login_type');
         if ('coub' === $loginType) {
             if ('' !== (string)$_ENV['COUB_KEY']) {
-                $url = CoubToolsService::REQUEST_AUTHORIZE_APP
+                $url = AppRegistry::REQUEST_AUTHORIZE_APP
                     . '?response_type=code'
-                    . '&redirect_uri=' . CoubToolsService::REDIRECT_CALLBACK
+                    . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
                     . '&client_id=' . $_ENV['COUB_KEY'];
 
                 return $this->redirect($url);
@@ -60,9 +61,9 @@ class SecurityController extends AbstractController
     public function loginCoub()
     {
         if ((string)$_ENV['COUB_KEY'] !== '') {
-            $url = CoubToolsService::REQUEST_AUTHORIZE_APP
+            $url = AppRegistry::REQUEST_AUTHORIZE_APP
                 . '?response_type=code'
-                . '&redirect_uri=' . CoubToolsService::REDIRECT_CALLBACK
+                . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
                 . '&client_id=' . $_ENV['COUB_KEY'];
 
             return $this->redirect($url);

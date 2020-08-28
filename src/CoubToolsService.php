@@ -9,62 +9,13 @@ use Exception;
 use Throwable;
 
 /**
+ * @deprecated
  * Class CoubToolsService
  *
  * @package App\Utility
  */
 class CoubToolsService
 {
-    /**
-     *
-     */
-    public const API_COUB_SINGLE_LINK = 'https://coub.com/api/v2/coubs/';
-
-    /**
-     *
-     */
-    public const API_COUB_USER_LINK = 'https://coub.com/api/v2/channels/';
-
-    /**
-     *
-     */
-    public const API_COUB_TIMELINE_LINK = 'https://coub.com/api/v2/timeline/channel/';
-
-    /**
-     *
-     */
-    public const TIMELINE_PER_PAGE = 20;
-
-    /**
-     *
-     */
-    public const TIMELINE_ORDER_BY = 'newest_popular';
-
-    /**
-     *
-     */
-    public const REQUEST_AUTHORIZE_APP = 'http://coub.com/oauth/authorize';
-
-    /**
-     *
-     */
-    public const REQUEST_REVOKE_APP = 'http://coub.com/oauth/revoke';
-
-    /**
-     *
-     */
-    public const REDIRECT_CALLBACK = 'https://221c955fb493.ngrok.io/api/coub/callback';
-
-    /**
-     *
-     */
-    public const REQUEST_ACCESS_TOKEN = 'http://coub.com/oauth/token';
-
-    /**
-     *
-     */
-    public const REQUEST_USER_INFO = 'https://coub.com/api/v2/users/me';
-
     /**
      * @param string $coubId
      *
@@ -83,7 +34,7 @@ class CoubToolsService
                 $coubId = str_replace('https://coub.com/view/', '', $coubId);
             }
 
-            $urlApi = self::API_COUB_SINGLE_LINK . $coubId;
+            $urlApi = AppRegistry::API_COUB_SINGLE_LINK . $coubId;
 
             $data = $this->getInfo($urlApi);
 
@@ -118,7 +69,7 @@ class CoubToolsService
                 $channelName = str_replace('https://coub.com/', '', $channelName);
             }
 
-            $urlApi = self::API_COUB_USER_LINK . $channelName;
+            $urlApi = AppRegistry::API_COUB_USER_LINK . $channelName;
 
             $data = $this->getInfo($urlApi);
 
@@ -154,9 +105,9 @@ class CoubToolsService
                 $channelName = str_replace('https://coub.com/', '', $channelName);
             }
 
-            $urlTale = '&per_page=' . self::TIMELINE_PER_PAGE . '&order_by=' . self::TIMELINE_ORDER_BY;
+            $urlTale = '&per_page=' . AppRegistry::TIMELINE_PER_PAGE . '&order_by=' . AppRegistry::TIMELINE_ORDER_BY;
 
-            $data = $this->getInfo(self::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
+            $data = $this->getInfo(AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
 
             // проверим, что вернулся не html
             if (false !== strpos((string)$data, '<!DOCTYPE html>')) {
@@ -174,7 +125,7 @@ class CoubToolsService
 
                     # получим грязный список страниц всех коубов
                     for ($i = 2; $i <= $decodeData['total_pages']; $i++) {
-                        $urls[] = self::API_COUB_TIMELINE_LINK . $channelName . '?page=' . $i . $urlTale;
+                        $urls[] = AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=' . $i . $urlTale;
                     }
 
                     $others = $this->getUrls($urls);
@@ -278,21 +229,21 @@ class CoubToolsService
                         $dateMonth = $arCoubsByMonth[$i];
 
                         $result['total_points_month'][$i] = [
-                            'date' => $dateMonth,
+                            'date'  => $dateMonth,
                             'count' => (array_key_exists($dateMonth, $arCountDatesTotal))
                                 ? (int)$arCountDatesTotal[$dateMonth]
                                 : 0
                         ];
 
                         $result['self_points_month'][$i] = [
-                            'date' => $dateMonth,
+                            'date'  => $dateMonth,
                             'count' => (array_key_exists($dateMonth, $arCountDatesSelf))
                                 ? (int)$arCountDatesSelf[$dateMonth]
                                 : 0
                         ];
 
                         $result['reposts_points_month'][$i] = [
-                            'date' => $dateMonth,
+                            'date'  => $dateMonth,
                             'count' => (array_key_exists($dateMonth, $arCountDatesReposts))
                                 ? (int)$arCountDatesReposts[$dateMonth]
                                 : 0
@@ -528,60 +479,5 @@ class CoubToolsService
         }
 
         return $result;
-    }
-
-    /**
-     * @param string $code
-     *
-     * @return bool|string
-     * @throws Exception
-     */
-    public function getUserToken(string $code)
-    {
-        if (
-            (string)$_ENV['COUB_KEY'] !== ''
-            && (string)$_ENV['COUB_SECRET'] !== ''
-            && $code !== ''
-        ) {
-            $postfields = 'grant_type=authorization_code'
-                . '&redirect_uri=' . self::REDIRECT_CALLBACK
-                . '&client_id=' . $_ENV['COUB_KEY']
-                . '&client_secret=' . $_ENV['COUB_SECRET']
-                . '&code=' . $code;
-
-            //todo Сделать на response
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, self::REQUEST_ACCESS_TOKEN);
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $postfields);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            $out = curl_exec($curl);
-
-            curl_close($curl);
-        } else {
-            throw new \Exception('env or code empty');
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param string $token
-     *
-     * @return array|mixed
-     */
-    public function getUserInfo(string $token)
-    {
-        $data = [];
-
-        if ('' !== $token) {
-            $temp = $this->getInfo(self::REQUEST_USER_INFO . '?access_token=' . $token);
-
-            if ('' !== (string)$temp) {
-                $data = json_decode($temp, true);
-            }
-        }
-
-        return $data;
     }
 }

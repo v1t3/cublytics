@@ -1,20 +1,79 @@
 <?php
-
+declare(strict_types=1);
 
 namespace App;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Class UserService
+ *
+ * @package App
+ */
 class UserService
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * UserService constructor.
+     *
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * @param string $token
+     *
+     * @return array|mixed
+     */
+    public function getInfo(string $token)
+    {
+        $data = [];
+        $temp = '';
+
+        try {
+            if ('' === (string)$token) {
+                return $data;
+            }
+            $url = AppRegistry::REQUEST_USER_INFO . '?access_token=' . $token;
+
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            $temp = curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                $temp = curl_error($ch);
+            }
+
+            curl_close($ch);
+        } catch (\Exception $e) {
+            trigger_error($e);
+        }
+
+        if ('' !== (string)$temp) {
+            $data = json_decode($temp, true);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param $tokenData
+     * @param $userData
+     *
+     * @return bool
+     */
     public function saveUser($tokenData, $userData)
     {
         if (isset($userData['id'])) {
@@ -31,8 +90,6 @@ class UserService
                 $user->setUsername($userData['name']);
                 $user->setCreatedAt($userData['created_at']);
                 $user->setUpdatedAt($userData['updated_at']);
-
-                //todo Добавить таблицу для каналов, добавить сохранение каналов юзера
 
                 $this->entityManager->persist($user);
             } else {
