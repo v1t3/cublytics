@@ -10,14 +10,14 @@
                 <a href="/" class="top-menu-link">Главная</a>
             </div>
             <div class="top-right links">
-                <a href="{{ path('app_login') }}" class="top-menu-link">Войти</a>
+                <a href="{{ path('app_login_coub') }}" class="top-menu-link">Войти через COUB</a>
                 <a href="{{ path('app_register') }}" class="top-menu-link">Регистрация</a>
             </div>
         </div>
     </div>
 
     <div class="container col-md-6" style="margin-top: 70px">
-        <a href="{{ path('app_login') }}?login_type=coub">
+        <a href="{{ path('app_login_coub') }}?login_type=coub">
             <button class="btn btn-primary">Войти через COUB</button>
         </a>
         <form method="post">

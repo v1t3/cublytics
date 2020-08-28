@@ -1,25 +1,74 @@
 <?php
 declare(strict_types=1);
 
+
 namespace App\Controller;
 
+
+use App\AppRegistry;
 use App\ChannelService;
 use App\CoubAuthService;
 use App\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
+
+/**
+ * Class CoubAuthController
+ *
+ * @package App\Controller
+ */
 class CoubAuthController extends AbstractController
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * CoubAuthController constructor.
+     *
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
+    }
+
+    /**
+     * @Route("/login", name="app_login_coub")
+     * @param Request             $request
+     *
+     * @return RedirectResponse|Response
+     */
+    public function loginCoub(Request $request)
+    {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('main');
+        }
+
+        $reg = (string)$request->query->get('registration');
+        if (
+            'success' !== $reg
+            && '' !== (string)$_ENV['COUB_KEY']
+        ) {
+            $url = AppRegistry::REQUEST_AUTHORIZE_APP
+                . '?response_type=code'
+                . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
+                . '&client_id=' . $_ENV['COUB_KEY'];
+
+            return $this->redirect($url);
+        }
+
+        return $this->redirectToRoute('main');
     }
 
     /**
@@ -30,8 +79,8 @@ class CoubAuthController extends AbstractController
      * @param ChannelService  $channelClient
      * @param CoubAuthService $coubAuthService
      *
-     * @return JsonResponse
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return RedirectResponse
+     * @throws GuzzleException
      * @throws Exception
      */
     public function callback(
@@ -55,25 +104,27 @@ class CoubAuthController extends AbstractController
 
         $userSaved = $userService->saveUser($tokenData, $userInfo);
 
-        if ($userSaved && isset($userInfo['channels'])) {
-            $channelSaved = $channelClient->saveUserChannels($userInfo);
-        } else {
+        if (!$userSaved) {
             throw new Exception(
                 'Ошибка при регистрации пользователя'
             );
         }
 
-        $result = [
-            'registration' => 'success',
-            'userSaved'    => $userSaved,
-            'channelSaved' => $channelSaved,
-            'access_token' => $tokenData['access_token']
-        ];
+        if (isset($userInfo['channels'])) {
+            $channelClient->saveUserChannels($userInfo);
+        }
 
-        $response = new JsonResponse();
-        $response->setData($result);
+        $request->getSession()->set(
+            Security::LAST_USERNAME,
+            $tokenData['access_token']
+        );
 
-        return $response;
+        return $this->redirectToRoute(
+            'app_login_coub',
+            [
+                'registration' => 'success'
+            ]
+        );
     }
 
 }

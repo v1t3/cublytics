@@ -12,7 +12,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     /**
-     * @Route("/login", name="app_login")
+     * @Route("/login-admin", name="app_login_admin")
      *
      * @param Request             $request
      * @param AuthenticationUtils $authenticationUtils
@@ -24,7 +24,6 @@ class SecurityController extends AbstractController
         AuthenticationUtils $authenticationUtils
     ): Response
     {
-        //todo Настроить общую систему авторизации
         if ($this->getUser()) {
             return $this->redirectToRoute('main');
         }
@@ -53,23 +52,6 @@ class SecurityController extends AbstractController
                 'error'         => $error
             ]
         );
-    }
-
-    /**
-     * @Route("/login-coub", name="app_login_coub")
-     */
-    public function loginCoub()
-    {
-        if ((string)$_ENV['COUB_KEY'] !== '') {
-            $url = AppRegistry::REQUEST_AUTHORIZE_APP
-                . '?response_type=code'
-                . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
-                . '&client_id=' . $_ENV['COUB_KEY'];
-
-            return $this->redirect($url);
-        }
-
-        return new Response('env empty');
     }
 
     /**

@@ -5,8 +5,10 @@ namespace App\Security;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Security;
@@ -24,21 +26,28 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
     /**
      *
      */
-    public const LOGIN_ROUTE = 'app_login';
+    public const LOGIN_ROUTE = 'app_login_coub';
 
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
 
+    private UrlGeneratorInterface $urlGenerator;
+
     /**
      * CoubAuthenticator constructor.
      *
      * @param EntityManagerInterface $entityManager
+     * @param UrlGeneratorInterface  $urlGenerator
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        UrlGeneratorInterface $urlGenerator
+    )
     {
         $this->entityManager = $entityManager;
+        $this->urlGenerator = $urlGenerator;
     }
 
     /**
@@ -48,9 +57,16 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        // todo
-        return self::LOGIN_ROUTE === $request->attributes->get('_route')
-            && $request->isMethod('POST');
+        if (
+            self::LOGIN_ROUTE === $request->attributes->get('_route')
+            && 'success' === $request->query->get('registration')
+        ) {
+//            throw new \Exception(json_encode($result));
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -62,12 +78,8 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
     {
         $credentials = [
             'registration' => $request->query->get('registration'),
-            'access_token' => $request->query->get('access_token')
+            'access_token' => $request->getSession()->get(Security::LAST_USERNAME)
         ];
-        $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $credentials['access_token']
-        );
 
         return $credentials;
     }
@@ -90,8 +102,6 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
 
         if (!$user) {
             return null;
-//            throw new CustomUserMessageAuthenticationException('User could not be found.');
-        } else {
         }
 
         return $user;
@@ -140,7 +150,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return null;
+        return new RedirectResponse($this->urlGenerator->generate('main'));
     }
 
     /**
