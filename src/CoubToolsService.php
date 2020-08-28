@@ -9,37 +9,13 @@ use Exception;
 use Throwable;
 
 /**
+ * @deprecated
  * Class CoubToolsService
  *
  * @package App\Utility
  */
 class CoubToolsService
 {
-    /**
-     *
-     */
-    public const API_COUB_SINGLE_LINK = 'https://coub.com/api/v2/coubs/';
-
-    /**
-     *
-     */
-    public const API_COUB_USER_LINK = 'https://coub.com/api/v2/channels/';
-
-    /**
-     *
-     */
-    public const API_COUB_TIMELINE_LINK = 'https://coub.com/api/v2/timeline/channel/';
-
-    /**
-     *
-     */
-    public const TIMELINE_PER_PAGE = 20;
-
-    /**
-     *
-     */
-    public const TIMELINE_ORDER_BY = 'newest_popular';
-
     /**
      * @param string $coubId
      *
@@ -58,7 +34,7 @@ class CoubToolsService
                 $coubId = str_replace('https://coub.com/view/', '', $coubId);
             }
 
-            $urlApi = self::API_COUB_SINGLE_LINK . $coubId;
+            $urlApi = AppRegistry::API_COUB_SINGLE_LINK . $coubId;
 
             $data = $this->getInfo($urlApi);
 
@@ -93,7 +69,7 @@ class CoubToolsService
                 $channelName = str_replace('https://coub.com/', '', $channelName);
             }
 
-            $urlApi = self::API_COUB_USER_LINK . $channelName;
+            $urlApi = AppRegistry::API_COUB_USER_LINK . $channelName;
 
             $data = $this->getInfo($urlApi);
 
@@ -129,9 +105,9 @@ class CoubToolsService
                 $channelName = str_replace('https://coub.com/', '', $channelName);
             }
 
-            $urlTale = '&per_page=' . self::TIMELINE_PER_PAGE . '&order_by=' . self::TIMELINE_ORDER_BY;
+            $urlTale = '&per_page=' . AppRegistry::TIMELINE_PER_PAGE . '&order_by=' . AppRegistry::TIMELINE_ORDER_BY;
 
-            $data = $this->getInfo(self::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
+            $data = $this->getInfo(AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
 
             // проверим, что вернулся не html
             if (false !== strpos((string)$data, '<!DOCTYPE html>')) {
@@ -149,7 +125,7 @@ class CoubToolsService
 
                     # получим грязный список страниц всех коубов
                     for ($i = 2; $i <= $decodeData['total_pages']; $i++) {
-                        $urls[] = self::API_COUB_TIMELINE_LINK . $channelName . '?page=' . $i . $urlTale;
+                        $urls[] = AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=' . $i . $urlTale;
                     }
 
                     $others = $this->getUrls($urls);
@@ -253,21 +229,21 @@ class CoubToolsService
                         $dateMonth = $arCoubsByMonth[$i];
 
                         $result['total_points_month'][$i] = [
-                            'date' => $dateMonth,
+                            'date'  => $dateMonth,
                             'count' => (array_key_exists($dateMonth, $arCountDatesTotal))
                                 ? (int)$arCountDatesTotal[$dateMonth]
                                 : 0
                         ];
 
                         $result['self_points_month'][$i] = [
-                            'date' => $dateMonth,
+                            'date'  => $dateMonth,
                             'count' => (array_key_exists($dateMonth, $arCountDatesSelf))
                                 ? (int)$arCountDatesSelf[$dateMonth]
                                 : 0
                         ];
 
                         $result['reposts_points_month'][$i] = [
-                            'date' => $dateMonth,
+                            'date'  => $dateMonth,
                             'count' => (array_key_exists($dateMonth, $arCountDatesReposts))
                                 ? (int)$arCountDatesReposts[$dateMonth]
                                 : 0

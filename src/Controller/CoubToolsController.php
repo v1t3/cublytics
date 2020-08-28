@@ -4,13 +4,35 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\CoubToolsService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/***
+ * @deprecated
+ * Class CoubToolsController
+ * @package App\Controller
+ */
 class CoubToolsController extends AbstractController
 {
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * CoubToolsController constructor.
+     *
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     /**
      * @Route("/api/coub/getdata", name="getData")
      *
@@ -52,6 +74,6 @@ class CoubToolsController extends AbstractController
             }
         }
 
-        return new Response($data);
+        return new JsonResponse($data);
     }
 }

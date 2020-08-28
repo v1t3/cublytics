@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -21,9 +24,9 @@ class User implements UserInterface
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
+     * @ORM\Column(type="integer", unique=true)
      */
-    private $email;
+    private $user_id;
 
     /**
      * @ORM\Column(type="json")
@@ -31,36 +34,67 @@ class User implements UserInterface
     private $roles = [];
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $username;
+
+    /**
+     * @ORM\Column(type="string", length=180, nullable=true)
+     */
+    private $email;
+
+    /**
      * @var string The hashed password
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", nullable=true)
      */
     private $password;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $token;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $token_expired_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $created_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $updated_at;
+
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    /**
+     * @return int|null
+     */
+    public function getUserId(): ?int
     {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-
-        return $this;
+        return $this->user_id;
     }
 
     /**
-     * A visual identifier that represents this user.
+     * @param int $user_id
      *
-     * @see UserInterface
+     * @return $this
      */
-    public function getUsername(): string
+    public function setUserId(int $user_id): self
     {
-        return (string) $this->email;
+        $this->user_id = $user_id;
+
+        return $this;
     }
 
     /**
@@ -75,9 +109,59 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array $roles
+     *
+     * @return $this
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUsername(): string
+    {
+        return (string)$this->username;
+    }
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @param string $username
+     *
+     * @return User
+     * @see UserInterface
+     */
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return $this
+     */
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
 
         return $this;
     }
@@ -87,12 +171,117 @@ class User implements UserInterface
      */
     public function getPassword(): string
     {
-        return (string) $this->password;
+        return (string)$this->password;
     }
 
+    /**
+     * @param string $password
+     *
+     * @return $this
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return $this
+     */
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getTokenExpiredAt(): ?DateTimeInterface
+    {
+        return $this->token_expired_at;
+    }
+
+    /**
+     * @param DateTimeInterface|null $token_expired_at
+     *
+     * @return $this
+     */
+    public function setTokenExpiredAt(int $token_expired_at): self
+    {
+        try {
+            if (0 < (int)$token_expired_at) {
+                $this->token_expired_at = new DateTime(date('Y-m-d H:i:s', $token_expired_at)) ;
+            }
+        } catch (Exception $exception) {
+            trigger_error($exception);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getCreatedAt(): ?DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * @param string $created_at
+     *
+     * @return $this
+     */
+    public function setCreatedAt(string $created_at): self
+    {
+        try {
+            if ('' !== $created_at) {
+                $dateObj = new DateTime($created_at);
+                $this->created_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
+            }
+        } catch (Exception $exception) {
+            trigger_error($exception);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getUpdatedAt(): ?DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    /**
+     * @param string $updated_at
+     *
+     * @return $this
+     */
+    public function setUpdatedAt(string $updated_at): self
+    {
+        try {
+            if ('' !== $updated_at) {
+                $dateObj = new DateTime($updated_at);
+                $this->updated_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
+            }
+        } catch (Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }
