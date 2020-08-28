@@ -1,19 +1,5 @@
 <template>
     <div>
-        <div class="header">
-            <div class="logo">
-            </div>
-            <div class="top-menu">
-                <div class="top-left links">
-                    <a href="/" title="">Главная</a>
-                    <a href="/about" title="">Где я?</a>
-                </div>
-                <div class="top-right links">
-                    <router-link :to="{ name: 'home' }">Кабинет</router-link>
-                    <a href="/logout" title="Выйти">Выйти</a>
-                </div>
-            </div>
-        </div>
         <div class="wrapper">
             <div class="left-menu-block">
                 <ul>

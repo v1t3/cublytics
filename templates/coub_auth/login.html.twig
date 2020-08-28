@@ -3,19 +3,6 @@
 {% block title %}Log in!{% endblock %}
 
 {% block body %}
-    <div class="header">
-        <div class="logo"></div>
-        <div class="top-menu">
-            <div class="top-left links">
-                <a href="/" class="top-menu-link">Главная</a>
-            </div>
-            <div class="top-right links">
-                <a href="{{ path('app_login_coub') }}" class="top-menu-link">Войти через COUB</a>
-                <a href="{{ path('app_register') }}" class="top-menu-link">Регистрация</a>
-            </div>
-        </div>
-    </div>
-
     <div class="container col-md-6" style="margin-top: 70px">
         {% if error %}
             <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
