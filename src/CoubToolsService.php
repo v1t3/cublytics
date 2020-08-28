@@ -53,7 +53,7 @@ class CoubToolsService
     /**
      *
      */
-    public const REDIRECT_CALLBACK = 'https://cc154c6b4484.ngrok.io/api/coub/callback';
+    public const REDIRECT_CALLBACK = 'https://221c955fb493.ngrok.io/api/coub/callback';
 
     /**
      *

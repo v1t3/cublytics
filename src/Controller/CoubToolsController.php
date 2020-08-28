@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class CoubToolsController extends AbstractController
 {
@@ -77,8 +78,13 @@ class CoubToolsController extends AbstractController
      * @return Response
      * @throws Exception
      */
-    public function callback(Request $request, UserService $userService, ChannelService $channelClient)
+    public function callback(
+        Request $request,
+        UserService $userService,
+        ChannelService $channelClient
+    )
     {
+        //ответ от сервиса регистраниции коуба
         $code = (string)$request->query->get('code');
         if ('' === $code) {
             throw new Exception(
@@ -112,9 +118,18 @@ class CoubToolsController extends AbstractController
                 );
             }
 
-            return $this->redirectToRoute('spa');
+            return $this->redirectToRoute(
+                'app_login',
+                [
+                    'registration' => 'success',
+                    'access_token' => $tokenData['access_token']
+                ]
+            );
         } elseif (isset($tokenData['error'])) {
-            throw new Exception('Error code: ' . $tokenData['error'] . ' description: ' . $tokenData['error_description']);
+            throw new Exception(
+                'Error code: ' . $tokenData['error']
+                . ' description: ' . $tokenData['error_description']
+            );
         }
     }
 }

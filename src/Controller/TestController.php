@@ -82,8 +82,8 @@ class TestController extends AbstractController
         }
         $testTokenData = [
             'access_token' => $_ENV['TEST_TOKEN'],
-            'expires_in' => 0,
-            'created_at' => 0,
+            'expires_in'   => 0,
+            'created_at'   => 0,
         ];
 
         $testUserInfo = $_ENV['TEST_DATA'];
@@ -139,5 +139,38 @@ class TestController extends AbstractController
         }
 
         return false;
+    }
+
+    /**
+     * @Route("/test1", name="test1")
+     */
+    public function test1()
+    {
+
+//        return $this->redirectToRoute(
+//            'test2',
+//            [
+//                'registration' => 'success',
+//            ],
+//            307
+//        );
+
+        return $this->forward('App\Controller\TestController::test2', [
+            'registration'  => 'success',
+        ]);
+    }
+
+    /**
+     * @Route("/test2", name="test2", requirements={"_methods": "POST"})
+     */
+    public function test2($registration, Request $request)
+    {
+//        $reg = $request->query->get('registration');
+//        $reg2 = $request->request->get('registration');
+
+        $response = new JsonResponse();
+        $response->setContent(json_encode([$registration]));
+
+        return $response;
     }
 }

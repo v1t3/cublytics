@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\CoubToolsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -17,11 +18,26 @@ class SecurityController extends AbstractController
      *
      * @return Response
      */
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(
+        Request $request,
+        AuthenticationUtils $authenticationUtils
+    ): Response
     {
         //todo Настроить общую систему авторизации
         if ($this->getUser()) {
             return $this->redirectToRoute('main');
+        }
+
+        $loginType = (string)$request->query->get('login_type');
+        if ('coub' === $loginType) {
+            if ('' !== (string)$_ENV['COUB_KEY']) {
+                $url = CoubToolsService::REQUEST_AUTHORIZE_APP
+                    . '?response_type=code'
+                    . '&redirect_uri=' . CoubToolsService::REDIRECT_CALLBACK
+                    . '&client_id=' . $_ENV['COUB_KEY'];
+
+                return $this->redirect($url);
+            }
         }
 
         // get the login error if there is one
@@ -29,7 +45,13 @@ class SecurityController extends AbstractController
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('security/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
+        return $this->render(
+            'security/login.html.twig',
+            [
+                'last_username' => $lastUsername,
+                'error'         => $error
+            ]
+        );
     }
 
     /**
