@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\AppRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 

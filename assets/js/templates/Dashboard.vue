@@ -21,9 +21,7 @@
                 </ul>
             </div>
             <div class="main-block">
-                <div class="container">
                     <router-view></router-view>
-                </div>
             </div>
         </div>
     </div>

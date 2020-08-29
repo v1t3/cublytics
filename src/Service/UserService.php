@@ -3,8 +3,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\AppRegistry;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 
 /**
  * Class UserService
@@ -19,13 +22,18 @@ class UserService
     private EntityManagerInterface $entityManager;
 
     /**
-     * UserService constructor.
-     *
-     * @param EntityManagerInterface $entityManager
+     * @var Security
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    private Security $security;
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param Security               $security
+     */
+    public function __construct(EntityManagerInterface $entityManager, Security $security)
     {
         $this->entityManager = $entityManager;
+        $this->security = $security;
     }
 
     /**
@@ -106,5 +114,47 @@ class UserService
         }
 
         return false;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return array
+     */
+    public function updateSettings(Request $request)
+    {
+        $email = $request->request->get('email');
+        $password = $request->request->get('password');
+
+        if ('' === $email || '' === $password) {
+            return [
+                'result'  => 'error',
+                'message' => 'email или пароль не заполнены'
+            ];
+        }
+
+        $user = $this->security->getUser();
+
+        if ($user->getEmail() === $email || $user->getPassword() === $password) {
+            $result = [
+                'result'  => 'error',
+                'message' => 'email или пароль совпадают'
+            ];
+        } else {
+            //todo Добавить подтверждение почты
+            $user->setEmail($email);
+            //todo Хешировать пароли при сохранении
+            $user->setPassword($password);
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            $result = [
+                'result'  => 'success',
+                'message' => 'Обновлено!'
+            ];
+        }
+
+        return $result;
     }
 }
