@@ -44,12 +44,17 @@ class CoubAuthController extends AbstractController
 
     /**
      * @Route("/login", name="app_login_coub")
+     *
      * @param Request $request
      *
      * @return RedirectResponse|Response
      */
     public function loginCoub(Request $request)
     {
+        if ('dev' === $_ENV['APP_ENV']) {
+            return $this->redirectToRoute('coub_callback');
+        }
+
         if ($this->getUser()) {
             return $this->redirectToRoute('main');
         }
@@ -71,7 +76,7 @@ class CoubAuthController extends AbstractController
     }
 
     /**
-     * @Route("/api/coub/callback", name="coub_callback")
+     * @Route("/auth/callback", name="coub_callback")
      *
      * @param Request         $request
      * @param UserService     $userService
@@ -91,17 +96,23 @@ class CoubAuthController extends AbstractController
     {
         $tokenData = [];
         $userInfo = [];
+        $userSaved = false;
         $code = (string)$request->query->get('code');
 
-        if ('' !== $code) {
+        if ('' !== $code && 'dev' !== $_ENV['APP_ENV']) {
             $tokenData = $coubAuthService->getUserToken($code);
 
             if (isset($tokenData['access_token'])) {
                 $userInfo = $userService->getInfo($tokenData['access_token']);
             }
+
+            $userSaved = $userService->saveUser($tokenData, $userInfo);
         }
 
-        $userSaved = $userService->saveUser($tokenData, $userInfo);
+        if ('dev' === $_ENV['APP_ENV']) {
+            $userSaved = true;
+            $tokenData['access_token'] = $_ENV['COUB_TEST_TOKEN'];
+        }
 
         if (!$userSaved) {
             throw new Exception(
