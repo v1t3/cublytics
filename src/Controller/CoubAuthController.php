@@ -6,9 +6,9 @@ namespace App\Controller;
 
 
 use App\AppRegistry;
-use App\ChannelService;
-use App\CoubAuthService;
-use App\UserService;
+use App\Service\ChannelService;
+use App\Service\CoubAuthService;
+use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 
 /**
@@ -45,7 +44,7 @@ class CoubAuthController extends AbstractController
 
     /**
      * @Route("/login", name="app_login_coub")
-     * @param Request             $request
+     * @param Request $request
      *
      * @return RedirectResponse|Response
      */

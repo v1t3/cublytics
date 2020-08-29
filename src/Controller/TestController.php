@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\ChannelService;
 use App\Entity\User;
-use App\UserService;
+use App\Service\ChannelService;
+use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -155,9 +155,11 @@ class TestController extends AbstractController
 //            307
 //        );
 
-        return $this->forward('App\Controller\TestController::test2', [
-            'registration'  => 'success',
-        ]);
+        return $this->forward(
+            'App\Controller\TestController::test2', [
+                'registration' => 'success',
+            ]
+        );
     }
 
     /**
