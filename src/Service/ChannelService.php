@@ -7,6 +7,7 @@ namespace App\Service;
 
 use App\Entity\Channel;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Security;
 
 
 /**
@@ -22,13 +23,18 @@ class ChannelService
     private EntityManagerInterface $entityManager;
 
     /**
-     * ChannelService constructor.
-     *
-     * @param EntityManagerInterface $entityManager
+     * @var Security
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    private Security $security;
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param Security               $security
+     */
+    public function __construct(EntityManagerInterface $entityManager, Security $security)
     {
         $this->entityManager = $entityManager;
+        $this->security = $security;
     }
 
     /**
@@ -93,5 +99,52 @@ class ChannelService
     public function updateUserChannels($channels)
     {
         return false;
+    }
+
+    /**
+     * @return array
+     */
+    public function getChannelsList()
+    {
+        $channels = [];
+        $user = $this->security->getUser();
+
+        if (!$user) {
+            return [
+                'result'   => 'error',
+                'message'  => 'Пользователь не найден',
+                'channels' => $channels
+            ];
+        }
+
+        $userId = $user->getUserId();
+
+        $userChannels = $this->entityManager
+            ->getRepository(Channel::class)
+            ->findBy(['user_id' => $userId]);
+
+        if ($userChannels) {
+            foreach ($userChannels as $userChannel) {
+                $channels[] = [
+                    'avatar'      => $userChannel->getAvatar(),
+                    'name'        => $userChannel->getChannelPermalink(),
+                    'is_watching' => $userChannel->getIsWatching(),
+                ];
+            }
+
+            $data = [
+                'result'   => 'success',
+                'message'  => '',
+                'channels' => $channels,
+            ];
+        } else {
+            $data = [
+                'result'   => 'error',
+                'message'  => 'Каналы не найдены',
+                'channels' => $channels,
+            ];
+        }
+
+        return $data;
     }
 }
