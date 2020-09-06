@@ -75,13 +75,13 @@ class TestController extends AbstractController
     {
         $token = (string)$request->query->get('access_token');
 
-        if ($token !== $_ENV['TEST_TOKEN']) {
+        if ($token !== $_ENV['COUB_TEST_TOKEN']) {
             throw new \Exception(
                 'Указан некорректный token' . $token . '/' . $_ENV['TEST_TOKEN']
             );
         }
         $testTokenData = [
-            'access_token' => $_ENV['TEST_TOKEN'],
+            'access_token' => $_ENV['COUB_TEST_TOKEN'],
             'expires_in'   => 0,
             'created_at'   => 0,
         ];

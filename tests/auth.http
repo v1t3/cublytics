@@ -37,7 +37,7 @@ grant_type=authorization_code
 ###
 # получение данных пользователя
 ### test
-GET http://localhost/test/coub/callback?access_token=c715140bdd8e13be2c8fecab777294bba7b3bba6131527711f62c215a4f13f1c
+#GET http://localhost/test/coub/callback?access_token=c715140bdd8e13be2c8fecab777294bba7b3bba6131527711f62c215a4f13f1c
 
 ### prod
 GET https://coub.com/api/v2/users/me?access_token=c715140bdd8e13be2c8fecab777294bba7b3bba6131527711f62c215a4f13f1c

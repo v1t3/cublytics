@@ -23,7 +23,7 @@ class Channel
     private $channel_id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $channel_permalink;
 
@@ -92,6 +92,11 @@ class Channel
      * @ORM\Column(type="integer", nullable=true)
      */
     private $views_count;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_active;
 
     public function getId(): ?int
     {
@@ -276,6 +281,18 @@ class Channel
     public function setIsCurrent(?bool $is_current): self
     {
         $this->is_current = $is_current;
+
+        return $this;
+    }
+
+    public function getIsActive(): ?bool
+    {
+        return $this->is_active;
+    }
+
+    public function setIsActive(?bool $is_active): self
+    {
+        $this->is_active = $is_active;
 
         return $this;
     }
