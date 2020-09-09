@@ -52,7 +52,7 @@
 
                 axios({
                     method: 'post',
-                    url: '/api/stat/getChannelsList',
+                    url: '/api/stat/get_channels_list',
                     data: {}
                 })
                     .then((response) => {

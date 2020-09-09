@@ -18,7 +18,7 @@ class StatisticController extends AbstractController
     }
 
     /**
-     * @Route("/api/stat/getChannelsList", name="api_statistic")
+     * @Route("/api/stat/get_channels_list", name="api_statistic")
      *
      * @param ChannelService $channelService
      *
