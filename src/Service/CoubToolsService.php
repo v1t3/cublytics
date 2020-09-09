@@ -150,7 +150,6 @@ class CoubToolsService
                     $result['coubs'] = $decodeData['coubs'];
                 }
 
-
                 $arCountDatesTotal = [];
                 $arCountDatesSelf = [];
                 $arCountDatesReposts = [];
@@ -197,7 +196,10 @@ class CoubToolsService
                             }
                         }
 
-                        if ($coub['banned'] === true) {
+                        if (
+                            array_key_exists('banned', $coub)
+                            && true === $coub['banned']
+                        ) {
                             $result['banned']++;
                         }
 
@@ -252,31 +254,28 @@ class CoubToolsService
                     }
                 }
 
-                if (
-                    $result['total_points_month']
-                    && (bool)array_filter($result['total_points_month'])
-                ) {
-                    $result['total_points_month'] = array_reverse($result['total_points_month']);
-                } else {
-                    unset($result['total_points_month']);
+                if (array_key_exists('total_points_month', $result)) {
+                    if (!empty($result['total_points_month'])) {
+                        $result['total_points_month'] = array_reverse($result['total_points_month']);
+                    } else {
+                        unset($result['total_points_month']);
+                    }
                 }
 
-                if (
-                    $result['self_points_month']
-                    && (bool)array_filter($result['self_points_month'])
-                ) {
-                    $result['self_points_month'] = array_reverse($result['self_points_month']);
-                } else {
-                    unset($result['self_points_month']);
+                if (array_key_exists('self_points_month', $result)) {
+                    if (!empty($result['self_points_month'])) {
+                        $result['self_points_month'] = array_reverse($result['self_points_month']);
+                    } else {
+                        unset($result['self_points_month']);
+                    }
                 }
 
-                if (
-                    $result['reposts_points_month']
-                    && (bool)array_filter($result['reposts_points_month'])
-                ) {
-                    $result['reposts_points_month'] = array_reverse($result['reposts_points_month']);
-                } else {
-                    unset($result['reposts_points_month']);
+                if (array_key_exists('reposts_points_month', $result)) {
+                    if (!empty($result['reposts_points_month'])) {
+                        $result['reposts_points_month'] = array_reverse($result['reposts_points_month']);
+                    } else {
+                        unset($result['reposts_points_month']);
+                    }
                 }
 
                 unset($result['coubs']);

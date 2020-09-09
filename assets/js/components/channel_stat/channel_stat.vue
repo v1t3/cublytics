@@ -1,23 +1,5 @@
 <template>
     <div class="component" id="channel-performance">
-        <div class="form form-statistic">
-            <h3>Статистика пользователя</h3>
-            <hr/>
-            <form v-on:submit="getViews">
-                <div class="form-group" :class="{ 'form-group--error': $v.url.$error }">
-                    <label>
-                        <span class="label-name">Ссылка или код канала</span>
-                        <input v-model="url" :class="{ 'error': $v.url.$error }">
-                    </label>
-                    <button>Отправить</button>
-
-                    <p class="form-group--error-text" v-if="!$v.url.required">Поле не может быть пустым</p>
-                    <p class="form-group--error-text" v-if="!$v.url.minLength">
-                        Минимальная длина: {{ $v.url.$params.minLength.min }} символа
-                    </p>
-                </div>
-            </form>
-        </div>
         <div class="loader" v-if="showLoader">
             <img src="/build/img/load.gif" alt="Loading">
         </div>
@@ -38,19 +20,23 @@
 </template>
 
 <script>
-    import {required, minLength} from 'vuelidate/lib/validators';
     import axios from "axios";
-    import LineChart from './channel_stat/LineChart.js'
+    import LineChart from './LineChart.js'
 
     export default {
-        name: "channel-performance",
+        name: "channel_stat",
+        props: {
+            channel_name: {
+                type: String,
+                required: true
+            },
+        },
         components: {
             LineChart,
         },
         data() {
             return {
-                url: '',
-                lastUrl: '',
+                data: {},
                 coubsCount: null,
                 isSelfCount: null,
                 isRepostCount: null,
@@ -65,16 +51,11 @@
                 },
             }
         },
-        validations: {
-            url: {
-                required,
-                minLength: minLength(3)
-            }
-        },
         mounted() {
+            this.getViews();
         },
         methods: {
-            fillData (data, labels) {
+            fillData: function (data, labels) {
                 this.dataCollection = {
                     labels: labels,
                     datasets: [
@@ -96,22 +77,14 @@
                     ]
                 }
             },
-            // getRandomInt () {
-            //     return Math.floor(Math.random() * (50 - 5 + 1)) + 5
-            // },
-            getViews: function (e) {
-                e.preventDefault();
-
-                this.$v.url.$touch();
-                if (this.$v.url.$error) return;
-
-                if (this.url !== this.lastUrl) {
+            getViews: function () {
+                if (this.channel_name) {
                     this.clearData();
                     this.showLoader = true;
 
                     const bodyFormData = new FormData();
                     bodyFormData.set('params', JSON.stringify({
-                        url: this.url,
+                        url: this.channel_name,
                         type: 'performance'
                     }));
 
@@ -129,9 +102,11 @@
 
                             // console.log('data', data);
 
-                            //todo Добавить блокировку формы
-
                             if (data) {
+                                if (typeof data === 'string') {
+                                    data = JSON.parse(data);
+                                }
+
                                 this.coubsCount = data['total_coubs'] || '';
                                 this.isSelfCount = data['self_coubs'] || '';
                                 this.isRepostCount = data['reposted'] || '';
@@ -170,8 +145,6 @@
                                     );
                                 }
 
-                                // this.lastUrl = this.url;
-
                                 if (data['error']) {
                                     this.error = 'Error: ' + data['error'];
                                     this.clearData();
@@ -194,13 +167,8 @@
                         });
                 }
             },
-            getTestViews: function (e) {
-                e.preventDefault();
-
-                this.$v.url.$touch();
-                if (this.$v.url.$error) return;
-
-                if (this.url !== this.lastUrl) {
+            getTestViews: function () {
+                if ('' !== this.channel_name) {
                     this.clearData();
                     this.showLoader = true;
 
@@ -249,8 +217,6 @@
                                 coubsMonth
                             );
                         }
-
-                        // this.lastUrl = this.url;
 
                         if (data['error']) {
                             this.error = 'Error: ' + data['error'];

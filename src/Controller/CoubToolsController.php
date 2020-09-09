@@ -49,8 +49,17 @@ class CoubToolsController extends AbstractController
 
             $params = json_decode(html_entity_decode($params), true);
 
-            if ((string)$params['url'] === '') {
-                return '';
+            if (empty($params['url'])) {
+                $response = new JsonResponse();
+                $response->setData(
+                    [
+                        'result'  => 'error',
+                        'message' => 'Отсутствует поле url',
+                        'params'  => json_encode($params),
+                    ]
+                );
+
+                return $response;
             }
 
             $coub = new CoubToolsService();
@@ -66,9 +75,9 @@ class CoubToolsController extends AbstractController
                     $coubContent = '';
                 }
 
-                if (is_array($coubContent) && count($coubContent) > 0) {
+                if (is_array($coubContent) && !empty($coubContent)) {
                     $data = json_encode($coubContent);
-                } elseif ('' !== (string)$coubContent) {
+                } elseif (is_string($coubContent) && !empty($coubContent)) {
                     $data = $coubContent;
                 }
             }
