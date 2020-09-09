@@ -11,7 +11,12 @@
         </div>
         <div class="info">
             <div class="small">
-                <line-chart v-if="showChart" :chart-data="dataCollection"></line-chart>
+                <line-chart v-if="showChart"
+                            :chart-data="dataCollection"
+                            :options="dataCollection.options"
+                            :width="400"
+                            :height="200"
+                ></line-chart>
             </div>
         </div>
         {{ error }}
@@ -48,8 +53,21 @@
                 error: null,
                 dataCollection: {
                     labels: null,
-                    datasets: []
-                },
+                    datasets: [],
+                    options: {
+                        scales: {
+                            yAxes: [
+                                {
+                                    ticks: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            ]
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                }
             }
         },
         mounted() {
@@ -84,24 +102,21 @@
                     this.showLoader = true;
 
                     const bodyFormData = new FormData();
-                    bodyFormData.set('params', JSON.stringify({
-                        url: this.channel_name,
-                        type: 'performance'
-                    }));
+                    bodyFormData.set('channel_name', this.channel_name);
 
                     axios({
                         method: 'post',
-                        url: '/api/coub/getdata',
+                        url: '/api/channel/get_channel_stat',
                         data: bodyFormData,
-                        headers: {"X-Requested-With": "XMLHttpRequest"}
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
                     })
                         .then((response) => {
                             let data = response['data'];
 
                             this.error = '';
                             this.showLoader = false;
-
-                            // console.log('data', data);
 
                             if (data) {
                                 if (typeof data === 'string') {
