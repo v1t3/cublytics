@@ -55,7 +55,6 @@ class CoubToolsController extends AbstractController
                     [
                         'result'  => 'error',
                         'message' => 'Отсутствует поле url',
-                        'params'  => json_encode($params),
                     ]
                 );
 

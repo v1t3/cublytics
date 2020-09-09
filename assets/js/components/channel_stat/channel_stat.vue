@@ -1,8 +1,7 @@
 <template>
     <div class="component" id="channel-performance">
-        <div class="loader" v-if="showLoader">
-            <img src="/build/img/load.gif" alt="Loading">
-        </div>
+        <loader_gif v-if="showLoader"/>
+
         <div class="views">
             <div v-if="coubsCount">Всего кубов: {{ coubsCount }}</div>
             <div v-if="isSelfCount">Своих: {{ isSelfCount }}</div>
@@ -21,7 +20,8 @@
 
 <script>
     import axios from "axios";
-    import LineChart from './LineChart.js'
+    import LineChart from './LineChart.js';
+    import Loader_gif from "../loader_gif";
 
     export default {
         name: "channel_stat",
@@ -32,6 +32,7 @@
             },
         },
         components: {
+            Loader_gif,
             LineChart,
         },
         data() {

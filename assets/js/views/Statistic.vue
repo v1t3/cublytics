@@ -16,9 +16,7 @@
                 <channel_stat v-if="show_stat && channel_active" :channel_name="channel_active"></channel_stat>
             </div>
 
-            <div class="loader" v-if="showLoader">
-                <img src="/build/img/load.gif" alt="Loading">
-            </div>
+            <loader_gif v-if="showLoader"/>
         </div>
     </div>
 </template>
@@ -27,10 +25,12 @@
     import axios from "axios";
     import ChannelPerformance from "../components/channel-performance";
     import Channel_stat from "../components/channel_stat/channel_stat";
+    import Loader_gif from "../components/loader_gif";
 
     export default {
         name: "Statistic",
         components: {
+            Loader_gif,
             Channel_stat,
             ChannelPerformance,
         },
