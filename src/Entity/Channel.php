@@ -59,16 +59,6 @@ class Channel
     private $avatar;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $created_at;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $updated_at;
-
-    /**
      * @ORM\Column(type="integer", nullable=true)
      */
     private $followers_count;
@@ -97,6 +87,36 @@ class Channel
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $is_active;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $timestamp;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $created_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $updated_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $deleted_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_create;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_update;
 
     public function getId(): ?int
     {
@@ -293,6 +313,54 @@ class Channel
     public function setIsActive(?bool $is_active): self
     {
         $this->is_active = $is_active;
+
+        return $this;
+    }
+
+    public function getTimestamp(): ?\DateTimeInterface
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(\DateTimeInterface $timestamp): self
+    {
+        $this->timestamp = $timestamp;
+
+        return $this;
+    }
+
+    public function getDateCreate(): ?\DateTimeInterface
+    {
+        return $this->date_create;
+    }
+
+    public function setDateCreate(?\DateTimeInterface $date_create): self
+    {
+        $this->date_create = $date_create;
+
+        return $this;
+    }
+
+    public function getDateUpdate(): ?\DateTimeInterface
+    {
+        return $this->date_update;
+    }
+
+    public function setDateUpdate(?\DateTimeInterface $date_update): self
+    {
+        $this->date_update = $date_update;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deleted_at;
+    }
+
+    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    {
+        $this->deleted_at = $deleted_at;
 
         return $this;
     }
