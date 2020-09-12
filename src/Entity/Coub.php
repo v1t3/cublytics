@@ -18,14 +18,9 @@ class Coub
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", unique=true)
      */
     private $coub_id;
-
-    /**
-     * @ORM\Column(type="integer")
-     */
-    private $user_id;
 
     /**
      * @ORM\Column(type="integer")
@@ -33,34 +28,14 @@ class Coub
     private $channel_id;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
+     * @ORM\Column(type="string", length=255)
      */
-    private $is_kd;
+    private $permalink;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $featured;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $like_count;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */
-    private $repost_count;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $date_create;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $timestamp;
+    private $title;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -77,6 +52,21 @@ class Coub
      */
     private $deleted_at;
 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_create;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_update;
+
+    public function __construct()
+    {
+        $this->setDateCreate();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -91,17 +81,7 @@ class Coub
     {
         $this->coub_id = $coub_id;
 
-        return $this;
-    }
-
-    public function getUserId(): ?int
-    {
-        return $this->user_id;
-    }
-
-    public function setUserId(int $user_id): self
-    {
-        $this->user_id = $user_id;
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -115,77 +95,35 @@ class Coub
     {
         $this->channel_id = $channel_id;
 
-        return $this;
-    }
-
-    public function getIsKd(): ?bool
-    {
-        return $this->is_kd;
-    }
-
-    public function setIsKd(?bool $is_kd): self
-    {
-        $this->is_kd = $is_kd;
+        $this->setDateUpdate();
 
         return $this;
     }
 
-    public function getFeatured(): ?bool
+    public function getPermalink(): ?string
     {
-        return $this->featured;
+        return $this->permalink;
     }
 
-    public function setFeatured(?bool $featured): self
+    public function setPermalink(string $permalink): self
     {
-        $this->featured = $featured;
+        $this->permalink = $permalink;
+
+        $this->setDateUpdate();
 
         return $this;
     }
 
-    public function getLikeCount(): ?int
+    public function getTitle(): ?string
     {
-        return $this->like_count;
+        return $this->title;
     }
 
-    public function setLikeCount(?int $like_count): self
+    public function setTitle(?string $title): self
     {
-        $this->like_count = $like_count;
+        $this->title = $title;
 
-        return $this;
-    }
-
-    public function getRepostCount(): ?int
-    {
-        return $this->repost_count;
-    }
-
-    public function setRepostCount(?int $repost_count): self
-    {
-        $this->repost_count = $repost_count;
-
-        return $this;
-    }
-
-    public function getDateCreate(): ?\DateTimeInterface
-    {
-        return $this->date_create;
-    }
-
-    public function setDateCreate(\DateTimeInterface $date_create): self
-    {
-        $this->date_create = $date_create;
-
-        return $this;
-    }
-
-    public function getTimestamp(): ?\DateTimeInterface
-    {
-        return $this->timestamp;
-    }
-
-    public function setTimestamp(?\DateTimeInterface $timestamp): self
-    {
-        $this->timestamp = $timestamp;
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -195,9 +133,18 @@ class Coub
         return $this->created_at;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $created_at): self
+    public function setCreatedAt($created_at): self
     {
-        $this->created_at = $created_at;
+        try {
+            if ('' !== $created_at) {
+                $dateObj = new \DateTime($created_at);
+                $this->created_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+
+                $this->setDateUpdate();
+            }
+        } catch (\Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }
@@ -207,9 +154,18 @@ class Coub
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updated_at): self
+    public function setUpdatedAt($updated_at): self
     {
-        $this->updated_at = $updated_at;
+        try {
+            if ('' !== $updated_at) {
+                $dateObj = new \DateTime($updated_at);
+                $this->updated_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+
+                $this->setDateUpdate();
+            }
+        } catch (\Exception $exception) {
+            trigger_error($exception);
+        }
 
         return $this;
     }
@@ -222,6 +178,36 @@ class Coub
     public function setDeletedAt(?\DateTimeInterface $deleted_at): self
     {
         $this->deleted_at = $deleted_at;
+
+        $this->setDateUpdate();
+
+        return $this;
+    }
+
+    public function getDateCreate(): ?\DateTimeInterface
+    {
+        return $this->date_create;
+    }
+
+    public function setDateCreate(): self
+    {
+        if (!$this->date_create) {
+            $this->date_create = new \DateTime();
+
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    public function getDateUpdate(): ?\DateTimeInterface
+    {
+        return $this->date_update;
+    }
+
+    public function setDateUpdate(): self
+    {
+        $this->date_update = new \DateTime();
 
         return $this;
     }

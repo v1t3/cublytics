@@ -118,6 +118,11 @@ class Channel
      */
     private $date_update;
 
+    public function __construct()
+    {
+        $this->setDateCreate();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -132,6 +137,8 @@ class Channel
     {
         $this->channel_id = $channel_id;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -143,6 +150,8 @@ class Channel
     public function setChannelPermalink(string $channel_permalink): self
     {
         $this->channel_permalink = $channel_permalink;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -156,6 +165,8 @@ class Channel
     {
         $this->user_id = $user_id;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -167,6 +178,8 @@ class Channel
     public function setIsWatching(?bool $is_watching): self
     {
         $this->is_watching = $is_watching;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -180,6 +193,8 @@ class Channel
     {
         $this->followers_count = $followers_count;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -192,6 +207,8 @@ class Channel
     {
         $this->avatar = $avatar;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -200,12 +217,14 @@ class Channel
         return $this->created_at;
     }
 
-    public function setCreatedAt(string $created_at): self
+    public function setCreatedAt($created_at): self
     {
         try {
             if ('' !== $created_at) {
                 $dateObj = new \DateTime($created_at);
                 $this->created_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+
+                $this->setDateUpdate();
             }
         } catch (\Exception $exception) {
             trigger_error($exception);
@@ -219,12 +238,14 @@ class Channel
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(string $updated_at): self
+    public function setUpdatedAt($updated_at): self
     {
         try {
             if ('' !== $updated_at) {
                 $dateObj = new \DateTime($updated_at);
                 $this->updated_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+
+                $this->setDateUpdate();
             }
         } catch (\Exception $exception) {
             trigger_error($exception);
@@ -242,6 +263,8 @@ class Channel
     {
         $this->title = $title;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -253,6 +276,8 @@ class Channel
     public function setRecoubsCount(?int $recoubs_count): self
     {
         $this->recoubs_count = $recoubs_count;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -266,6 +291,8 @@ class Channel
     {
         $this->likes_count = $likes_count;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -277,6 +304,8 @@ class Channel
     public function setStoriesCount(?int $stories_count): self
     {
         $this->stories_count = $stories_count;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -290,6 +319,8 @@ class Channel
     {
         $this->views_count = $views_count;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -301,6 +332,8 @@ class Channel
     public function setIsCurrent(?bool $is_current): self
     {
         $this->is_current = $is_current;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -314,17 +347,7 @@ class Channel
     {
         $this->is_active = $is_active;
 
-        return $this;
-    }
-
-    public function getTimestamp(): ?\DateTimeInterface
-    {
-        return $this->timestamp;
-    }
-
-    public function setTimestamp(\DateTimeInterface $timestamp): self
-    {
-        $this->timestamp = $timestamp;
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -334,9 +357,13 @@ class Channel
         return $this->date_create;
     }
 
-    public function setDateCreate(?\DateTimeInterface $date_create): self
+    public function setDateCreate(): self
     {
-        $this->date_create = $date_create;
+        if (!$this->date_create) {
+            $this->date_create = new \DateTime();
+
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -346,9 +373,9 @@ class Channel
         return $this->date_update;
     }
 
-    public function setDateUpdate(?\DateTimeInterface $date_update): self
+    public function setDateUpdate(): self
     {
-        $this->date_update = $date_update;
+        $this->date_update = new \DateTime();
 
         return $this;
     }
@@ -361,6 +388,8 @@ class Channel
     public function setDeletedAt(?\DateTimeInterface $deleted_at): self
     {
         $this->deleted_at = $deleted_at;
+
+        $this->setDateUpdate();
 
         return $this;
     }

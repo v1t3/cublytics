@@ -62,4 +62,17 @@ class ChannelRepository extends ServiceEntityRepository
             trigger_error($e);
         }
     }
+
+    public function findOneByPermalink($value)
+    {
+        try {
+            return $this->createQueryBuilder('c')
+                ->andWhere('c.channel_permalink = :val')
+                ->setParameter('val', $value)
+                ->getQuery()
+                ->getArrayResult();
+        } catch (NonUniqueResultException $e) {
+            trigger_error($e);
+        }
+    }
 }

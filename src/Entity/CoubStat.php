@@ -1,0 +1,236 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\CoubStatRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass=CoubStatRepository::class)
+ */
+class CoubStat
+{
+    /**
+     * @ORM\Id()
+     * @ORM\GeneratedValue()
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $coub_id;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $channel_id;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $like_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $repost_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $remixes_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $views_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $dislikes_count;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_kd;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $featured;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $banned;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_create;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $date_update;
+
+    public function __construct()
+    {
+        $this->setDateCreate();
+        $this->setDateUpdate();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getCoubId(): ?int
+    {
+        return $this->coub_id;
+    }
+
+    public function setCoubId(int $coub_id): self
+    {
+        $this->coub_id = $coub_id;
+
+        return $this;
+    }
+
+    public function getChannelId(): ?int
+    {
+        return $this->channel_id;
+    }
+
+    public function setChannelId(int $channel_id): self
+    {
+        $this->channel_id = $channel_id;
+
+        return $this;
+    }
+
+    public function getLikeCount(): ?int
+    {
+        return $this->like_count;
+    }
+
+    public function setLikeCount(?int $like_count): self
+    {
+        $this->like_count = $like_count;
+
+        return $this;
+    }
+
+    public function getRepostCount(): ?int
+    {
+        return $this->repost_count;
+    }
+
+    public function setRepostCount(?int $repost_count): self
+    {
+        $this->repost_count = $repost_count;
+
+        return $this;
+    }
+
+    public function getRemixesCount(): ?int
+    {
+        return $this->remixes_count;
+    }
+
+    public function setRemixesCount(?int $remixes_count): self
+    {
+        $this->remixes_count = $remixes_count;
+
+        return $this;
+    }
+
+    public function getViewsCount(): ?int
+    {
+        return $this->views_count;
+    }
+
+    public function setViewsCount(?int $views_count): self
+    {
+        $this->views_count = $views_count;
+
+        return $this;
+    }
+
+    public function getDislikesCount(): ?int
+    {
+        return $this->dislikes_count;
+    }
+
+    public function setDislikesCount(?int $dislikes_count): self
+    {
+        $this->dislikes_count = $dislikes_count;
+
+        return $this;
+    }
+
+    public function getIsKd(): ?bool
+    {
+        return $this->is_kd;
+    }
+
+    public function setIsKd(?bool $is_kd): self
+    {
+        $this->is_kd = $is_kd;
+
+        return $this;
+    }
+
+    public function getFeatured(): ?bool
+    {
+        return $this->featured;
+    }
+
+    public function setFeatured(?bool $featured): self
+    {
+        $this->featured = $featured;
+
+        return $this;
+    }
+
+    public function getBanned(): ?bool
+    {
+        return $this->banned;
+    }
+
+    public function setBanned(?bool $banned): self
+    {
+        $this->banned = $banned;
+
+        return $this;
+    }
+
+    public function getDateCreate(): ?\DateTimeInterface
+    {
+        return $this->date_create;
+    }
+
+    public function setDateCreate(): self
+    {
+        if (!$this->date_create) {
+            $this->date_create = new \DateTime();
+        }
+
+        return $this;
+    }
+
+    public function getDateUpdate(): ?\DateTimeInterface
+    {
+        return $this->date_update;
+    }
+
+    public function setDateUpdate(): self
+    {
+        $this->date_update = new \DateTime();
+
+        return $this;
+    }
+}

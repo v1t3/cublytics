@@ -79,6 +79,11 @@ class User implements UserInterface
      */
     private $date_update;
 
+    public function __construct()
+    {
+        $this->setDateCreate();
+    }
+
     /**
      * @return int|null
      */
@@ -104,6 +109,8 @@ class User implements UserInterface
     {
         $this->user_id = $user_id;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -127,6 +134,8 @@ class User implements UserInterface
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -153,6 +162,8 @@ class User implements UserInterface
     {
         $this->username = $username;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -172,6 +183,8 @@ class User implements UserInterface
     public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -193,6 +206,8 @@ class User implements UserInterface
     {
         $this->password = $password;
 
+        $this->setDateUpdate();
+
         return $this;
     }
 
@@ -212,6 +227,8 @@ class User implements UserInterface
     public function setToken(string $token): self
     {
         $this->token = $token;
+
+        $this->setDateUpdate();
 
         return $this;
     }
@@ -235,6 +252,8 @@ class User implements UserInterface
             if (0 < (int)$token_expired_at) {
                 $this->token_expired_at = new DateTime(date('Y-m-d H:i:s', $token_expired_at)) ;
             }
+
+            $this->setDateUpdate();
         } catch (Exception $exception) {
             trigger_error($exception);
         }
@@ -250,17 +269,14 @@ class User implements UserInterface
         return $this->created_at;
     }
 
-    /**
-     * @param string $created_at
-     *
-     * @return $this
-     */
-    public function setCreatedAt(string $created_at): self
+    public function setCreatedAt($created_at): self
     {
         try {
             if ('' !== $created_at) {
                 $dateObj = new DateTime($created_at);
                 $this->created_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
+
+                $this->setDateUpdate();
             }
         } catch (Exception $exception) {
             trigger_error($exception);
@@ -269,25 +285,19 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getUpdatedAt(): ?DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeInterface
     {
         return $this->updated_at;
     }
 
-    /**
-     * @param string $updated_at
-     *
-     * @return $this
-     */
-    public function setUpdatedAt(string $updated_at): self
+    public function setUpdatedAt($updated_at): self
     {
         try {
             if ('' !== $updated_at) {
                 $dateObj = new DateTime($updated_at);
                 $this->updated_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
+
+                $this->setDateUpdate();
             }
         } catch (Exception $exception) {
             trigger_error($exception);
@@ -318,9 +328,13 @@ class User implements UserInterface
         return $this->date_create;
     }
 
-    public function setDateCreate(?\DateTimeInterface $date_create): self
+    public function setDateCreate(): self
     {
-        $this->date_create = $date_create;
+        if (!$this->date_create) {
+            $this->date_create = new \DateTime();
+
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -330,9 +344,9 @@ class User implements UserInterface
         return $this->date_update;
     }
 
-    public function setDateUpdate(?\DateTimeInterface $date_update): self
+    public function setDateUpdate(): self
     {
-        $this->date_update = $date_update;
+        $this->date_update = new \DateTime();
 
         return $this;
     }
