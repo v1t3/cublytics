@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Coub;
 use App\Entity\User;
 use App\Service\ChannelService;
 use App\Service\UserService;
@@ -95,7 +96,7 @@ class TestController extends AbstractController
         if ($userSaved) {
             if (isset($testUserInfo['channels'])) {
 //                $testSavedCh = $this->saveTestUserChannels($testUserInfo);
-                $channelSaved = $channelService->saveUserChannels($testUserInfo);
+                $channelSaved = $channelService->saveUserChannelsList($testUserInfo);
             }
         }
 
@@ -139,6 +140,56 @@ class TestController extends AbstractController
         }
 
         return false;
+    }
+
+    /**
+     * @Route("/savecoub", name="savecoub")
+     */
+    public function saveTestCoub()
+    {
+        $channelId = 1111;
+        $coubRepo = $this->entityManager->getRepository(Coub::class);
+
+        /**
+         * @var $coubItem Coub
+         */
+        $coubItem = $coubRepo->findOneBy(['channel_id' => $channelId]);
+
+        if ($coubItem) {
+            $coubItem->setChannelId($channelId);
+            $coubItem->setTitle('title');
+//            $coubItem->setUpdatedAt($coub['updated_at']);
+            //$coubItem->setDeletedAt();
+            //todo Реализовать проверку существования коуба при выполнении задания cron
+
+            //добавим коуб к сохранению
+            $this->entityManager->persist($coubItem);
+        } else {
+            $coubItem = new Coub();
+            $coubItem->setCoubId(111);
+            $coubItem->setChannelId($channelId);
+            $coubItem->setPermalink('permalink');
+            $coubItem->setTitle('title');
+//            $coubItem->setCreatedAt($coub['created_at']);
+//            $coubItem->setUpdatedAt($coub['updated_at']);
+
+            //добавим коуб к сохранению
+            $this->entityManager->persist($coubItem);
+        }
+
+        $this->entityManager->flush();
+
+        $response = new JsonResponse();
+        $response->setData([
+            'result'=> 'success',
+            'message'=> [
+                'id' => $coubItem->getCoubId(),
+                'create'=> $coubItem->getDateCreate(),
+                'update'=> $coubItem->getDateUpdate(),
+            ]
+        ]);
+
+        return $response;
     }
 
     /**

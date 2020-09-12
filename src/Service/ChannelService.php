@@ -7,8 +7,9 @@ namespace App\Service;
 
 use App\AppRegistry;
 use App\Entity\Channel;
+use App\Entity\Coub;
+use App\Entity\CoubStat;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
 
@@ -44,7 +45,7 @@ class ChannelService
      *
      * @return bool
      */
-    public function saveUserChannels($data)
+    public function saveUserChannelsList($data)
     {
         if (
             empty($data)
@@ -123,7 +124,7 @@ class ChannelService
 
         $userChannels = $this->entityManager
             ->getRepository(Channel::class)
-            ->findBy(['user_id' => $userId]);
+            ->findBy(['user_id' => $userId], ['is_current' => 'DESC']);
 
         if ($userChannels) {
             foreach ($userChannels as $userChannel) {
@@ -151,15 +152,61 @@ class ChannelService
     }
 
     /**
-     * @param Request $request
+     * @param string $channelName
+     * @param string $statType
      *
      * @return array
      * @throws \Exception
      */
-    public function getChannelStatistic(Request $request)
+    public function getChannelStatistic(string $channelName, string $statType)
     {
         $result = [];
-        $channelName = (string)$request->request->get('channel_name');
+
+        if ('' === $channelName || '' === $statType) {
+            throw new \Exception('Не указано поле channel_name или type');
+        }
+
+        $channel = $this->entityManager
+            ->getRepository(Channel::class)
+            ->findOneBy(['channel_permalink' => $channelName]);
+
+        if ($channel && 0 < (int)$channel->getChannelId()) {
+            $channelId = $channel->getChannelId();
+            $coubsStat = $this->entityManager
+                ->getRepository(CoubStat::class)
+                ->findBy(['channel_id' => $channelId]);
+
+            if ($coubsStat) {
+                foreach ($coubsStat as $coub) {
+                    $result[] = [
+                        'coub_id'        => $coub->getCoubId(),
+                        'timestamp'      => $coub->getDateCreate(),
+                        'like_count'     => $coub->getLikeCount(),
+                        'repost_count'   => $coub->getRepostCount(),
+                        'remixes_count'  => $coub->getRemixesCount(),
+                        'views_count'    => $coub->getViewsCount(),
+                        'dislikes_count' => $coub->getDislikesCount(),
+                        'is_kd'          => $coub->getIsKd(),
+                        'featured'       => $coub->getFeatured(),
+                        'banned'         => $coub->getBanned(),
+                    ];
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     *
+     * @param string $channelName
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getOriginalCoubs(string $channelName)
+    {
+        $result = [];
 
         if ('' === $channelName) {
             throw new \Exception('Не корректно или не заполнено поле channel_name');
@@ -215,140 +262,84 @@ class ChannelService
             }
         }
 
-        $arCountDatesTotal = [];
-        $arCountDatesSelf = [];
-        $arCountDatesReposts = [];
+        return $result;
+    }
 
-        # получим данные коубов
-        if (
-            !empty($result['coubs'])
-            && is_array($result['coubs'])
-        ) {
-            $result['total_coubs'] = count($result['coubs']);
-            // начальные значения мин. и макс. дат
-            $createdDateMin = 'now';
-            $createdDateMax = 0;
+    /**
+     * @param $data
+     * @param $channelName
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function saveOriginalCoubs($data, $channelName)
+    {
+        if (!$data) {
+            return false;
+        }
 
-            foreach ($result['coubs'] as $coub) {
-                $date = strtotime($coub['created_at']);
-                $monthDate = date('m.Y', $date);
+        $channel = $this->entityManager
+            ->getRepository(Channel::class)
+            ->findOneBy(['channel_permalink' => $channelName]);
+
+        if ($channel && 0 < (int)$channel->getChannelId()) {
+            $channelId = $channel->getChannelId();
+            $coubRepo = $this->entityManager->getRepository(Coub::class);
+
+            foreach ($data['coubs'] as $coub) {
+                /**
+                 * @var $coubItem Coub
+                 */
+                $coubItem = $coubRepo->findOneBy(['channel_id' => $channelId]);
+
+                if ($coubItem) {
+                    if ($coubItem->getUpdatedAt() !== (new \DateTime($coub['updated_at']))) {
+                        $coubItem->setChannelId($channelId);
+                        $coubItem->setTitle($coub['title']);
+                        $coubItem->setUpdatedAt($coub['updated_at']);
+                        //todo Реализовать проверку существования coub'a при выполнении задания cron
+
+                        //добавим coub к сохранению
+                        $this->entityManager->persist($coubItem);
+                    }
+                } else {
+                    $coubItem = new Coub();
+                    $coubItem->setCoubId($coub['id']);
+                    $coubItem->setChannelId($channelId);
+                    $coubItem->setPermalink($coub['permalink']);
+                    $coubItem->setTitle($coub['title']);
+                    $coubItem->setCreatedAt($coub['created_at']);
+                    $coubItem->setUpdatedAt($coub['updated_at']);
+
+                    //добавим coub к сохранению
+                    $this->entityManager->persist($coubItem);
+                }
 
                 # Если recoub_to не существует, то coub свой
                 if (empty($coub['recoub_to'])) {
-                    if (array_key_exists('self_coubs', $result)) {
-                        $result['self_coubs']++;
-                    } else {
-                        $result['self_coubs'] = 1;
-                    }
+                    $coubStatItem = new CoubStat();
+                    $coubStatItem->setCoubId($coub['id']);
+                    $coubStatItem->setChannelId($channelId);
+                    $coubStatItem->setLikeCount($coub['likes_count']);
+                    $coubStatItem->setRepostCount($coub['recoubs_count']);
+                    $coubStatItem->setRemixesCount($coub['remixes_count']);
+                    $coubStatItem->setDislikesCount($coub['dislikes_count']);
+                    $coubStatItem->setViewsCount($coub['views_count']);
+                    $coubStatItem->setFeatured($coub['featured']);
+                    $coubStatItem->setIsKd($coub['cotd']);
+                    $coubStatItem->setBanned($coub['banned']);
 
-                    if (array_key_exists($monthDate, $arCountDatesSelf)) {
-                        $arCountDatesSelf[$monthDate] ++;
-                    } else {
-                        $arCountDatesSelf[$monthDate] = 1;
-                    }
-
-                    if (array_key_exists('total_likes', $result)) {
-                        $result['total_likes'] += $coub['likes_count'];
-                    } else {
-                        $result['total_likes'] = $coub['likes_count'];
-                    }
-                } else {
-                    if (array_key_exists('reposted', $result)) {
-                        $result['reposted']++;
-                    } else {
-                        $result['reposted'] = 1;
-                    }
-
-                    if (array_key_exists($monthDate, $arCountDatesReposts)) {
-                        $arCountDatesReposts[$monthDate]++;
-                    } else {
-                        $arCountDatesReposts[$monthDate] = 1;
-                    }
-                }
-
-                if (
-                    array_key_exists('banned', $coub)
-                    && true === $coub['banned']
-                ) {
-                    $result['banned']++;
-                }
-
-                // получим самую маленькую и большую даты
-                if ($date) {
-                    if ((int)strtotime($createdDateMin) > (int)$date) {
-                        $createdDateMin = date('d.m.Y', $date);
-                    }
-
-                    if (
-                        (int)$createdDateMax === 0
-                        || ((int)strtotime($createdDateMax) < (int)$date)
-                    ) {
-                        $createdDateMax = date('d.m.Y', $date);
-                    }
-                }
-
-                // массив вида [дата => количество элементов]
-                if (array_key_exists($monthDate, $arCountDatesTotal)) {
-                    $arCountDatesTotal[$monthDate]++;
-                } else {
-                    $arCountDatesTotal[$monthDate] = 1;
+                    //добавим данные coub'a к сохранению
+                    $this->entityManager->persist($coubStatItem);
                 }
             }
 
-            // пустой помесячный массив
-            $arCoubsByMonth = $this->fillByMonth($createdDateMin, $createdDateMax);
+            $this->entityManager->flush();
 
-            for ($i = 0, $count = count($arCoubsByMonth); $i < $count; $i++) {
-                $dateMonth = $arCoubsByMonth[$i];
-
-                $result['total_points_month'][$i] = [
-                    'date'  => $dateMonth,
-                    'count' => (array_key_exists($dateMonth, $arCountDatesTotal))
-                        ? (int)$arCountDatesTotal[$dateMonth]
-                        : 0
-                ];
-
-                $result['self_points_month'][$i] = [
-                    'date'  => $dateMonth,
-                    'count' => (array_key_exists($dateMonth, $arCountDatesSelf))
-                        ? (int)$arCountDatesSelf[$dateMonth]
-                        : 0
-
-                ];
-
-                $result['reposts_points_month'][$i] = [
-                    'date'  => $dateMonth,
-                    'count' => (array_key_exists($dateMonth, $arCountDatesReposts))
-                        ? (int)$arCountDatesReposts[$dateMonth]
-                        : 0
-                ];
-            }
+            return true;
         }
 
-        //развернуть массивы для привильной последовательности дат
-        if (
-            array_key_exists('total_points_month', $result)
-            && !empty($result['total_points_month'])
-        ) {
-            $result['total_points_month'] = array_reverse($result['total_points_month']);
-        }
-        if (
-            array_key_exists('self_points_month', $result)
-            && !empty($result['self_points_month'])
-        ) {
-            $result['self_points_month'] = array_reverse($result['self_points_month']);
-
-        }
-        if (
-            array_key_exists('reposts_points_month', $result)
-            && !empty($result['reposts_points_month'])
-        ) {
-            $result['reposts_points_month'] = array_reverse($result['reposts_points_month']);
-        }
-
-        unset($result['coubs']);
-
-        return $result;
+        return false;
     }
 
     /**

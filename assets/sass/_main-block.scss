@@ -88,3 +88,9 @@
         border: 1px solid red;
     }
 }
+
+.statistic-btn-time {
+    &:hover {
+        background-color: #dcdcdc;
+    }
+}

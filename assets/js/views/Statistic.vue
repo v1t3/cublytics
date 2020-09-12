@@ -12,8 +12,17 @@
             </select>
             <div v-if="channels">
                 <h3>Статистика по каналу: {{ channel_active }}</h3>
+                <span class="statistic-btn-time btn" @click="getActive('day')">День</span>
+                <span class="statistic-btn-time btn" @click="getActive('week')">Неделя</span>
+                <span class="statistic-btn-time btn" @click="getActive('month1')">Месяц</span>
+                <span class="statistic-btn-time btn" @click="getActive('month6')">Пол года</span>
+                <span class="statistic-btn-time btn" @click="getActive('year')">Год</span>
+                <span class="statistic-btn-time btn" @click="getActive('all')">Всё время</span>
                 <br><br>
-                <channel_stat v-if="show_stat && channel_active" :channel_name="channel_active"></channel_stat>
+                <channel_stat v-if="show_stat && channel_active"
+                              :channel_name="channel_active"
+                              :statistic_type="statistic_type"
+                ></channel_stat>
             </div>
 
             <loader_gif v-if="showLoader"/>
@@ -39,6 +48,7 @@
                 channels: null,
                 channel_active: '',
                 channel_name: '',
+                statistic_type: '',
                 show_stat: true,
                 showLoader: false,
             }
@@ -76,11 +86,17 @@
                     });
 
             },
-            getActive: function () {
+            getActive: function (type = '') {
                 this.show_stat = false;
                 let that = this;
                 this.$nextTick(function () {
                     that.channel_name = that.channel_active;
+                    if (type) {
+                        console.log('type=', type);
+
+                        that.statistic_type = type;
+                    }
+
                     that.show_stat = true;
                 });
             }

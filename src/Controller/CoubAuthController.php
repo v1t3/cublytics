@@ -121,7 +121,7 @@ class CoubAuthController extends AbstractController
         }
 
         if (isset($userInfo['channels'])) {
-            $channelClient->saveUserChannels($userInfo);
+            $channelClient->saveUserChannelsList($userInfo);
         }
 
         $request->getSession()->set(

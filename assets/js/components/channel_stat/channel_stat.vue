@@ -35,6 +35,10 @@
                 type: String,
                 required: true
             },
+            statistic_type: {
+                type: String,
+                required: false
+            },
         },
         components: {
             Loader_gif,
@@ -103,6 +107,7 @@
 
                     const bodyFormData = new FormData();
                     bodyFormData.set('channel_name', this.channel_name);
+                    bodyFormData.set('statistic_type', this.statistic_type);
 
                     axios({
                         method: 'post',
@@ -117,6 +122,8 @@
 
                             this.error = '';
                             this.showLoader = false;
+
+                            console.log('data', data);
 
                             if (data) {
                                 if (typeof data === 'string') {

@@ -25,11 +25,41 @@ class ChannelController extends AbstractController
      * @param ChannelService $channelService
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public static function getChannelStatistic(Request $request, ChannelService $channelService)
     {
         try {
-            $result = $channelService->getChannelStatistic($request);
+            $channelName = (string)$request->request->get('channel_name');
+            $statType = (string)$request->request->get('statistic_type') ?: 'month';
+
+            //todo проверка по времени
+
+            $data = $channelService->getChannelStatistic($channelName, $statType);
+
+            if (empty($data)) {
+                $coubsOrig = $channelService->getOriginalCoubs($channelName);
+
+                $coubsOrigSaved = $channelService->saveOriginalCoubs($coubsOrig, $channelName);
+
+                if ($coubsOrigSaved) {
+                    $data = $channelService->getChannelStatistic($channelName, $statType);
+                }
+            }
+
+            if (!empty($data)) {
+                $result = [
+                    'result'  => 'success',
+                    'message' => '',
+                    'data'    => $data,
+                ];
+            } else {
+                $result = [
+                    'result'  => 'error',
+                    'message' => 'Данные отсутствуют',
+                    'data'    => $data
+                ];
+            }
         } catch (\Exception $exception) {
             $result = [
                 'result'  => 'error',

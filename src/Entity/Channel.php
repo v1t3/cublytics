@@ -261,7 +261,7 @@ class Channel
 
     public function setTitle(?string $title): self
     {
-        $this->title = $title;
+        $this->title = htmlspecialchars($title);
 
         $this->setDateUpdate();
 
