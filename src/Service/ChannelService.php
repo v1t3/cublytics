@@ -256,9 +256,9 @@ class ChannelService
                 }
 
                 # уберём дубликаты коубов
-                $result['coubs'] = $this->arrayUniqueKey($allCoubs, 'id');
+                $result = $this->arrayUniqueKey($allCoubs, 'id');
             } elseif (1 === $decodeData['total_pages']) {
-                $result['coubs'] = $decodeData['coubs'];
+                $result = $decodeData['coubs'];
             }
         }
 
@@ -286,7 +286,7 @@ class ChannelService
             $channelId = $channel->getChannelId();
             $coubRepo = $this->entityManager->getRepository(Coub::class);
 
-            foreach ($data['coubs'] as $coub) {
+            foreach ($data as $coub) {
                 /**
                  * @var $coubItem Coub
                  */
@@ -528,5 +528,58 @@ class ChannelService
         }
 
         return $result;
+    }
+
+    /**
+     * @param $data
+     * @param $permalink
+     * @param $channelId
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function markAsDeleted($data, $permalink, $channelId)
+    {
+        $allCoubsIds = [];
+        $allDataIds = [];
+        $coubRepo = $this->entityManager->getRepository(Coub::class);
+
+        if (!empty($data)) {
+            $this->saveOriginalCoubs($data, $permalink);
+
+            $allCoubs = $coubRepo->findEnabledByChannelId($channelId);
+
+            /**
+             * @var $coub Coub
+             */
+            foreach ($allCoubs as $coub) {
+                $allCoubsIds[] = $coub->getCoubId();
+            }
+
+            foreach ($data as $coub) {
+                $allDataIds[] = $coub['id'];
+            }
+
+            $diff = array_diff($allCoubsIds, $allDataIds);
+
+            if (!empty($diff)) {
+                /**
+                 * @var $item Coub
+                 */
+                foreach ($diff as $coubId) {
+                    $coub = $coubRepo->findOneBy(['coub_id' => $coubId]);
+
+                    $coub->setDeletedAt(new \DateTime());
+
+                    $this->entityManager->persist($coub);
+                }
+            }
+
+            $this->entityManager->flush();
+
+            return true;
+        }
+
+        return false;
     }
 }

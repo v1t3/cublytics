@@ -19,6 +19,25 @@ class CoubRepository extends ServiceEntityRepository
         parent::__construct($registry, Coub::class);
     }
 
+    public function findEnabledByChannelId($channelId)
+    {
+        $value = false;
+        $queryBuilder = $this->createQueryBuilder('c');
+        $expr = $queryBuilder->expr();
+
+        $queryBuilder->where(
+            $expr->orX(
+                $expr->eq('c.deleted_at', ':val'),
+                $expr->isNull('c.deleted_at')
+            )
+        );
+        $queryBuilder->andWhere('c.channel_id = :ch_id');
+        $queryBuilder->setParameter('val', $value);
+        $queryBuilder->setParameter('ch_id', $channelId);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     // /**
     //  * @return Coub[] Returns an array of Coub objects
     //  */
