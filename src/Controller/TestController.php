@@ -70,6 +70,8 @@ class TestController extends AbstractController
 //    }
 
     /**
+     * формат /test/coub/callback?access_token=f98c13e91e128b4c859f2ec15e77a3780ea46f9d65dbafce95a7b9e2209675ef
+     *
      * @Route("/test/coub/callback", name="test_user_info")
      */
     public function getTestUserInfo(Request $request, UserService $userService, ChannelService $channelService)
@@ -77,9 +79,10 @@ class TestController extends AbstractController
         $token = (string)$request->query->get('access_token');
 
         if ($token !== $_ENV['COUB_TEST_TOKEN']) {
-            throw new \Exception(
-                'Указан некорректный token' . $token . '/' . $_ENV['TEST_TOKEN']
-            );
+            $response = new JsonResponse();
+            $response->setContent('Не указан или некорректный тестовый токен');
+
+            return $response;
         }
         $testTokenData = [
             'access_token' => $_ENV['COUB_TEST_TOKEN'],
@@ -101,7 +104,7 @@ class TestController extends AbstractController
         }
 
         $response = new JsonResponse();
-        $response->setContent(json_encode([$userSaved, $channelSaved]));
+        $response->setData([$userSaved, $channelSaved]);
 
         return $response;
     }
