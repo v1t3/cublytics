@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -77,6 +78,43 @@ class UserController extends AbstractController
 
         $response = new JsonResponse();
         $response->setData($data);
+
+        return $response;
+    }
+
+    /**
+     * @Route("/api/user/get_settings", name="get_user_settings")
+     *
+     * @param UserService $userService
+     *
+     * @return JsonResponse
+     */
+    public function getSettings(UserService $userService)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        /**
+         * @var $user User
+         */
+        $user = $this->getUser();
+
+        if ($user) {
+            $data = $userService->getSettings($user);
+
+            $result = [
+                'result'  => 'success',
+                'message' => '',
+                'data'    => $data
+            ];
+        } else {
+            $result = [
+                'result'  => 'error',
+                'message' => 'Пользователь не найден'
+            ];
+        }
+
+        $response = new JsonResponse();
+        $response->setData($result);
 
         return $response;
     }

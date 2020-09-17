@@ -9,7 +9,7 @@ import Coubdata from './views/Coubdata'
 import UserData from './views/UserData'
 // import Page404 from './views/Page404'
 
-// require('./bootstrap');
+require('./bootstrap');
 
 Vue.use(VueRouter);
 Vue.use(vuelidate);

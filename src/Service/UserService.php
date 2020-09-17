@@ -117,6 +117,27 @@ class UserService
     }
 
     /**
+     * @param $user
+     *
+     * @return array
+     */
+    public function getSettings(User $user)
+    {
+        $result = [];
+
+        if ($user) {
+            $userId = $user->getUserId();
+
+            $result = [
+                'username' => $user->getUsername(),
+                'email' => $user->getEmail(),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * @param Request $request
      *
      * @return array
@@ -133,12 +154,15 @@ class UserService
             ];
         }
 
+        /**
+         * @var $user User
+         */
         $user = $this->security->getUser();
 
         if ($user->getEmail() === $email || $user->getPassword() === $password) {
             $result = [
                 'result'  => 'error',
-                'message' => 'email или пароль совпадают'
+                'message' => 'email или пароль совпадают с текущим'
             ];
         } else {
             //todo Добавить подтверждение почты

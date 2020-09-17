@@ -23,3 +23,5 @@
 /docker/logs/
 /dev/
 /.env
+/.yarn/
+.yarnrc

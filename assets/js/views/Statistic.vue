@@ -70,7 +70,8 @@
 
                         this.showLoader = false;
 
-                        console.log('data', data);
+                        // console.log('data', data);
+
                         if (data) {
                             if ('success' === data['result']) {
                                 this.channels = data['channels'];

@@ -132,6 +132,7 @@ class ChannelService
                 $channels[] = [
                     'avatar'      => $userChannel->getAvatar(),
                     'name'        => $userChannel->getChannelPermalink(),
+                    'is_active'   => $userChannel->getIsActive(),
                     'is_watching' => $userChannel->getIsWatching(),
                 ];
             }
