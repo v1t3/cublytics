@@ -73,6 +73,7 @@ class ChannelService
                     $ch->setChannelPermalink($channel['permalink']);
                     $ch->setUserId($userId);
                     $ch->setIsWatching(false);
+                    $ch->setIsActive(true);
                     $ch->setIsCurrent((int)$channel['id'] === (int)$current);
                     $ch->setTitle($channel['title']);
                     $ch->setCreatedAt($channel['created_at']);
@@ -216,20 +217,24 @@ class ChannelService
         //получим основные данные канала
         $data = $this->getInfo(AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
 
+        if ('' === (string)$data) {
+            throw new \Exception('Возвращён пустой ответ');
+        }
         // проверим, что вернулся не html
         if (false !== strpos((string)$data, '<!DOCTYPE html>')) {
             throw new \Exception('Некорректный ответ от сервиса');
-        }
-        if ('' === (string)$data) {
-            throw new \Exception('Возвращён пустой ответ');
         }
 
         $decodeData = json_decode(html_entity_decode($data), true);
 
         if (
-            is_array($decodeData)
-            && array_key_exists('total_pages', $decodeData)
+            !is_array($decodeData)
+            || !array_key_exists('total_pages', $decodeData)
         ) {
+            throw new \Exception('Ошибка при получении данных data: ' . json_encode($data));
+        }
+
+        if (array_key_exists('total_pages', $decodeData)) {
             if (1 < (int)$decodeData['total_pages']) {
                 $urls = [];
                 $allCoubs = [];
@@ -302,7 +307,7 @@ class ChannelService
                         //добавим coub к сохранению
                         $this->entityManager->persist($coubItem);
                     }
-                } else {
+                } elseif (empty($coub['recoub_to'])) {
                     $coubItem = new Coub();
                     $coubItem->setCoubId($coub['id']);
                     $coubItem->setChannelId($channelId);
@@ -354,7 +359,8 @@ class ChannelService
             $ch = curl_init();
 
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10); //timeout in seconds
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
             $data = curl_exec($ch);
@@ -419,7 +425,8 @@ class ChannelService
                     $curl_array[$i] = curl_init($url);
                     curl_setopt($curl_array[$i], CURLOPT_HEADER, 0);
                     curl_setopt($curl_array[$i], CURLOPT_NOBODY, 0);
-                    curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 6000);
+                    curl_setopt($curl_array[$i], CURLOPT_CONNECTTIMEOUT ,10);
+                    curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 10000);
                     curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true);
 
                     curl_multi_add_handle($mh, $curl_array[$i]);
@@ -532,21 +539,17 @@ class ChannelService
 
     /**
      * @param $data
-     * @param $permalink
      * @param $channelId
      *
      * @return bool
-     * @throws \Exception
      */
-    public function markAsDeleted($data, $permalink, $channelId)
+    public function checkDeletedCoubs($data, $channelId)
     {
         $allCoubsIds = [];
         $allDataIds = [];
         $coubRepo = $this->entityManager->getRepository(Coub::class);
 
         if (!empty($data)) {
-            $this->saveOriginalCoubs($data, $permalink);
-
             $allCoubs = $coubRepo->findEnabledByChannelId($channelId);
 
             /**
@@ -573,11 +576,11 @@ class ChannelService
 
                     $this->entityManager->persist($coub);
                 }
+
+                $this->entityManager->flush();
+
+                return true;
             }
-
-            $this->entityManager->flush();
-
-            return true;
         }
 
         return false;

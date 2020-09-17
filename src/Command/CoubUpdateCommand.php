@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * @usage php bin/console app:coub-update --channel=channel_permalink -vvv
+ * @usage php bin/console app:coub-update -vvv --channel=channel_permalink
  */
 
 namespace App\Command;
@@ -126,12 +126,7 @@ class CoubUpdateCommand extends Command
             //получить данные
             $result = $this->process($singleChannel);
 
-            if ($result) {
-                $output->writeln(
-                    '[' . \date('Y-m-d H:i:s') . '] Данные обновлены',
-                    OutputInterface::VERBOSITY_VERBOSE
-                );
-            } else {
+            if (!$result) {
                 $output->writeln(
                     '[' . \date('Y-m-d H:i:s') . '] Данные для сохранения отсутствуют',
                     OutputInterface::VERBOSITY_VERBOSE
@@ -203,39 +198,65 @@ class CoubUpdateCommand extends Command
             return false;
         }
 
-        $this->io->progressStart(count($channels));
+        if (is_array($channels)) {
+            foreach ($channels as $channel) {
+                $permalink = $channel->getChannelPermalink();
+                $channelId = $channel->getChannelId();
 
-        foreach ($channels as $channel) {
-            $permalink = $channel->getChannelPermalink();
-            $channelId = $channel->getChannelId();
+                $this->output->writeln(
+                    [
+                        '[' . \date('Y-m-d H:i:s') . '] Обработка канала: ' . $permalink
+                    ],
+                    OutputInterface::VERBOSITY_VERBOSE
+                );
 
-            $this->output->writeln(
-                [
-                    '[' . \date('Y-m-d H:i:s') . '] Обработка канала: ' . $permalink
-                ],
-                OutputInterface::VERBOSITY_VERBOSE
-            );
+                $data = $this->channelService->getOriginalCoubs($permalink);
 
+                if (!empty($data)) {
+                    $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink);
 
-            $data = $this->channelService->getOriginalCoubs($permalink);
+                    if ($saveRes) {
+                        $this->output->writeln(
+                            [
+                                '[' . \date('Y-m-d H:i:s') . '] Данные канала обновлены'
+                            ],
+                            OutputInterface::VERBOSITY_VERBOSE
+                        );
+                    }
 
-            if (!empty($data)) {
-                $this->channelService->markAsDeleted($data, $permalink, $channelId);
+                    $checkRes = $this->channelService->checkDeletedCoubs($data, $channelId);
+
+                    if ($checkRes) {
+                        $this->output->writeln(
+                            [
+                                '[' . \date('Y-m-d H:i:s') . '] Помечены удалённые коубы'
+                            ],
+                            OutputInterface::VERBOSITY_VERBOSE
+                        );
+                    }
+                } else {
+                    $this->output->writeln(
+                        [
+                            '[' . \date('Y-m-d H:i:s') . '] коубы не найдены'
+                        ],
+                        OutputInterface::VERBOSITY_VERBOSE
+                    );
+                }
             }
+
+            $this->entityManager->flush();
+
+            return true;
         }
 
-        $this->entityManager->flush();
-
-        $this->io->progressFinish();
-
-        return true;
+        return false;
     }
 
     /**
      * Получить время выполнения скрипта
      *
-     * @param bool $humanize
-     * @param int  $decimals
+     * @param bool     $humanize
+     * @param int|null $decimals
      *
      * @return string
      * @throws \Exception

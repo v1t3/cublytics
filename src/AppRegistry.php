@@ -13,17 +13,17 @@ class AppRegistry
     /**
      *
      */
-    public const API_COUB_SINGLE_LINK = 'https://coub.com/api/v2/coubs/';
+    public const API_COUB_SINGLE_LINK = 'http://coub.com/api/v2/coubs/';
 
     /**
      *
      */
-    public const API_COUB_USER_LINK = 'https://coub.com/api/v2/channels/';
+    public const API_COUB_USER_LINK = 'http://coub.com/api/v2/channels/';
 
     /**
      *
      */
-    public const API_COUB_TIMELINE_LINK = 'https://coub.com/api/v2/timeline/channel/';
+    public const API_COUB_TIMELINE_LINK = 'http://coub.com/api/v2/timeline/channel/';
 
     /**
      *
