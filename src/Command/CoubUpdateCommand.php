@@ -10,7 +10,6 @@ use App\Entity\Channel;
 use App\Entity\Coub;
 use App\Service\ChannelService;
 use Doctrine\ORM\EntityManagerInterface;
-use MyBuilder\Bundle\CronosBundle\Annotation\Cron;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,8 +21,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * Class CoubUpdateCommand
  *
  * Класс для загрузки данных по coub'ам в заданный период
- *
- * @Cron(minute="0", noLogs=true)
  *
  * @package App\Command
  */

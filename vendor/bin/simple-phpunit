@@ -1,13 +1,14 @@
-#!/usr/bin/env php
-<?php
+#!/usr/bin/env sh
 
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+dir=$(cd "${0%[/\\]*}" > /dev/null; cd "../symfony/phpunit-bridge/bin" && pwd)
 
-require __DIR__.DIRECTORY_SEPARATOR.'simple-phpunit.php';
+if [ -d /proc/cygdrive ]; then
+    case $(which php) in
+        $(readlink -n /proc/cygdrive)/*)
+            # We are in Cygwin using Windows php, so the path must be translated
+            dir=$(cygpath -m "$dir");
+            ;;
+    esac
+fi
+
+"${dir}/simple-phpunit" "$@"

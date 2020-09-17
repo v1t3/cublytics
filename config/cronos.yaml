@@ -1,8 +1,0 @@
-my_builder_cronos:
-    exporter:
-        key: faew4fawefawfsdfwfwef2234gdh6iuy7f
-        mailto: glazunov.fmx@gmail.com
-        path: /bin:/usr/local/bin
-        executor: php
-        console: bin/console
-        shell: /bin/bash

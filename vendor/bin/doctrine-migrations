@@ -1,8 +1,14 @@
-#!/usr/bin/env php
-<?php
+#!/usr/bin/env sh
 
-declare(strict_types=1);
+dir=$(cd "${0%[/\\]*}" > /dev/null; cd "../doctrine/migrations/bin" && pwd)
 
-namespace Doctrine\Migrations;
+if [ -d /proc/cygdrive ]; then
+    case $(which php) in
+        $(readlink -n /proc/cygdrive)/*)
+            # We are in Cygwin using Windows php, so the path must be translated
+            dir=$(cygpath -m "$dir");
+            ;;
+    esac
+fi
 
-require __DIR__ . '/doctrine-migrations.php';
+"${dir}/doctrine-migrations" "$@"
