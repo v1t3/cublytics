@@ -27,72 +27,72 @@
 </template>
 
 <script>
-    import axios from "axios";
-    import ChannelPerformance from "../components/channel-performance";
-    import Channel_stat from "../components/channel_stat/channel_stat";
-    import Loader_gif from "../components/loader_gif";
+import axios from "axios";
+import ChannelPerformance from "../components/channel-performance";
+import Channel_stat from "../components/channel_stat/channel_stat";
+import Loader_gif from "../components/loader_gif";
 
-    export default {
-        name: "Statistic",
-        components: {
-            Loader_gif,
-            Channel_stat,
-            ChannelPerformance,
-        },
-        data() {
-            return {
-                channels: null,
-                channel_active: '',
-                channel_name: '',
-                statistic_type: '',
-                show_stat: true,
-                showLoader: false,
-            }
-        },
-        mounted() {
-            this.getChannelsList();
-        },
-        methods: {
-            getChannelsList: function () {
-                this.showLoader = true;
+export default {
+    name: "Statistic",
+    components: {
+        Loader_gif,
+        Channel_stat,
+        ChannelPerformance,
+    },
+    data() {
+        return {
+            channels: null,
+            channel_active: '',
+            channel_name: '',
+            statistic_type: '',
+            show_stat: true,
+            showLoader: false,
+        }
+    },
+    mounted() {
+        this.getChannelsList();
+    },
+    methods: {
+        getChannelsList: function () {
+            this.showLoader = true;
 
-                axios({
-                    method: 'post',
-                    url: '/api/stat/get_channels_list',
-                    data: {}
-                })
-                    .then((response) => {
-                        let data = response['data'];
+            axios({
+                method: 'post',
+                url: '/api/stat/get_channels_list',
+                data: {}
+            })
+                .then((response) => {
+                    let data = response['data'];
 
-                        this.showLoader = false;
+                    this.showLoader = false;
 
-                        if (data) {
-                            if ('success' === data['result']) {
-                                this.channels = data['channels'];
+                    if (data) {
+                        if ('success' === data['result']) {
+                            this.channels = data['channels'];
 
-                                this.channel_active = this.channels[0].name;
-                            }
+                            this.channel_active = this.channels[0].name;
                         }
-                    })
-                    .catch((error) => {
-                        console.log('catch error', error);
-
-                        this.error = error;
-                    });
-
-            },
-            getActive: function (type = '') {
-                this.show_stat = false;
-                let that = this;
-                this.$nextTick(function () {
-                    that.channel_name = that.channel_active;
-                    if (type) {
-                        that.statistic_type = type;
                     }
+                })
+                .catch((error) => {
+                    console.log('catch error', error);
 
-                    that.show_stat = true;
+                    this.error = error;
                 });
-            }
+
+        },
+        getActive: function (type = '') {
+            this.show_stat = false;
+            let that = this;
+            this.$nextTick(function () {
+                that.channel_name = that.channel_active;
+                if (type) {
+                    that.statistic_type = type;
+                }
+
+                that.show_stat = true;
+            });
         }
     }
+}
 </script>
