@@ -53,41 +53,6 @@ class CoubToolsService
     }
 
     /**
-     * @param string $channelName
-     *
-     * @return bool|string
-     */
-    public function getUserData(string $channelName)
-    {
-        $result = '';
-
-        try {
-            if ((string)$channelName === '') {
-                return $result;
-            }
-
-            if (strpos($channelName, 'https://coub.com/') !== false) {
-                $channelName = str_replace('https://coub.com/', '', $channelName);
-            }
-
-            $urlApi = AppRegistry::API_COUB_USER_LINK . $channelName;
-
-            $data = $this->getInfo($urlApi);
-
-            if (
-                '' !== (string)$data
-                && false === strpos((string)$data, '<!DOCTYPE html>')
-            ) {
-                $result = $data;
-            }
-        } catch (Exception $e) {
-            trigger_error($e);
-        }
-
-        return $result;
-    }
-
-    /**
      * Возвращает количество месяцев
      * с даты публикации по сегодняшний день
      *

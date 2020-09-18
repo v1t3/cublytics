@@ -7,13 +7,10 @@
                         <router-link :to="{ name: 'home' }">Главная</router-link>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'Statistic' }">Статистика</router-link>
+                        <router-link :to="{ name: 'Statistic' }">Статистика по каналам</router-link>
                     </li>
                     <li>
-                        <router-link :to="{ name: 'Coubdata' }">Данные коуба</router-link>
-                    </li>
-                    <li>
-                        <router-link :to="{ name: 'UserData' }">Данные пользователя</router-link>
+                        <router-link :to="{ name: 'Coubdata' }">Статиститика по коубам</router-link>
                     </li>
                     <li>
                         <router-link :to="{ name: 'Settings' }">Настройки</router-link>

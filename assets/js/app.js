@@ -17,36 +17,38 @@ Vue.use(vuelidate);
 //css
 require('../sass/app.scss');
 
+let index = '/dashboard';
+
 const router = new VueRouter({
     mode: 'history',
     routes: [
         {
-            path: '/dashboard',
+            path: index,
             name: 'home',
             component: Home
         },
         {
-            path: '/dashboard/statistic',
+            path: index + '/statistic',
             name: 'Statistic',
             component: Statistic
         },
         {
-            path: '/dashboard/settings',
+            path: index + '/settings',
             name: 'Settings',
             component: Settings
         },
         {
-            path: '/dashboard/сoubdata',
+            path: index + '/сoubdata',
             name: 'Coubdata',
             component: Coubdata
         },
         {
-            path: '/dashboard/userdata',
+            path: index + '/userdata',
             name: 'UserData',
             component: UserData
         },
         {
-            path: '/dashboard/*',
+            path: index + '/*',
             redirect: '/dashboard'
         }
     ],

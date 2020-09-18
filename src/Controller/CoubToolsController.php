@@ -64,12 +64,8 @@ class CoubToolsController extends AbstractController
             $coub = new CoubToolsService();
 
             if ($coub) {
-                if ((string)$params['type'] === 'userdata') {
-                    $coubContent = $coub->getUserData($params['url']);
-                } elseif ((string)$params['type'] === 'coubdata') {
+                if ((string)$params['type'] === 'coubdata') {
                     $coubContent = $coub->getCoubData($params['url']);
-//                } elseif ((string)$params['type'] === 'performance') {
-//                    $coubContent = $coub->getChannelPerf($params['url']);
                 } else {
                     $coubContent = '';
                 }
