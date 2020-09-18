@@ -129,28 +129,8 @@ export default {
                                 ) {
                                     datasets.push({
                                         label: 'Просмотры',
-                                        backgroundColor: 'rgba(78,103,245,0.8)',
+                                        backgroundColor: that.generateColor(),
                                         data: coubsData['views_count']
-                                    });
-                                }
-                                if (
-                                    coubsData['repost_count'] &&
-                                    coubsData['repost_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Репосты',
-                                        backgroundColor: 'rgba(248,145,46,0.8)',
-                                        data: coubsData['repost_count']
-                                    });
-                                }
-                                if (
-                                    coubsData['remixes_count'] &&
-                                    coubsData['remixes_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Рекоубы',
-                                        backgroundColor: 'rgba(105,248,178,0.8)',
-                                        data: coubsData['remixes_count']
                                     });
                                 }
                                 if (
@@ -159,7 +139,7 @@ export default {
                                 ) {
                                     datasets.push({
                                         label: 'Лайки',
-                                        backgroundColor: 'rgb(105,248,107,0.8)',
+                                        backgroundColor: that.generateColor(),
                                         data: coubsData['like_count']
                                     });
                                 }
@@ -169,8 +149,28 @@ export default {
                                 ) {
                                     datasets.push({
                                         label: 'Дизлайки',
-                                        backgroundColor: 'rgb(105,107,248,0.8)',
+                                        backgroundColor: that.generateColor(),
                                         data: coubsData['dislikes_count']
+                                    });
+                                }
+                                if (
+                                    coubsData['repost_count'] &&
+                                    coubsData['repost_count'].some(item => item !== 0)
+                                ) {
+                                    datasets.push({
+                                        label: 'Репосты',
+                                        backgroundColor: that.generateColor(),
+                                        data: coubsData['repost_count']
+                                    });
+                                }
+                                if (
+                                    coubsData['remixes_count'] &&
+                                    coubsData['remixes_count'].some(item => item !== 0)
+                                ) {
+                                    datasets.push({
+                                        label: 'Рекоубы',
+                                        backgroundColor: that.generateColor(),
+                                        data: coubsData['remixes_count']
                                     });
                                 }
                                 if (
@@ -179,7 +179,7 @@ export default {
                                 ) {
                                     datasets.push({
                                         label: 'КД',
-                                        backgroundColor: 'rgb(248,105,207,0.8)',
+                                        backgroundColor: that.generateColor(),
                                         data: coubsData['is_kd']
                                     });
                                 }
@@ -189,7 +189,7 @@ export default {
                                 ) {
                                     datasets.push({
                                         label: 'Фичи',
-                                        backgroundColor: 'rgb(248,207,105,0.8)',
+                                        backgroundColor: that.generateColor(),
                                         data: coubsData['featured']
                                     });
                                 }
@@ -199,7 +199,7 @@ export default {
                                 ) {
                                     datasets.push({
                                         label: 'Баны',
-                                        backgroundColor: 'rgb(91,74,186,0.8)',
+                                        backgroundColor: that.generateColor(),
                                         data: coubsData['banned']
                                     });
                                 }
@@ -310,8 +310,14 @@ export default {
 
             return result;
         },
-        generatecolor: function () {
+        generateColor: function () {
+            let r, g, b, opacity = 0.8;
 
+            r = Math.floor(Math.random() * (256));
+            g = Math.floor(Math.random() * (256));
+            b = Math.floor(Math.random() * (256));
+
+            return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
         },
         clearData: function () {
             this.coubsCount = '';
