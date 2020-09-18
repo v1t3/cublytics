@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\ChannelService;
+use App\Service\StatisticService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

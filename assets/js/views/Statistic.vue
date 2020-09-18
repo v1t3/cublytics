@@ -2,10 +2,6 @@
     <div>
         <h1>Статистика</h1>
         <div class="channel-list">
-            <button class="btn-primary" v-on:click="getChannelsList()">Обновить список</button>
-            <br>
-            <br>
-
             Каналы:
             <select v-model="channel_active" @change="getActive()">
                 <option v-for="channel in channels" :key="channel.name">{{ channel.name }}</option>
@@ -70,8 +66,6 @@
 
                         this.showLoader = false;
 
-                        // console.log('data', data);
-
                         if (data) {
                             if ('success' === data['result']) {
                                 this.channels = data['channels'];
@@ -93,8 +87,6 @@
                 this.$nextTick(function () {
                     that.channel_name = that.channel_active;
                     if (type) {
-                        console.log('type=', type);
-
                         that.statistic_type = type;
                     }
 

@@ -75,32 +75,18 @@
             }
         },
         mounted() {
-            this.getViews();
+            this.getCoubData();
         },
         methods: {
-            fillData: function (data, labels) {
+            fillData: function (labels, datasets) {
                 this.dataCollection = {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Все',
-                            backgroundColor: 'rgba(78,103,245,0.8)',
-                            data: data['total']
-                        },
-                        {
-                            label: 'Свои',
-                            backgroundColor: 'rgba(248,145,46,0.8)',
-                            data: data['self']
-                        },
-                        {
-                            label: 'Репосты',
-                            backgroundColor: 'rgba(105,248,178,0.8)',
-                            data: data['reposts']
-                        }
-                    ]
+                    datasets: datasets
                 }
             },
-            getViews: function () {
+            getCoubData: function () {
+                let that = this;
+
                 if (this.channel_name) {
                     this.clearData();
                     this.showLoader = true;
@@ -119,63 +105,93 @@
                     })
                         .then((response) => {
                             let data = response['data'];
+                            let datasets = [];
+                            let coubsData;
 
-                            this.error = '';
-                            this.showLoader = false;
+                            that.error = '';
+                            that.showLoader = false;
 
-                            console.log('data', data);
+                            // console.log('data', data);
 
                             if (data) {
                                 if (typeof data === 'string') {
                                     data = JSON.parse(data);
                                 }
 
-                                this.coubsCount = data['total_coubs'] || '';
-                                this.isSelfCount = data['self_coubs'] || '';
-                                this.isRepostCount = data['reposted'] || '';
-                                this.likesCount = data['total_likes'] || '';
-                                this.banCount = data['banned'] || '';
+                                coubsData = that.getCoubsCount(data['data']);
 
-                                if (
-                                    data['total_points_month'] &&
-                                    Object.keys(data['total_points_month']).length > 0
-                                ) {
-                                    this.showChart = true;
+                                if (coubsData) {
+                                    that.showChart = true;
 
-                                    let chartPointsTotal = [];
-                                    let chartPointsSelf = [];
-                                    let chartPointsReposts = [];
-                                    let coubsMonth = [];
-
-                                    for (let i = 0, max = data['total_points_month'].length; i < max; i++) {
-                                        chartPointsTotal[i] = data['total_points_month'][i]['count'];
-                                        coubsMonth[i] = data['total_points_month'][i]['date'];
+                                    if (coubsData['views_count'] && coubsData['views_count'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Просмотры',
+                                            backgroundColor: 'rgba(78,103,245,0.8)',
+                                            data: coubsData['views_count']
+                                        });
                                     }
-                                    for (let i = 0, max = data['self_points_month'].length; i < max; i++) {
-                                        chartPointsSelf[i] = data['self_points_month'][i]['count'];
+                                    if (coubsData['repost_count'] && coubsData['repost_count'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Репосты',
+                                            backgroundColor: 'rgba(248,145,46,0.8)',
+                                            data: coubsData['repost_count']
+                                        });
                                     }
-                                    for (let i = 0, max = data['reposts_points_month'].length; i < max; i++) {
-                                        chartPointsReposts[i] = data['reposts_points_month'][i]['count'];
+                                    if (coubsData['remixes_count'] && coubsData['remixes_count'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Рекоубы',
+                                            backgroundColor: 'rgba(105,248,178,0.8)',
+                                            data: coubsData['remixes_count']
+                                        });
+                                    }
+                                    if (coubsData['like_count'] && coubsData['like_count'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Лайки',
+                                            backgroundColor: 'rgb(105,248,107,0.8)',
+                                            data: coubsData['like_count']
+                                        });
+                                    }
+                                    if (coubsData['dislikes_count'] && coubsData['dislikes_count'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Дизлайки',
+                                            backgroundColor: 'rgb(105,107,248,0.8)',
+                                            data: coubsData['dislikes_count']
+                                        });
+                                    }
+                                    if (coubsData['is_kd'] && coubsData['is_kd'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'КД',
+                                            backgroundColor: 'rgb(248,105,207,0.8)',
+                                            data: coubsData['is_kd']
+                                        });
+                                    }
+                                    if (coubsData['featured'] && coubsData['featured'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Фичи',
+                                            backgroundColor: 'rgb(248,207,105,0.8)',
+                                            data: coubsData['featured']
+                                        });
+                                    }
+                                    if (coubsData['banned'] && coubsData['banned'].some(item => item !== 0)) {
+                                        datasets.push({
+                                            label: 'Баны',
+                                            backgroundColor: 'rgb(91,74,186,0.8)',
+                                            data: coubsData['banned']
+                                        });
                                     }
 
-                                    this.fillData(
-                                        {
-                                            'total'  : chartPointsTotal,
-                                            'self'   : chartPointsSelf,
-                                            'reposts': chartPointsReposts,
-                                        },
-                                        coubsMonth
-                                    );
+                                    //отравим данные для графика
+                                    that.fillData(coubsData['dates'], datasets);
                                 }
 
                                 if (data['error']) {
-                                    this.error = 'Error: ' + data['error'];
-                                    this.clearData();
+                                    that.error = 'Error: ' + data['error'];
+                                    that.clearData();
                                 }
                             }
 
                             if (!data) {
-                                this.clearData();
+                                that.clearData();
                             }
                         })
                         .catch((error) => {
@@ -190,67 +206,149 @@
                         });
                 }
             },
-            getTestViews: function () {
-                if ('' !== this.channel_name) {
-                    this.clearData();
-                    this.showLoader = true;
+            getCoubsCount: function (data) {
+                let result = [];
+                let temp = [];
+                let dates = [];
 
-                    let data = { "total_coubs": 131, "self_coubs": 86, "total_likes": 16509, "reposted": 45, "total_points_month": [ { "date": "11.2017", "count": 1 }, { "date": "12.2017", "count": 0 }, { "date": "01.2018", "count": 2 }, { "date": "02.2018", "count": 2 }, { "date": "03.2018", "count": 8 }, { "date": "04.2018", "count": 5 }, { "date": "05.2018", "count": 8 }, { "date": "06.2018", "count": 2 }, { "date": "07.2018", "count": 3 }, { "date": "08.2018", "count": 2 }, { "date": "09.2018", "count": 5 }, { "date": "10.2018", "count": 0 }, { "date": "11.2018", "count": 1 }, { "date": "12.2018", "count": 1 }, { "date": "01.2019", "count": 4 }, { "date": "02.2019", "count": 0 }, { "date": "03.2019", "count": 4 }, { "date": "04.2019", "count": 6 }, { "date": "05.2019", "count": 6 }, { "date": "06.2019", "count": 2 }, { "date": "07.2019", "count": 4 }, { "date": "08.2019", "count": 8 }, { "date": "09.2019", "count": 5 }, { "date": "10.2019", "count": 11 }, { "date": "11.2019", "count": 14 }, { "date": "12.2019", "count": 2 }, { "date": "01.2020", "count": 5 }, { "date": "02.2020", "count": 3 }, { "date": "03.2020", "count": 4 }, { "date": "04.2020", "count": 6 }, { "date": "05.2020", "count": 1 }, { "date": "06.2020", "count": 1 } ], "self_points_month": [ { "date": "06.2020", "count": 1 }, { "date": "05.2020", "count": 0 }, { "date": "04.2020", "count": 4 }, { "date": "03.2020", "count": 4 }, { "date": "02.2020", "count": 1 }, { "date": "01.2020", "count": 3 }, { "date": "12.2019", "count": 0 }, { "date": "11.2019", "count": 2 }, { "date": "10.2019", "count": 1 }, { "date": "09.2019", "count": 1 }, { "date": "08.2019", "count": 6 }, { "date": "07.2019", "count": 3 }, { "date": "06.2019", "count": 0 }, { "date": "05.2019", "count": 2 }, { "date": "04.2019", "count": 5 }, { "date": "03.2019", "count": 4 }, { "date": "02.2019", "count": 0 }, { "date": "01.2019", "count": 4 }, { "date": "12.2018", "count": 1 }, { "date": "11.2018", "count": 1 }, { "date": "10.2018", "count": 0 }, { "date": "09.2018", "count": 5 }, { "date": "08.2018", "count": 2 }, { "date": "07.2018", "count": 3 }, { "date": "06.2018", "count": 2 }, { "date": "05.2018", "count": 8 }, { "date": "04.2018", "count": 5 }, { "date": "03.2018", "count": 8 }, { "date": "02.2018", "count": 2 }, { "date": "01.2018", "count": 2 }, { "date": "12.2017", "count": 0 }, { "date": "11.2017", "count": 1 } ], "reposts_points_month": [ { "date": "06.2020", "count": 0 }, { "date": "05.2020", "count": 1 }, { "date": "04.2020", "count": 2 }, { "date": "03.2020", "count": 0 }, { "date": "02.2020", "count": 2 }, { "date": "01.2020", "count": 2 }, { "date": "12.2019", "count": 2 }, { "date": "11.2019", "count": 12 }, { "date": "10.2019", "count": 10 }, { "date": "09.2019", "count": 4 }, { "date": "08.2019", "count": 2 }, { "date": "07.2019", "count": 1 }, { "date": "06.2019", "count": 2 }, { "date": "05.2019", "count": 4 }, { "date": "04.2019", "count": 1 }, { "date": "03.2019", "count": 0 }, { "date": "02.2019", "count": 0 }, { "date": "01.2019", "count": 0 }, { "date": "12.2018", "count": 0 }, { "date": "11.2018", "count": 0 }, { "date": "10.2018", "count": 0 }, { "date": "09.2018", "count": 0 }, { "date": "08.2018", "count": 0 }, { "date": "07.2018", "count": 0 }, { "date": "06.2018", "count": 0 }, { "date": "05.2018", "count": 0 }, { "date": "04.2018", "count": 0 }, { "date": "03.2018", "count": 0 }, { "date": "02.2018", "count": 0 }, { "date": "01.2018", "count": 0 }, { "date": "12.2017", "count": 0 }, { "date": "11.2017", "count": 0 } ] };
+                if (!data) {
+                    return [];
+                }
 
-                    this.error = '';
-                    this.showLoader = false;
+                for (let i = 0, len = data.length; i < len; i++) {
+                    let date = data[i]['timestamp']['date'];
 
-                    console.log(data);
-
-                    if (data) {
-                        this.coubsCount = data['total_coubs'] || '';
-                        this.isSelfCount = data['self_coubs'] || '';
-                        this.isRepostCount = data['reposted'] || '';
-                        this.likesCount = data['total_likes'] || '';
-                        this.banCount = data['banned'] || '';
-
-                        if (
-                            data['total_points_month'] &&
-                            Object.keys(data['total_points_month']).length > 0
-                        ) {
-                            this.showChart = true;
-
-                            let chartPointsTotal = [];
-                            let chartPointsSelf = [];
-                            let chartPointsReposts = [];
-                            let coubsMonth = [];
-
-                            for (let i = 0, max = data['total_points_month'].length; i < max; i++) {
-                                chartPointsTotal[i] = data['total_points_month'][i]['count'];
-                                coubsMonth[i] = data['total_points_month'][i]['date'];
-                            }
-                            for (let i = 0, max = data['self_points_month'].length; i < max; i++) {
-                                chartPointsSelf[i] = data['self_points_month'][i]['count'];
-                            }
-                            for (let i = 0, max = data['reposts_points_month'].length; i < max; i++) {
-                                chartPointsReposts[i] = data['reposts_points_month'][i]['count'];
-                            }
-
-                            this.fillData(
-                                {
-                                    'total'  : chartPointsTotal,
-                                    'self'   : chartPointsSelf,
-                                    'reposts': chartPointsReposts,
-                                },
-                                coubsMonth
-                            );
-                        }
-
-                        if (data['error']) {
-                            this.error = 'Error: ' + data['error'];
-                            this.clearData();
-                        }
+                    if (!dates.includes(date)) {
+                        dates.push(date);
                     }
 
-                    if (!data) {
-                        this.clearData();
+                    if (!temp[date]) {
+                        temp[date] = [];
+                        temp[date]['views_count'] = 0;
+                        temp[date]['repost_count'] = 0;
+                        temp[date]['remixes_count'] = 0;
+                        temp[date]['like_count'] = 0;
+                        temp[date]['dislikes_count'] = 0;
+                        temp[date]['is_kd'] = 0;
+                        temp[date]['featured'] = 0;
+                        temp[date]['banned'] = 0;
+                    }
+
+                    if (data[i]['views_count']) {
+                        temp[date]['views_count'] += +data[i]['views_count'];
+                    }
+                    if (data[i]['repost_count']) {
+                        temp[date]['repost_count'] += +data[i]['repost_count'];
+                    }
+                    if (data[i]['remixes_count']) {
+                        temp[date]['remixes_count'] += +data[i]['remixes_count'];
+                    }
+                    if (data[i]['like_count']) {
+                        temp[date]['like_count'] = +temp[date]['like_count'] + +data[i]['like_count'];
+                    }
+                    if (data[i]['dislikes_count']) {
+                        temp[date]['dislikes_count'] += +data[i]['dislikes_count'];
+                    }
+                    if (data[i]['is_kd']) {
+                        temp[date]['is_kd']++;
+                    }
+                    if (data[i]['featured']) {
+                        temp[date]['featured']++;
+                    }
+                    if (data[i]['banned']) {
+                        temp[date]['banned']++;
                     }
                 }
+
+                result['views_count'] = [];
+                result['repost_count'] = [];
+                result['remixes_count'] = [];
+                result['like_count'] = [];
+                result['dislikes_count'] = [];
+                result['is_kd'] = [];
+                result['featured'] = [];
+                result['banned'] = [];
+                for (let i = 0, len = dates.length; i < len; i++) {
+                    let item = temp[dates[i]];
+
+                    result['views_count'].push(item['views_count']);
+                    result['repost_count'].push(item['repost_count']);
+                    result['remixes_count'].push(item['remixes_count']);
+                    result['like_count'].push(item['like_count']);
+                    result['dislikes_count'].push(item['dislikes_count']);
+                    result['is_kd'].push(item['is_kd']);
+                    result['featured'].push(item['featured']);
+                    result['banned'].push(item['banned']);
+                }
+
+                result['dates'] = dates;
+
+                return result;
+            },
+            // getTestViews: function () {
+            //     if ('' !== this.channel_name) {
+            //         this.clearData();
+            //         this.showLoader = true;
+            //
+            //         let data = { "total_coubs": 131, "self_coubs": 86, "total_likes": 16509, "reposted": 45, "total_points_month": [ { "date": "11.2017", "count": 1 }, { "date": "12.2017", "count": 0 }, { "date": "01.2018", "count": 2 }, { "date": "02.2018", "count": 2 }, { "date": "03.2018", "count": 8 }, { "date": "04.2018", "count": 5 }, { "date": "05.2018", "count": 8 }, { "date": "06.2018", "count": 2 }, { "date": "07.2018", "count": 3 }, { "date": "08.2018", "count": 2 }, { "date": "09.2018", "count": 5 }, { "date": "10.2018", "count": 0 }, { "date": "11.2018", "count": 1 }, { "date": "12.2018", "count": 1 }, { "date": "01.2019", "count": 4 }, { "date": "02.2019", "count": 0 }, { "date": "03.2019", "count": 4 }, { "date": "04.2019", "count": 6 }, { "date": "05.2019", "count": 6 }, { "date": "06.2019", "count": 2 }, { "date": "07.2019", "count": 4 }, { "date": "08.2019", "count": 8 }, { "date": "09.2019", "count": 5 }, { "date": "10.2019", "count": 11 }, { "date": "11.2019", "count": 14 }, { "date": "12.2019", "count": 2 }, { "date": "01.2020", "count": 5 }, { "date": "02.2020", "count": 3 }, { "date": "03.2020", "count": 4 }, { "date": "04.2020", "count": 6 }, { "date": "05.2020", "count": 1 }, { "date": "06.2020", "count": 1 } ], "self_points_month": [ { "date": "06.2020", "count": 1 }, { "date": "05.2020", "count": 0 }, { "date": "04.2020", "count": 4 }, { "date": "03.2020", "count": 4 }, { "date": "02.2020", "count": 1 }, { "date": "01.2020", "count": 3 }, { "date": "12.2019", "count": 0 }, { "date": "11.2019", "count": 2 }, { "date": "10.2019", "count": 1 }, { "date": "09.2019", "count": 1 }, { "date": "08.2019", "count": 6 }, { "date": "07.2019", "count": 3 }, { "date": "06.2019", "count": 0 }, { "date": "05.2019", "count": 2 }, { "date": "04.2019", "count": 5 }, { "date": "03.2019", "count": 4 }, { "date": "02.2019", "count": 0 }, { "date": "01.2019", "count": 4 }, { "date": "12.2018", "count": 1 }, { "date": "11.2018", "count": 1 }, { "date": "10.2018", "count": 0 }, { "date": "09.2018", "count": 5 }, { "date": "08.2018", "count": 2 }, { "date": "07.2018", "count": 3 }, { "date": "06.2018", "count": 2 }, { "date": "05.2018", "count": 8 }, { "date": "04.2018", "count": 5 }, { "date": "03.2018", "count": 8 }, { "date": "02.2018", "count": 2 }, { "date": "01.2018", "count": 2 }, { "date": "12.2017", "count": 0 }, { "date": "11.2017", "count": 1 } ], "reposts_points_month": [ { "date": "06.2020", "count": 0 }, { "date": "05.2020", "count": 1 }, { "date": "04.2020", "count": 2 }, { "date": "03.2020", "count": 0 }, { "date": "02.2020", "count": 2 }, { "date": "01.2020", "count": 2 }, { "date": "12.2019", "count": 2 }, { "date": "11.2019", "count": 12 }, { "date": "10.2019", "count": 10 }, { "date": "09.2019", "count": 4 }, { "date": "08.2019", "count": 2 }, { "date": "07.2019", "count": 1 }, { "date": "06.2019", "count": 2 }, { "date": "05.2019", "count": 4 }, { "date": "04.2019", "count": 1 }, { "date": "03.2019", "count": 0 }, { "date": "02.2019", "count": 0 }, { "date": "01.2019", "count": 0 }, { "date": "12.2018", "count": 0 }, { "date": "11.2018", "count": 0 }, { "date": "10.2018", "count": 0 }, { "date": "09.2018", "count": 0 }, { "date": "08.2018", "count": 0 }, { "date": "07.2018", "count": 0 }, { "date": "06.2018", "count": 0 }, { "date": "05.2018", "count": 0 }, { "date": "04.2018", "count": 0 }, { "date": "03.2018", "count": 0 }, { "date": "02.2018", "count": 0 }, { "date": "01.2018", "count": 0 }, { "date": "12.2017", "count": 0 }, { "date": "11.2017", "count": 0 } ] };
+            //
+            //         this.error = '';
+            //         this.showLoader = false;
+            //
+            //         // console.log(data);
+            //
+            //         if (data) {
+            //             this.coubsCount = data['total_coubs'] || '';
+            //             this.isSelfCount = data['self_coubs'] || '';
+            //             this.isRepostCount = data['reposted'] || '';
+            //             this.likesCount = data['total_likes'] || '';
+            //             this.banCount = data['banned'] || '';
+            //
+            //             if (
+            //                 data['total_points_month'] &&
+            //                 Object.keys(data['total_points_month']).length > 0
+            //             ) {
+            //                 this.showChart = true;
+            //
+            //                 let chartPointsTotal = [];
+            //                 let chartPointsSelf = [];
+            //                 let chartPointsReposts = [];
+            //                 let coubsMonth = [];
+            //
+            //                 for (let i = 0, max = data['total_points_month'].length; i < max; i++) {
+            //                     chartPointsTotal[i] = data['total_points_month'][i]['count'];
+            //                     coubsMonth[i] = data['total_points_month'][i]['date'];
+            //                 }
+            //                 for (let i = 0, max = data['self_points_month'].length; i < max; i++) {
+            //                     chartPointsSelf[i] = data['self_points_month'][i]['count'];
+            //                 }
+            //                 for (let i = 0, max = data['reposts_points_month'].length; i < max; i++) {
+            //                     chartPointsReposts[i] = data['reposts_points_month'][i]['count'];
+            //                 }
+            //
+            //                 this.fillData(
+            //                     {
+            //                         'total'  : chartPointsTotal,
+            //                         'self'   : chartPointsSelf,
+            //                         'reposts': chartPointsReposts,
+            //                     },
+            //                     coubsMonth
+            //                 );
+            //             }
+            //
+            //             if (data['error']) {
+            //                 this.error = 'Error: ' + data['error'];
+            //                 this.clearData();
+            //             }
+            //         }
+            //
+            //         if (!data) {
+            //             this.clearData();
+            //         }
+            //     }
+            // },
+            generatecolor: function () {
+
             },
             clearData: function () {
                 this.coubsCount = '';
