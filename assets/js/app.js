@@ -6,7 +6,6 @@ import Home from './views/Home'
 import Statistic from './views/Statistic'
 import Settings from './views/Settings'
 import Coubdata from './views/Coubdata'
-import UserData from './views/UserData'
 // import Page404 from './views/Page404'
 
 require('./bootstrap');
@@ -41,11 +40,6 @@ const router = new VueRouter({
             path: index + '/сoubdata',
             name: 'Coubdata',
             component: Coubdata
-        },
-        {
-            path: index + '/userdata',
-            name: 'UserData',
-            component: UserData
         },
         {
             path: index + '/*',
