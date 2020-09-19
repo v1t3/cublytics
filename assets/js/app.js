@@ -21,8 +21,14 @@ require('../sass/app.scss');
 
 const store = new Vuex.Store({
     state: {
+        user: {},
     },
     mutations: {
+        setUserData(state, params) {
+            if (params.hasOwnProperty('user_id') && !state.user[params['user_id']]) {
+                state.user[params['user_id']] = params;
+            }
+        }
     }
 });
 

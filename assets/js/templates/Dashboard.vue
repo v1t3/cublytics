@@ -18,14 +18,48 @@
                 </ul>
             </div>
             <div class="main-block">
-                    <router-view></router-view>
+                <router-view></router-view>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-    export default {
-        name: "Dashboard"
+import axios from "axios";
+
+export default {
+    name: "Dashboard",
+    data() {
+        return {};
+    },
+    beforeMount() {
+        this.getUserData();
+    },
+    methods: {
+        getUserData: function () {
+            axios({
+                method: 'post',
+                url: '/api/user/get_data',
+                data: {},
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then((response) => {
+                    let data = response['data'];
+
+                    if (
+                        data &&
+                        'success' === data['result']
+                    ) {
+                        this.$store.commit('setUserData', data['data']);
+                    }
+                })
+                .catch((error) => {
+                    console.error('catch error: ', error);
+                });
+        },
     }
+
+}
 </script>

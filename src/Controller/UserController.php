@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\ChannelService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,6 +31,40 @@ class UserController extends AbstractController
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
+    }
+
+    /**
+     * @Route ("api/user/get_data", name="get_user_data")
+     *
+     * @param ChannelService $channelService
+     *
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function getData(ChannelService $channelService)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /**
+         * @var $user User
+         */
+        $user = $this->getUser();
+        $channels = $channelService->getChannelsList();
+
+        $response = new JsonResponse();
+        $response->setData(
+            [
+                'result' => 'success',
+                'data'   => [
+                    'user_id'  => $user->getUserId(),
+                    'username' => $user->getUsername(),
+                    'roles'    => $user->getRoles(),
+                    'token'    => $user->getToken(),
+                    'channels' => $channels,
+                ]
+            ]
+        );
+
+        return $response;
     }
 
     /**

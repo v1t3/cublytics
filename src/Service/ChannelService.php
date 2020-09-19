@@ -9,6 +9,7 @@ use App\AppRegistry;
 use App\Entity\Channel;
 use App\Entity\Coub;
 use App\Entity\CoubStat;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -107,18 +108,18 @@ class ChannelService
 
     /**
      * @return array
+     * @throws \Exception
      */
     public function getChannelsList()
     {
         $channels = [];
+        /**
+         * @var $user User
+         */
         $user = $this->security->getUser();
 
         if (!$user) {
-            return [
-                'result'   => 'error',
-                'message'  => 'Пользователь не найден',
-                'channels' => $channels
-            ];
+            throw new \Exception('Пользователь не найден');
         }
 
         $userId = $user->getUserId();
@@ -130,27 +131,22 @@ class ChannelService
         if ($userChannels) {
             foreach ($userChannels as $userChannel) {
                 $channels[] = [
-                    'avatar'      => $userChannel->getAvatar(),
-                    'name'        => $userChannel->getChannelPermalink(),
-                    'is_active'   => $userChannel->getIsActive(),
-                    'is_watching' => $userChannel->getIsWatching(),
+                    'avatar'          => $userChannel->getAvatar(),
+                    'name'            => $userChannel->getChannelPermalink(),
+                    'title'           => $userChannel->getTitle(),
+                    'is_active'       => $userChannel->getIsActive(),
+                    'is_watching'     => $userChannel->getIsWatching(),
+                    'is_current'      => $userChannel->getIsCurrent(),
+                    'views_count'     => $userChannel->getViewsCount(),
+                    'likes_count'     => $userChannel->getLikesCount(),
+                    'followers_count' => $userChannel->getFollowersCount(),
+                    'recoubs_count'   => $userChannel->getRecoubsCount(),
+                    'stories_count'   => $userChannel->getStoriesCount()
                 ];
             }
-
-            $data = [
-                'result'   => 'success',
-                'message'  => '',
-                'channels' => $channels,
-            ];
-        } else {
-            $data = [
-                'result'   => 'error',
-                'message'  => 'Каналы не найдены',
-                'channels' => $channels,
-            ];
         }
 
-        return $data;
+        return $channels;
     }
 
     /**
@@ -360,7 +356,7 @@ class ChannelService
             $ch = curl_init();
 
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,10);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10); //timeout in seconds
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -426,7 +422,7 @@ class ChannelService
                     $curl_array[$i] = curl_init($url);
                     curl_setopt($curl_array[$i], CURLOPT_HEADER, 0);
                     curl_setopt($curl_array[$i], CURLOPT_NOBODY, 0);
-                    curl_setopt($curl_array[$i], CURLOPT_CONNECTTIMEOUT ,10);
+                    curl_setopt($curl_array[$i], CURLOPT_CONNECTTIMEOUT, 10);
                     curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 10000);
                     curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true);
 
