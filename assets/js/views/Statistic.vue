@@ -54,32 +54,10 @@ export default {
     },
     methods: {
         getChannelsList: function () {
-            this.showLoader = true;
-
-            axios({
-                method: 'post',
-                url: '/api/stat/get_channels_list',
-                data: {}
-            })
-                .then((response) => {
-                    let data = response['data'];
-
-                    this.showLoader = false;
-
-                    if (data) {
-                        if ('success' === data['result']) {
-                            this.channels = data['channels'];
-
-                            this.channel_active = this.channels[0].name;
-                        }
-                    }
-                })
-                .catch((error) => {
-                    console.log('catch error', error);
-
-                    this.error = error;
-                });
-
+            if (undefined !== this.$store.state.user.channels) {
+                this.channels = this.$store.state.user.channels;
+                this.channel_active = this.channels[0].name;
+            }
         },
         getActive: function (type = '') {
             this.show_stat = false;

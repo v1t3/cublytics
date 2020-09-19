@@ -26,7 +26,7 @@ const store = new Vuex.Store({
     mutations: {
         setUserData(state, params) {
             if (params.hasOwnProperty('user_id') && !state.user[params['user_id']]) {
-                state.user[params['user_id']] = params;
+                state.user = params;
             }
         }
     }

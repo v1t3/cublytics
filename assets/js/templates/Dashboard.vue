@@ -54,6 +54,8 @@ export default {
                     ) {
                         this.$store.commit('setUserData', data['data']);
                     }
+
+                    // console.log('user', this.$store.state.user);
                 })
                 .catch((error) => {
                     console.error('catch error: ', error);
