@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import vuelidate from 'vuelidate'
+import Vuex from 'vuex';
+
 import App from './views/App'
 import Home from './views/Home'
 import Statistic from './views/Statistic'
@@ -12,9 +14,17 @@ require('./bootstrap');
 
 Vue.use(VueRouter);
 Vue.use(vuelidate);
+Vue.use(Vuex);
 
 //css
 require('../sass/app.scss');
+
+const store = new Vuex.Store({
+    state: {
+    },
+    mutations: {
+    }
+});
 
 let index = '/dashboard';
 
@@ -55,4 +65,5 @@ const app = new Vue({
     },
     router,
     vuelidate,
+    store: store,
 });
