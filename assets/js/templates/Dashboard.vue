@@ -18,7 +18,7 @@
                 </ul>
             </div>
             <div class="main-block">
-                <router-view></router-view>
+                <router-view v-if="show"></router-view>
             </div>
         </div>
     </div>
@@ -30,13 +30,17 @@ import axios from "axios";
 export default {
     name: "Dashboard",
     data() {
-        return {};
+        return {
+            show: false
+        };
     },
     beforeMount() {
         this.getUserData();
     },
     methods: {
         getUserData: function () {
+            this.show = false;
+
             axios({
                 method: 'post',
                 url: '/api/user/get_data',
@@ -53,6 +57,7 @@ export default {
                         'success' === data['result']
                     ) {
                         this.$store.commit('setUserData', data['data']);
+                        this.show = true;
                     }
 
                     // console.log('user', this.$store.state.user);
