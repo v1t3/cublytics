@@ -27,8 +27,6 @@
 </template>
 
 <script>
-import axios from "axios";
-import ChannelPerformance from "../components/channel-performance";
 import Channel_stat from "../components/channel_stat/channel_stat";
 import Loader_gif from "../components/loader_gif";
 
@@ -36,8 +34,7 @@ export default {
     name: "Statistic",
     components: {
         Loader_gif,
-        Channel_stat,
-        ChannelPerformance,
+        Channel_stat
     },
     data() {
         return {
