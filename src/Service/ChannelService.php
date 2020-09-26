@@ -131,6 +131,7 @@ class ChannelService
         if ($userChannels) {
             foreach ($userChannels as $userChannel) {
                 $channels[] = [
+                    'channel_id'      => $userChannel->getChannelId(),
                     'avatar'          => $userChannel->getAvatar(),
                     'name'            => $userChannel->getChannelPermalink(),
                     'title'           => $userChannel->getTitle(),
