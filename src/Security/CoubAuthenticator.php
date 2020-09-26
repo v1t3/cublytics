@@ -159,15 +159,11 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      * @param Request                      $request
      * @param AuthenticationException|null $authException
      *
-     * @return JsonResponse
+     * @return RedirectResponse
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        $data = [
-            'message' => 'Требуется аутентификация'
-        ];
-
-        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
+        return new RedirectResponse($this->urlGenerator->generate('main'));
     }
 
     /**

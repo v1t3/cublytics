@@ -28,7 +28,22 @@ const store = new Vuex.Store({
             if (params.hasOwnProperty('user_id') && !state.user[params['user_id']]) {
                 state.user = params;
             }
-        }
+        },
+
+        updateChannel(state, params) {
+            if (
+                params.hasOwnProperty('channel')
+                && params.hasOwnProperty('type')
+                && params.hasOwnProperty('new_val')
+                && state.user.channels
+            ) {
+                for (let i = 0, len = state.user.channels.length; i < len; i++) {
+                    if (params['channel'] === state.user.channels[i]['name']) {
+                        state.user.channels[i][params['type']] = params['new_val'];
+                    }
+                }
+            }
+        },
     }
 });
 

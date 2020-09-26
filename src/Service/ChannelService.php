@@ -11,6 +11,7 @@ use App\Entity\Coub;
 use App\Entity\CoubStat;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
 
@@ -97,13 +98,61 @@ class ChannelService
     }
 
     /**
-     * @param $channels
+     * @param Request $request
      *
-     * @return bool
+     * @return array
+     * @throws \Exception
      */
-    public function updateUserChannels($channels)
+    public function updateChannelSettings(Request $request)
     {
-        return false;
+        $result = null;
+
+        $channelPermalink = (string)$request->request->get('channel_permalink');
+        $type = (string)$request->request->get('type');
+        $newVal = $request->request->get('new_val');
+
+        if (
+            '' === $channelPermalink
+            || '' === $type
+            || null === $newVal
+        ) {
+            throw new \Exception('Не заданы все необходимые параметры');
+        }
+
+        $newVal = ($newVal === 'true');
+
+        /**
+         * @var $channel Channel
+         */
+        $channel = $this->entityManager
+            ->getRepository(Channel::class)
+            ->findOneBy(['channel_permalink' => $channelPermalink]);
+
+        if (!$channel) {
+            throw new \Exception('Канал не найден');
+        }
+
+        if ('is_active' === $type) {
+            $channel->setIsActive((bool)$newVal);
+
+            $this->entityManager->persist($channel);
+            $this->entityManager->flush();
+
+            $result = $channel->getIsActive();
+        }
+        if ('is_watching' === $type) {
+            $channel->setIsWatching((bool)$newVal);
+
+            $this->entityManager->persist($channel);
+            $this->entityManager->flush();
+
+            $result = $channel->getIsWatching();
+        }
+
+        return [
+            'success' => $newVal === $result,
+            $type     => $result
+        ];
     }
 
     /**
@@ -124,6 +173,10 @@ class ChannelService
 
         $userId = $user->getUserId();
 
+        /**
+         * @var $userChannels Channel
+         * @var $userChannel  Channel
+         */
         $userChannels = $this->entityManager
             ->getRepository(Channel::class)
             ->findBy(['user_id' => $userId], ['is_current' => 'DESC']);

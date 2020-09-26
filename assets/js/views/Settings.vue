@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="user-settings">
         <h1>Настройки</h1>
 
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -20,7 +20,6 @@
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <div class="settings-main">
-                    <div>Аватар</div>
                     <div v-if="user.username"><span>Имя: </span><span>{{ user.username }}</span></div>
                     <div v-if="user.email"><span>Email: </span><span>{{ user.email }}</span></div>
                 </div>
@@ -53,7 +52,6 @@
                             Минимальная длина: {{ $v.user.password.$params.minLength.min }} символов
                         </p>
                     </div>
-
                     <div>
                         <label>
                             <span>Повторите пароль:</span>
@@ -76,14 +74,26 @@
                     </p>
                 </form>
             </div>
+
             <div class="tab-pane fade" id="channels" role="tabpanel" aria-labelledby="channels-tab">
                 Каналы:
-                <select v-model="user.channel_active.name" @change="getActive()">
-                    <option v-for="channel in user.channels" :key="channel.name">{{ channel.name }}</option>
-                </select>
-                <div v-if="user.channels">
-                    <label>Активен: <input type="checkbox" v-bind:checked="user.channel_active.isActive"></label>
-                    <label>Наблюдается: <input type="checkbox" v-bind:checked="user.channel_active.isWatching"></label>
+
+                <div class="channels-list" v-if="user.channels"  v-for="channel in user.channels" :key="channel.name">
+                    {{ channel.name }}
+                    <br>
+                    <label>
+                        Активен:
+                        <input type="checkbox"
+                               v-model="channel.checkboxActive"
+                               @change="updateChannel(channel.name, 'is_active', channel.checkboxActive)">
+                    </label>
+                    <br>
+                    <label>
+                        Наблюдается:
+                        <input type="checkbox"
+                               v-model="channel.checkboxWatching"
+                               @change="updateChannel(channel.name, 'is_watching', channel.checkboxWatching)">
+                    </label>
                 </div>
             </div>
         </div>
@@ -107,12 +117,9 @@ export default {
                 avatar: {
                     link: '',
                 },
-                channel_active: {
-                    name: '',
-                    isActive: false,
-                    isWacthing: false,
-                },
-                channels: {}
+                channels: {},
+                checkboxActive: '',
+                checkboxWatching: '',
             },
             response: {
                 result: '',
@@ -143,33 +150,10 @@ export default {
     },
     methods: {
         getSettings: function () {
-            //todo Сделать общее получение информации и хранение в сторе
-
-            axios({
-                method: 'post',
-                url: '/api/user/get_settings',
-                data: {}
-            })
-                .then((response) => {
-                    let data = response['data'];
-
-                    console.log('data', data);
-
-                    if (data) {
-                        if ('success' === data['result']) {
-                            this.user.username = data['data']['username'];
-                            this.user.email = data['data']['email'];
-                        }
-                    } else {
-                        console.log('data error', error);
-                    }
-                })
-                .catch((error) => {
-                    console.log('catch error', error);
-
-                    this.error = error;
-                });
-
+            if (undefined !== this.$store.state.user) {
+                this.user.username = this.$store.state.user.username;
+                this.user.email = this.$store.state.user.email || 'Email не задан';
+            }
         },
         updateSettings: function (e) {
             e.preventDefault();
@@ -202,9 +186,6 @@ export default {
                             this.getSettings();
                         }
                     } else {
-                        // this.error = 'User not found';
-                        console.log('data error', error);
-
                         this.clearData();
                     }
                 })
@@ -218,35 +199,54 @@ export default {
 
         },
         getChannelsList: function () {
+            if (undefined !== this.$store.state.user) {
+                this.user.channels = this.$store.state.user.channels;
+
+                if (this.user.channels.length) {
+                    for (let i = 0, len = this.user.channels.length; i < len; i++) {
+                        this.user.channels[i]['checkboxActive'] = this.user.channels[i]['is_active'];
+                        this.user.channels[i]['checkboxWatching'] = this.user.channels[i]['is_watching'];
+                    }
+                }
+            }
+        },
+        updateChannel: function (channel, type, checkboxVal) {
+            const bodyFormData = new FormData();
+            bodyFormData.set('channel_permalink', channel);
+            bodyFormData.set('type', type);
+            bodyFormData.set('new_val', checkboxVal);
+
             axios({
                 method: 'post',
-                url: '/api/stat/get_channels_list',
-                data: {}
+                url: '/api/channel/update_settings',
+                data: bodyFormData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
             })
                 .then((response) => {
                     let data = response['data'];
 
-                    // console.log('data', data);
+                    // console.log('updateChannel data', data);
 
-                    if (data) {
-                        if ('success' === data['result']) {
-                            this.user.channels = data['channels'];
+                    if (
+                        data &&
+                        'success' === data['result']
+                    ) {
+                        let params = [];
+                        params['channel'] = channel;
+                        params['type'] = type;
+                        params['new_val'] = data['data'][type];
 
-                            this.user.channel_active.name = this.user.channels[0].name;
-                            this.user.channel_active.isActive = this.user.channels[0]['is_active'];
-                            this.user.channel_active.isWatching = this.user.channels[0]['is_watching'];
-                        }
+                        this.$store.commit(
+                            'updateChannel',
+                            params
+                        );
                     }
                 })
                 .catch((error) => {
-                    console.log('catch error', error);
-
-                    this.error = error;
+                    console.error('catch error: ', error);
                 });
-
-        },
-        getActive: function (type = '') {
-            this.user.channel_active = this.user.channels
         },
         clearData: function () {
             this.user = {

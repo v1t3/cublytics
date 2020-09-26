@@ -77,4 +77,57 @@ class ChannelController extends AbstractController
 
         return $response;
     }
+
+    /**
+     * @Route("/api/channel/update_settings", name="update_channel_settings", methods={"POST"})
+     *
+     * @param Request        $request
+     * @param ChannelService $channelService
+     *
+     * @return JsonResponse
+     */
+    public function updateChannelSettings(Request $request, ChannelService $channelService)
+    {
+        try {
+            $type = (string)$request->request->get('type');
+
+            $data = $channelService->updateChannelSettings($request);
+
+            if (
+                array_key_exists('success', $data)
+                && true === $data['success']
+            ) {
+                $result = [
+                    'result' => 'success',
+                    'data'   => [
+                        $type => $data[$type]
+                    ],
+                ];
+            } else {
+                $result = [
+                    'result' => 'error',
+                    'error'  => [
+                        'message' => 'Данные не обновлены',
+                    ]
+                ];
+            }
+        } catch (\Exception $exception) {
+            $result = [
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
+
+        $response = new JsonResponse();
+        $response->setData($result);
+
+        return $response;
+    }
 }

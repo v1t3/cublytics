@@ -57,6 +57,7 @@ class UserController extends AbstractController
                 'data'   => [
                     'user_id'  => $user->getUserId(),
                     'username' => $user->getUsername(),
+                    'email'    => $user->getEmail(),
                     'roles'    => $user->getRoles(),
                     'token'    => $user->getToken(),
                     'channels' => $channels,
