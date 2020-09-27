@@ -126,7 +126,9 @@ class CoubController extends AbstractController
 
             $result = [
                 'result'  => 'error',
-                'message' => $exception,
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
             ];
 
             $response = new JsonResponse();
