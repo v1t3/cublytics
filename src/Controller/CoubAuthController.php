@@ -6,6 +6,7 @@ namespace App\Controller;
 
 
 use App\AppRegistry;
+use App\Entity\Log;
 use App\Service\ChannelService;
 use App\Service\CoubAuthService;
 use App\Service\UserService;
@@ -48,28 +49,42 @@ class CoubAuthController extends AbstractController
      * @param Request $request
      *
      * @return RedirectResponse|Response
+     * @throws Exception
      */
     public function loginCoub(Request $request)
     {
-        if ('dev' === $_ENV['APP_ENV']) {
-            return $this->redirectToRoute('coub_callback');
-        }
+        try {
+            if ('dev' === $_ENV['APP_ENV']) {
+                return $this->redirectToRoute('coub_callback');
+            }
+            if ($this->getUser()) {
+                return $this->redirectToRoute('main');
+            }
 
-        if ($this->getUser()) {
+            $reg = (string)$request->query->get('registration');
+
+            if (
+                'success' !== $reg
+                && '' !== (string)$_ENV['COUB_KEY']
+            ) {
+                $url = AppRegistry::REQUEST_AUTHORIZE_APP
+                    . '?response_type=code'
+                    . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
+                    . '&client_id=' . $_ENV['COUB_KEY'];
+
+                return $this->redirect($url);
+            }
+        } catch (Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('app_login_coub');
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
             return $this->redirectToRoute('main');
-        }
-
-        $reg = (string)$request->query->get('registration');
-        if (
-            'success' !== $reg
-            && '' !== (string)$_ENV['COUB_KEY']
-        ) {
-            $url = AppRegistry::REQUEST_AUTHORIZE_APP
-                . '?response_type=code'
-                . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
-                . '&client_id=' . $_ENV['COUB_KEY'];
-
-            return $this->redirect($url);
         }
 
         return $this->redirectToRoute('main');
@@ -99,35 +114,55 @@ class CoubAuthController extends AbstractController
         $userSaved = false;
         $code = (string)$request->query->get('code');
 
-        if ('' !== $code && 'dev' !== $_ENV['APP_ENV']) {
-            $tokenData = $coubAuthService->getUserToken($code);
+        try {
+            if ('' !== $code && 'dev' !== $_ENV['APP_ENV']) {
+                $tokenData = $coubAuthService->getUserToken($code);
 
-            if (isset($tokenData['access_token'])) {
-                $userInfo = $userService->getInfo($tokenData['access_token']);
+                if (isset($tokenData['access_token'])) {
+                    $userInfo = $userService->getInfo($tokenData['access_token']);
+                }
+
+                $userSaved = $userService->saveUser($tokenData, $userInfo);
             }
 
-            $userSaved = $userService->saveUser($tokenData, $userInfo);
-        }
+            if ('dev' === $_ENV['APP_ENV']) {
+                $userSaved = true;
+                $tokenData['access_token'] = $_ENV['COUB_TEST_TOKEN'];
+            }
 
-        if ('dev' === $_ENV['APP_ENV']) {
-            $userSaved = true;
-            $tokenData['access_token'] = $_ENV['COUB_TEST_TOKEN'];
-        }
+            if (!$userSaved) {
+                throw new Exception(
+                    'Ошибка при регистрации пользователя'
+                );
+            }
 
-        if (!$userSaved) {
-            throw new Exception(
-                'Ошибка при регистрации пользователя'
+            if (isset($userInfo['channels'])) {
+                $channelClient->saveUserChannelsList($userInfo);
+            }
+
+            $request->getSession()->set(
+                Security::LAST_USERNAME,
+                $tokenData['access_token']
+            );
+        } catch (Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('coub_callback');
+            $logger->setRegCode($code);
+            $logger->setToken($tokenData);
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute(
+                'app_login_coub',
+                [
+                    'registration' => false
+                ]
             );
         }
-
-        if (isset($userInfo['channels'])) {
-            $channelClient->saveUserChannelsList($userInfo);
-        }
-
-        $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $tokenData['access_token']
-        );
 
         return $this->redirectToRoute(
             'app_login_coub',

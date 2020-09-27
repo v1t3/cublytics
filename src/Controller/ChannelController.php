@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Log;
 use App\Service\ChannelService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,12 +28,12 @@ class ChannelController extends AbstractController
      * @return JsonResponse
      * @throws \Exception
      */
-    public static function getChannelStatistic(Request $request, ChannelService $channelService)
+    public function getChannelStatistic(Request $request, ChannelService $channelService)
     {
-        try {
-            $channelName = (string)$request->request->get('channel_name');
-            $statType = (string)$request->request->get('statistic_type') ?: 'month';
+        $channelName = (string)$request->request->get('channel_name');
+        $statType = (string)$request->request->get('statistic_type') ?: 'month';
 
+        try {
             //todo проверка по времени
 
             $data = $channelService->getChannelStatistic($channelName, $statType);
@@ -61,6 +62,17 @@ class ChannelController extends AbstractController
                 ];
             }
         } catch (\Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('get_channel_stat');
+            $logger->setChannel($channelName);
+            $logger->setStatisticType($statType);
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
             $result = [
                 'result'  => 'error',
                 'message' => $exception,
@@ -85,6 +97,7 @@ class ChannelController extends AbstractController
      * @param ChannelService $channelService
      *
      * @return JsonResponse
+     * @throws \Exception
      */
     public function updateChannelSettings(Request $request, ChannelService $channelService)
     {
@@ -112,6 +125,15 @@ class ChannelController extends AbstractController
                 ];
             }
         } catch (\Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('update_channel_settings');
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
             $result = [
                 'result' => 'error',
                 'error'  => [
