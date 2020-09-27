@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Log;
 use App\Entity\User;
 use App\Service\ChannelService;
 use App\Service\UserService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,7 +42,7 @@ class UserController extends AbstractController
      * @param ChannelService $channelService
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function getData(ChannelService $channelService)
     {
@@ -48,7 +51,34 @@ class UserController extends AbstractController
          * @var $user User
          */
         $user = $this->getUser();
-        $channels = $channelService->getChannelsList();
+
+        try {
+            $channels = $channelService->getChannelsList();
+        } catch (Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('get_user_data');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
 
         $response = new JsonResponse();
         $response->setData(
@@ -75,10 +105,39 @@ class UserController extends AbstractController
      * @param UserService $userService
      *
      * @return JsonResponse
+     * @throws Exception
      */
     public function updateSettings(Request $request, UserService $userService)
     {
-        $data = $userService->updateSettings($request);
+        try {
+            $data = $userService->updateSettings($request);
+        } catch (Exception $exception) {
+            $user = $this->getUser();
+
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('update_user_settings');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
 
         $response = new JsonResponse();
         $response->setData($data);
@@ -92,24 +151,50 @@ class UserController extends AbstractController
      * @param Request $request
      *
      * @return JsonResponse
+     * @throws Exception
      */
     public function getUserName(Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        $field = (string)$request->request->get('field');
         $user = $this->getUser();
 
-        if ('' !== $field && '' !== $user->getUsername()) {
+        try {
+            $field = (string)$request->request->get('field');
+
+            if ('' === $field && '' === (string)$user->getUsername()) {
+                throw new Exception('Не задано поле field или имя пользователя');
+            }
+
             $data = [
-                'result'  => 'success',
-                'message' => $user->getUsername()
+                'result' => 'success',
+                'data'   => [
+                    'username' => $user->getUsername()
+                ]
             ];
-        } else {
-            $data = [
-                'result'  => 'error',
-                'message' => ''
+        } catch (Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('get_user_username');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
             ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
         }
 
         $response = new JsonResponse();
@@ -124,17 +209,21 @@ class UserController extends AbstractController
      * @param UserService $userService
      *
      * @return JsonResponse
+     * @throws Exception
      */
     public function getSettings(UserService $userService)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
         /**
          * @var $user User
          */
         $user = $this->getUser();
 
-        if ($user) {
+        try {
+            if (!$user) {
+                throw new Exception('Пользователь не найден');
+            }
+
             $data = $userService->getSettings($user);
 
             $result = [
@@ -142,11 +231,30 @@ class UserController extends AbstractController
                 'message' => '',
                 'data'    => $data
             ];
-        } else {
+        } catch (Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('get_user_username');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
             $result = [
-                'result'  => 'error',
-                'message' => 'Пользователь не найден'
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
             ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
         }
 
         $response = new JsonResponse();

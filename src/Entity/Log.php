@@ -147,9 +147,9 @@ class Log
     }
 
     /**
-     * @return string|null
+     * @return bool|null
      */
-    public function getStatus(): ?string
+    public function getStatus(): ?bool
     {
         return $this->status;
     }
