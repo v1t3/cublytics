@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col-md-9 d-flex flex-wrap">
                 <div class="channel-home col-md-3" v-for="channel in user.channels">
-                    <img :src="channel.avatar.replace('%{version}', 'profile_pic_big')"
+                    <img :src="channel.avatar"
                          :alt="channel.title">
                     <a :href="'https://coub.com/' + channel.name"
                        target="_blank"

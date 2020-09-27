@@ -77,6 +77,11 @@ class ChannelService
 
             foreach ($channels as $channel) {
                 $channelStored = $repo->findOneByChannelId($channel['id']);
+                $avatar = preg_replace(
+                    '%{version}',
+                    'profile_pic_big',
+                    $channel['avatar_versions']['template']
+                );
 
                 if (!$channelStored) {
                     $ch = new Channel();
@@ -92,8 +97,7 @@ class ChannelService
                     $ch->setFollowersCount($channel['followers_count']);
                     $ch->setRecoubsCount($channel['recoubs_count']);
                     $ch->setStoriesCount($channel['stories_count']);
-                    //todo Скачивание изображения
-                    $ch->setAvatar($channel['avatar_versions']['template']);
+                    $ch->setAvatar($avatar);
 
                     $this->entityManager->persist($ch);
                     $this->entityManager->flush();
@@ -132,7 +136,7 @@ class ChannelService
 
         /**
          * @var $channelRepo ChannelRepository
-         * @var $channel Channel
+         * @var $channel     Channel
          */
         $channelRepo = $this->entityManager->getRepository(Channel::class);
         $channel = $channelRepo->findOneBy(['channel_permalink' => $channelPermalink]);
@@ -184,8 +188,8 @@ class ChannelService
 
         /**
          * @var $userChannelsRepo ChannelRepository
-         * @var $userChannels Channel
-         * @var $userChannel  Channel
+         * @var $userChannels     Channel
+         * @var $userChannel      Channel
          */
         $userChannelsRepo = $this->entityManager->getRepository(Channel::class);
         $userChannels = $userChannelsRepo->findBy(
