@@ -20,6 +20,49 @@ class ChannelController extends AbstractController
     }
 
     /**
+     * @Route("/api/coub/get_channels_list", name="get_channels_list")
+     *
+     * @param ChannelService $channelService
+     *
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function getChannelsList(ChannelService $channelService)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        try {
+            $result = $channelService->getChannelsList();
+        } catch (\Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('get_channels_list');
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
+                'result'  => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
+
+        $response = new JsonResponse();
+        $response->setData($result);
+
+        return $response;
+    }
+
+    /**
      * @Route("/api/channel/get_channel_stat", name="get_channel_stat", methods={"POST"})
      *
      * @param Request        $request
@@ -75,7 +118,9 @@ class ChannelController extends AbstractController
 
             $result = [
                 'result'  => 'error',
-                'message' => $exception,
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
             ];
 
             $response = new JsonResponse();
