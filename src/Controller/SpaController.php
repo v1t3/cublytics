@@ -17,9 +17,11 @@ class SpaController extends AbstractController
     /**
      * @Route("/dashboard/{page}", name="spa")
      *
+     * @param string $page
+     *
      * @return Response
      */
-    public function index()
+    public function index($page = '')
     {
         return $this->render('spa/index.html.twig', [
             'controller_name' => 'SpaController',
