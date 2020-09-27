@@ -3,23 +3,21 @@
 {% block title %}Добро пожаловать!{% endblock %}
 
 {% block body %}
-    <style>
-        .example-wrapper {
-            margin: 1em auto;
-            max-width: 800px;
-            width: 95%;
-            font: 18px/1.5 sans-serif;
-        }
+    {{ include('components/header_main.html.twig') }}
 
-        .example-wrapper code {
-            background: #F5F5F5;
-            padding: 2px 6px;
-        }
-    </style>
-    {% block header %}{% endblock %}
-
-    <div class="main-block">
-            <h1>Добро пожаловать!</h1>
-
+    <div class="main-page">
+        <div class="container">
+            <div class="welcome">
+                <div class="welcome-text">
+                    <h1>Добро пожаловать</h1>
+                    <p>на сервис отслеживания статистики вашего coub-канала</p>
+                </div>
+                <div class="welcome-btn">
+                    <a href="{{ path('app_login_coub') }}">
+                        Войти с помощью COUB
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
