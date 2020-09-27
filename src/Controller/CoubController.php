@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Log;
 use App\Service\CoubService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,16 +39,27 @@ class CoubController extends AbstractController
     public function getList(Request $request, CoubService $coubService)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
         try {
             $coubs = $coubService->getCoubsList($request);
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
+            $channelId = (int)$request->request->get('channel_id');
+
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('get_coub_list');
+            $logger->setChannelId($channelId);
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
             $response = new JsonResponse();
             $response->setData(
                 [
                     'result' => 'error',
                     'error'  => [
-                        'message' => $e->getMessage(),
+                        'message' => $exception->getMessage(),
                     ]
                 ]
             );
@@ -75,13 +87,14 @@ class CoubController extends AbstractController
      * @param CoubService $coubService
      *
      * @return JsonResponse
+     * @throws \Exception
      */
-    public static function getCoubStatistic(Request $request, CoubService $coubService)
+    public function getCoubStatistic(Request $request, CoubService $coubService)
     {
-        try {
-            $coubId = (string)$request->request->get('coub_id');
-            $statType = (string)$request->request->get('statistic_type') ?: 'month';
+        $coubId = (string)$request->request->get('coub_id');
+        $statType = (string)$request->request->get('statistic_type') ?: 'month';
 
+        try {
             //todo проверка по времени
 
             $data = $coubService->getCoubStatistic($coubId, $statType);
@@ -100,6 +113,17 @@ class CoubController extends AbstractController
                 ];
             }
         } catch (\Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new \DateTime('now'));
+            $logger->setType('get_coub_stat');
+            $logger->setCoubId((int)$coubId);
+            $logger->setStatisticType($statType);
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
             $result = [
                 'result'  => 'error',
                 'message' => $exception,

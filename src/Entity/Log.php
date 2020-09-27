@@ -59,6 +59,11 @@ class Log
     private $channel;
 
     /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $channel_id;
+
+    /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $coub;
@@ -77,6 +82,11 @@ class Log
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $date_update;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $coub_id;
 
     /**
      * Log constructor.
@@ -241,6 +251,26 @@ class Log
     }
 
     /**
+     * @return int|null
+     */
+    public function getChannelId(): ?int
+    {
+        return $this->channel_id;
+    }
+
+    /**
+     * @param int|null $channel_id
+     *
+     * @return $this
+     */
+    public function setChannelId(?int $channel_id): self
+    {
+        $this->channel_id = $channel_id;
+
+        return $this;
+    }
+
+    /**
      * @return string|null
      */
     public function getCoub(): ?string
@@ -310,6 +340,18 @@ class Log
     public function setDateUpdate(): self
     {
         $this->date_update = new \DateTime();
+
+        return $this;
+    }
+
+    public function getCoubId(): ?int
+    {
+        return $this->coub_id;
+    }
+
+    public function setCoubId(?int $coub_id): self
+    {
+        $this->coub_id = $coub_id;
 
         return $this;
     }
