@@ -285,7 +285,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updated_at;
     }
@@ -323,7 +323,7 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
-    public function getDateCreate(): ?\DateTimeInterface
+    public function getDateCreate(): ?DateTimeInterface
     {
         return $this->date_create;
     }
@@ -331,7 +331,7 @@ class User implements UserInterface
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new \DateTime();
+            $this->date_create = new DateTime();
 
             $this->setDateUpdate();
         }
@@ -339,14 +339,14 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getDateUpdate(): ?\DateTimeInterface
+    public function getDateUpdate(): ?DateTimeInterface
     {
         return $this->date_update;
     }
 
     public function setDateUpdate(): self
     {
-        $this->date_update = new \DateTime();
+        $this->date_update = new DateTime();
 
         return $this;
     }

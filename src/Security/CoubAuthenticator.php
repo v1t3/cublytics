@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Security;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -96,9 +98,11 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
             return null;
         }
 
-        $user = $this->entityManager
-            ->getRepository(User::class)
-            ->findOneBy(['token' => $credentials['access_token']]);
+        /**
+         * @var $userRepo UserRepository
+         */
+        $userRepo = $this->entityManager->getRepository(User::class);
+        $user = $userRepo->findOneBy(['token' => $credentials['access_token']]);
 
         if (!$user) {
             return null;

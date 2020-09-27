@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\LogRepository;
+use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 
 /**
  * @ORM\Entity(repositoryClass=LogRepository::class)
@@ -91,7 +93,7 @@ class Log
     /**
      * Log constructor.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct()
     {
@@ -312,12 +314,12 @@ class Log
 
     /**
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new \DateTime();
+            $this->date_create = new DateTime();
 
             $this->setDateUpdate();
         }
@@ -335,11 +337,11 @@ class Log
 
     /**
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function setDateUpdate(): self
     {
-        $this->date_update = new \DateTime();
+        $this->date_update = new DateTime();
 
         return $this;
     }

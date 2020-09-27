@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-
 namespace App\Service;
-
 
 use App\AppRegistry;
 use App\Entity\Channel;
@@ -19,7 +17,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
-
 
 /**
  * Class ChannelService

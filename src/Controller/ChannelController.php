@@ -1,10 +1,13 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
 use App\Entity\Log;
 use App\Service\ChannelService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +28,7 @@ class ChannelController extends AbstractController
      * @param ChannelService $channelService
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function getChannelsList(ChannelService $channelService)
     {
@@ -33,10 +36,10 @@ class ChannelController extends AbstractController
 
         try {
             $result = $channelService->getChannelsList();
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('get_channels_list');
             $logger->setStatus(false);
             $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
@@ -69,7 +72,7 @@ class ChannelController extends AbstractController
      * @param ChannelService $channelService
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function getChannelStatistic(Request $request, ChannelService $channelService)
     {
@@ -104,10 +107,10 @@ class ChannelController extends AbstractController
                     'data'    => $data
                 ];
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('get_channel_stat');
             $logger->setChannel($channelName);
             $logger->setStatisticType($statType);
@@ -142,7 +145,7 @@ class ChannelController extends AbstractController
      * @param ChannelService $channelService
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function updateChannelSettings(Request $request, ChannelService $channelService)
     {
@@ -169,10 +172,10 @@ class ChannelController extends AbstractController
                     ]
                 ];
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('update_channel_settings');
             $logger->setStatus(false);
             $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());

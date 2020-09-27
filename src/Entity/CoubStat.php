@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CoubStatRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -208,7 +210,7 @@ class CoubStat
         return $this;
     }
 
-    public function getDateCreate(): ?\DateTimeInterface
+    public function getDateCreate(): ?DateTimeInterface
     {
         return $this->date_create;
     }
@@ -216,20 +218,20 @@ class CoubStat
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new \DateTime();
+            $this->date_create = new DateTime();
         }
 
         return $this;
     }
 
-    public function getDateUpdate(): ?\DateTimeInterface
+    public function getDateUpdate(): ?DateTimeInterface
     {
         return $this->date_update;
     }
 
     public function setDateUpdate(): self
     {
-        $this->date_update = new \DateTime();
+        $this->date_update = new DateTime();
 
         return $this;
     }

@@ -3,7 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\CoubRepository;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 
 /**
  * @ORM\Entity(repositoryClass=CoubRepository::class)
@@ -128,7 +131,7 @@ class Coub
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->created_at;
     }
@@ -137,19 +140,19 @@ class Coub
     {
         try {
             if ('' !== $created_at) {
-                $dateObj = new \DateTime($created_at);
-                $this->created_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+                $dateObj = new DateTime($created_at);
+                $this->created_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
 
                 $this->setDateUpdate();
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             trigger_error($exception);
         }
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updated_at;
     }
@@ -158,24 +161,24 @@ class Coub
     {
         try {
             if ('' !== $updated_at) {
-                $dateObj = new \DateTime($updated_at);
-                $this->updated_at = new \DateTime($dateObj->format('Y-m-d H:i:s'));
+                $dateObj = new DateTime($updated_at);
+                $this->updated_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
 
                 $this->setDateUpdate();
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             trigger_error($exception);
         }
 
         return $this;
     }
 
-    public function getDeletedAt(): ?\DateTimeInterface
+    public function getDeletedAt(): ?DateTimeInterface
     {
         return $this->deleted_at;
     }
 
-    public function setDeletedAt(?\DateTimeInterface $deleted_at): self
+    public function setDeletedAt(?DateTimeInterface $deleted_at): self
     {
         $this->deleted_at = $deleted_at;
 
@@ -184,7 +187,7 @@ class Coub
         return $this;
     }
 
-    public function getDateCreate(): ?\DateTimeInterface
+    public function getDateCreate(): ?DateTimeInterface
     {
         return $this->date_create;
     }
@@ -192,7 +195,7 @@ class Coub
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new \DateTime();
+            $this->date_create = new DateTime();
 
             $this->setDateUpdate();
         }
@@ -200,14 +203,14 @@ class Coub
         return $this;
     }
 
-    public function getDateUpdate(): ?\DateTimeInterface
+    public function getDateUpdate(): ?DateTimeInterface
     {
         return $this->date_update;
     }
 
     public function setDateUpdate(): self
     {
-        $this->date_update = new \DateTime();
+        $this->date_update = new DateTime();
 
         return $this;
     }

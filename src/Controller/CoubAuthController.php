@@ -1,15 +1,14 @@
 <?php
 declare(strict_types=1);
 
-
 namespace App\Controller;
-
 
 use App\AppRegistry;
 use App\Entity\Log;
 use App\Service\ChannelService;
 use App\Service\CoubAuthService;
 use App\Service\UserService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -19,7 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
-
 
 /**
  * Class CoubAuthController
@@ -77,7 +75,7 @@ class CoubAuthController extends AbstractController
         } catch (Exception $exception) {
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('app_login_coub');
             $logger->setStatus(false);
             $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
@@ -147,7 +145,7 @@ class CoubAuthController extends AbstractController
         } catch (Exception $exception) {
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('coub_callback');
             $logger->setRegCode($code);
             $logger->setToken($tokenData);

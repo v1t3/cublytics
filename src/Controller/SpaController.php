@@ -1,20 +1,25 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class SpaController
+ *
+ * @package App\Controller
+ */
 class SpaController extends AbstractController
 {
     /**
      * @Route("/dashboard/{page}", name="spa")
      *
-     * @param string $page
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
-    public function index($page = '')
+    public function index()
     {
         return $this->render('spa/index.html.twig', [
             'controller_name' => 'SpaController',

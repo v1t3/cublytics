@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
@@ -12,10 +13,22 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 
+/**
+ * Class RegistrationController
+ *
+ * @package App\Controller
+ */
 class RegistrationController extends AbstractController
 {
     /**
      * @Route("/register", name="app_register")
+     *
+     * @param Request                      $request
+     * @param UserPasswordEncoderInterface $passwordEncoder
+     * @param GuardAuthenticatorHandler    $guardHandler
+     * @param LoginFormAuthenticator       $authenticator
+     *
+     * @return Response
      */
     public function register(
         Request $request,

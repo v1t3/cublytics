@@ -5,7 +5,9 @@ namespace App\Service;
 
 use App\AppRegistry;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
@@ -65,7 +67,7 @@ class UserService
             }
 
             curl_close($ch);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             trigger_error($e);
         }
 
@@ -85,9 +87,11 @@ class UserService
     public function saveUser($tokenData, $userData)
     {
         if (isset($userData['id'])) {
-            $userAccount = $this->entityManager
-                ->getRepository('App:User')
-                ->findOneByUserId($userData['id']);
+            /**
+             * @var $userAccountRepo UserRepository
+             */
+            $userAccountRepo = $this->entityManager->getRepository('App:User');
+            $userAccount = $userAccountRepo->findOneByUserId($userData['id']);
 
             if (!$userAccount) {
                 $user = new User();
@@ -126,11 +130,9 @@ class UserService
         $result = [];
 
         if ($user) {
-            $userId = $user->getUserId();
-
             $result = [
                 'username' => $user->getUsername(),
-                'email' => $user->getEmail(),
+                'email'    => $user->getEmail(),
             ];
         }
 
@@ -149,8 +151,10 @@ class UserService
 
         if ('' === $email || '' === $password) {
             return [
-                'result'  => 'error',
-                'message' => 'email или пароль не заполнены'
+                'result' => 'error',
+                'error'  => [
+                    'message' => 'email или пароль не заполнены'
+                ]
             ];
         }
 

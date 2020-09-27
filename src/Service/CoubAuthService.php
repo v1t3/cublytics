@@ -5,7 +5,9 @@ namespace App\Service;
 
 use App\AppRegistry;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class CoubAuthService
@@ -40,8 +42,8 @@ class CoubAuthService
      * @param string $code
      *
      * @return array|bool|float|int|object|string|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \Exception
+     * @throws GuzzleException
+     * @throws Exception
      */
     public function getUserToken(string $code)
     {
@@ -52,7 +54,7 @@ class CoubAuthService
             && '' === (string)$_ENV['COUB_SECRET']
             && '' === $code
         ) {
-            throw new \Exception('env or code empty');
+            throw new Exception('Не заданы поля env or code');
         }
 
         $response = $this->client->request(
@@ -72,7 +74,7 @@ class CoubAuthService
         if ($response->getStatusCode() === 200) {
             try {
                 $responseData = \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 return [
                     'success' => false,
                     'error'   => [
@@ -84,13 +86,13 @@ class CoubAuthService
 
             if (!isset($responseData['access_token'])) {
                 if (isset($tokenData['error'])) {
-                    throw new \Exception(
+                    throw new Exception(
                         $responseData['error'],
                         $responseData['error_description']
                     );
                 }
 
-                throw new \Exception(
+                throw new Exception(
                     'Неизвестный ответ от сервиса'
                 );
             }

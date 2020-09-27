@@ -7,15 +7,22 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Entity\Channel;
-use App\Entity\Coub;
+use App\Repository\ChannelRepository;
 use App\Service\ChannelService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use function date;
+use function md5;
+use function microtime;
+use function number_format;
 
 /**
  * Class CoubUpdateCommand
@@ -111,15 +118,15 @@ class CoubUpdateCommand extends Command
 
             $output->writeln(
                 [
-                    '[' . \date('Y-m-d H:i:s') . '] Процесс запущен'
+                    '[' . date('Y-m-d H:i:s') . '] Процесс запущен'
                 ],
                 OutputInterface::VERBOSITY_VERBOSE
             );
 
-            $this->lock(self::class . \md5(__DIR__), true);
+            $this->lock(self::class . md5(__DIR__), true);
 
             $output->writeln(
-                '[' . \date('Y-m-d H:i:s') . '] Включена блокировка ' . self::class,
+                '[' . date('Y-m-d H:i:s') . '] Включена блокировка ' . self::class,
                 OutputInterface::VERBOSITY_VERBOSE
             );
 
@@ -128,14 +135,14 @@ class CoubUpdateCommand extends Command
 
             if (!$result) {
                 $output->writeln(
-                    '[' . \date('Y-m-d H:i:s') . '] Данные для сохранения отсутствуют',
+                    '[' . date('Y-m-d H:i:s') . '] Данные для сохранения отсутствуют',
                     OutputInterface::VERBOSITY_VERBOSE
                 );
             }
 
             $output->writeln(
                 [
-                    '[' . \date('Y-m-d H:i:s') . '] Процесс завершен'
+                    '[' . date('Y-m-d H:i:s') . '] Процесс завершен'
                 ],
                 OutputInterface::VERBOSITY_VERBOSE
             );
@@ -143,15 +150,15 @@ class CoubUpdateCommand extends Command
             $this->release();
 
             $output->writeln(
-                '[' . \date('Y-m-d H:i:s') . '] Отключена блокировка ' . self::class,
+                '[' . date('Y-m-d H:i:s') . '] Отключена блокировка ' . self::class,
                 OutputInterface::VERBOSITY_VERBOSE
             );
             $output->writeln(
-                '[' . \date('Y-m-d H:i:s') . '] Время выполнения: '
+                '[' . date('Y-m-d H:i:s') . '] Время выполнения: '
                 . $this->requestTime(true, 2)
             );
-        } catch (\Exception $exception) {
-            throw new \RuntimeException((string)$exception);
+        } catch (Exception $exception) {
+            throw new RuntimeException((string)$exception);
         }
 
         return 0;
@@ -163,12 +170,14 @@ class CoubUpdateCommand extends Command
      * @param string $singleChannel
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     private function process($singleChannel = '')
     {
+        /**
+         * @var $channelRepo ChannelRepository
+         */
         $channelRepo = $this->entityManager->getRepository(Channel::class);
-        $coubRepo = $this->entityManager->getRepository(Coub::class);
 
         if ('' !== (string)$singleChannel) {
             $channels = $channelRepo->findBy(
@@ -190,7 +199,7 @@ class CoubUpdateCommand extends Command
         if (!$channels) {
             $this->output->writeln(
                 [
-                    '[' . \date('Y-m-d H:i:s') . '] Отсутствуют активные каналы для слежения'
+                    '[' . date('Y-m-d H:i:s') . '] Отсутствуют активные каналы для слежения'
                 ],
                 OutputInterface::VERBOSITY_VERBOSE
             );
@@ -205,7 +214,7 @@ class CoubUpdateCommand extends Command
 
                 $this->output->writeln(
                     [
-                        '[' . \date('Y-m-d H:i:s') . '] Обработка канала: ' . $permalink
+                        '[' . date('Y-m-d H:i:s') . '] Обработка канала: ' . $permalink
                     ],
                     OutputInterface::VERBOSITY_VERBOSE
                 );
@@ -218,7 +227,7 @@ class CoubUpdateCommand extends Command
                     if ($saveRes) {
                         $this->output->writeln(
                             [
-                                '[' . \date('Y-m-d H:i:s') . '] Данные канала обновлены'
+                                '[' . date('Y-m-d H:i:s') . '] Данные канала обновлены'
                             ],
                             OutputInterface::VERBOSITY_VERBOSE
                         );
@@ -229,7 +238,7 @@ class CoubUpdateCommand extends Command
                     if ($checkRes) {
                         $this->output->writeln(
                             [
-                                '[' . \date('Y-m-d H:i:s') . '] Помечены удалённые коубы'
+                                '[' . date('Y-m-d H:i:s') . '] Помечены удалённые коубы'
                             ],
                             OutputInterface::VERBOSITY_VERBOSE
                         );
@@ -237,7 +246,7 @@ class CoubUpdateCommand extends Command
                 } else {
                     $this->output->writeln(
                         [
-                            '[' . \date('Y-m-d H:i:s') . '] коубы не найдены'
+                            '[' . date('Y-m-d H:i:s') . '] коубы не найдены'
                         ],
                         OutputInterface::VERBOSITY_VERBOSE
                     );
@@ -259,15 +268,15 @@ class CoubUpdateCommand extends Command
      * @param int|null $decimals
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     private function requestTime(bool $humanize = null, int $decimals = null): string
     {
-        $time = \microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
+        $time = microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
 
         return $humanize
             ? $this->getHumanReadableTime((int)$time)
-            : \number_format($time, $decimals ?? 3);
+            : number_format($time, $decimals ?? 3);
     }
 
     /**
@@ -276,12 +285,12 @@ class CoubUpdateCommand extends Command
      * @param int $time
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     private function getHumanReadableTime(int $time): string
     {
-        $timeFrom = new \DateTime('@0');
-        $timeTo = new \DateTime("@$time");
+        $timeFrom = new DateTime('@0');
+        $timeTo = new DateTime("@$time");
         $days = $timeFrom->diff($timeTo)->format('%a');
         $hours = $timeFrom->diff($timeTo)->format('%h');
         $minutes = $timeFrom->diff($timeTo)->format('%i');

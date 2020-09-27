@@ -1,15 +1,23 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Controller;
 
 use App\Entity\Log;
 use App\Service\CoubService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class CoubController
+ *
+ * @package App\Controller
+ */
 class CoubController extends AbstractController
 {
     /**
@@ -34,19 +42,19 @@ class CoubController extends AbstractController
      * @param CoubService $coubService
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function getList(Request $request, CoubService $coubService)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         try {
             $coubs = $coubService->getCoubsList($request);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $channelId = (int)$request->request->get('channel_id');
 
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('get_coub_list');
             $logger->setChannelId($channelId);
             $logger->setStatus(false);
@@ -87,7 +95,7 @@ class CoubController extends AbstractController
      * @param CoubService $coubService
      *
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function getCoubStatistic(Request $request, CoubService $coubService)
     {
@@ -112,10 +120,10 @@ class CoubController extends AbstractController
                     'data'    => $data
                 ];
             }
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->entityManager->clear();
             $logger = new Log();
-            $logger->setDate(new \DateTime('now'));
+            $logger->setDate(new DateTime('now'));
             $logger->setType('get_coub_stat');
             $logger->setCoubId((int)$coubId);
             $logger->setStatisticType($statType);
