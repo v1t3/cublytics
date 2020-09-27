@@ -10,7 +10,13 @@ use App\Entity\Channel;
 use App\Entity\Coub;
 use App\Entity\CoubStat;
 use App\Entity\User;
+use App\Repository\ChannelRepository;
+use App\Repository\CoubRepository;
+use App\Repository\CoubStatRepository;
+use DateInterval;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
@@ -64,6 +70,9 @@ class ChannelService
         //todo Добавить проверку активности канала
 
         if (!empty($channels)) {
+            /**
+             * @var $repo ChannelRepository
+             */
             $repo = $this->entityManager->getRepository('App:Channel');
 
             foreach ($channels as $channel) {
@@ -101,7 +110,7 @@ class ChannelService
      * @param Request $request
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function updateChannelSettings(Request $request)
     {
@@ -116,20 +125,20 @@ class ChannelService
             || '' === $type
             || null === $newVal
         ) {
-            throw new \Exception('Не заданы все необходимые параметры');
+            throw new Exception('Не заданы все необходимые параметры');
         }
 
         $newVal = ($newVal === 'true');
 
         /**
+         * @var $channelRepo ChannelRepository
          * @var $channel Channel
          */
-        $channel = $this->entityManager
-            ->getRepository(Channel::class)
-            ->findOneBy(['channel_permalink' => $channelPermalink]);
+        $channelRepo = $this->entityManager->getRepository(Channel::class);
+        $channel = $channelRepo->findOneBy(['channel_permalink' => $channelPermalink]);
 
         if (!$channel) {
-            throw new \Exception('Канал не найден');
+            throw new Exception('Канал не найден');
         }
 
         if ('is_active' === $type) {
@@ -157,7 +166,7 @@ class ChannelService
 
     /**
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getChannelsList()
     {
@@ -168,18 +177,25 @@ class ChannelService
         $user = $this->security->getUser();
 
         if (!$user) {
-            throw new \Exception('Пользователь не найден');
+            throw new Exception('Пользователь не найден');
         }
 
         $userId = $user->getUserId();
 
         /**
+         * @var $userChannelsRepo ChannelRepository
          * @var $userChannels Channel
          * @var $userChannel  Channel
          */
-        $userChannels = $this->entityManager
-            ->getRepository(Channel::class)
-            ->findBy(['user_id' => $userId], ['is_current' => 'DESC']);
+        $userChannelsRepo = $this->entityManager->getRepository(Channel::class);
+        $userChannels = $userChannelsRepo->findBy(
+            [
+                'user_id' => $userId
+            ],
+            [
+                'is_current' => 'DESC'
+            ]
+        );
 
         if ($userChannels) {
             foreach ($userChannels as $userChannel) {
@@ -208,27 +224,36 @@ class ChannelService
      * @param string $statType
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getChannelStatistic(string $channelName, string $statType)
     {
         $result = [];
 
         if ('' === $channelName || '' === $statType) {
-            throw new \Exception('Не указано поле channel_name или type');
+            throw new Exception('Не указано поле channel_name или type');
         }
 
-        $channel = $this->entityManager
-            ->getRepository(Channel::class)
-            ->findOneBy(['channel_permalink' => $channelName]);
+        /**
+         * @var $channelRepo ChannelRepository
+         * @var $channel     Channel
+         */
+        $channelRepo = $this->entityManager->getRepository(Channel::class);
+        $channel = $channelRepo->findOneBy(['channel_permalink' => $channelName]);
 
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
-            $coubsStat = $this->entityManager
-                ->getRepository(CoubStat::class)
-                ->findBy(['channel_id' => $channelId]);
+            /**
+             * @var $coubsStatRepo CoubStatRepository
+             * @var $coubsStat     CoubStat
+             */
+            $coubsStatRepo = $this->entityManager->getRepository(CoubStat::class);
+            $coubsStat = $coubsStatRepo->findBy(['channel_id' => $channelId]);
 
             if ($coubsStat) {
+                /**
+                 * @var $coub CoubStat
+                 */
                 foreach ($coubsStat as $coub) {
                     $result[] = [
                         'coub_id'        => $coub->getCoubId(),
@@ -254,14 +279,14 @@ class ChannelService
      * @param string $channelName
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getOriginalCoubs(string $channelName)
     {
         $result = [];
 
         if ('' === $channelName) {
-            throw new \Exception('Не корректно или не заполнено поле channel_name');
+            throw new Exception('Не корректно или не заполнено поле channel_name');
         }
 
         $urlTale = '&per_page=' . AppRegistry::TIMELINE_PER_PAGE . '&order_by=' . AppRegistry::TIMELINE_ORDER_BY;
@@ -269,11 +294,11 @@ class ChannelService
         $data = $this->getInfo(AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
 
         if ('' === (string)$data) {
-            throw new \Exception('Возвращён пустой ответ');
+            throw new Exception('Возвращён пустой ответ');
         }
         // проверим, что вернулся не html
         if (false !== strpos((string)$data, '<!DOCTYPE html>')) {
-            throw new \Exception('Некорректный ответ от сервиса');
+            throw new Exception('Некорректный ответ от сервиса');
         }
 
         $decodeData = json_decode(html_entity_decode($data), true);
@@ -282,7 +307,7 @@ class ChannelService
             !is_array($decodeData)
             || !array_key_exists('total_pages', $decodeData)
         ) {
-            throw new \Exception('Ошибка при получении данных data: ' . json_encode($data));
+            throw new Exception('Ошибка при получении данных data: ' . json_encode($data));
         }
 
         if (array_key_exists('total_pages', $decodeData)) {
@@ -326,7 +351,7 @@ class ChannelService
      * @param $channelName
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function saveOriginalCoubs($data, $channelName)
     {
@@ -334,12 +359,18 @@ class ChannelService
             return false;
         }
 
-        $channel = $this->entityManager
-            ->getRepository(Channel::class)
-            ->findOneBy(['channel_permalink' => $channelName]);
+        /**
+         * @var $channelRepo ChannelRepository
+         * @var $channel     Channel
+         */
+        $channelRepo = $this->entityManager->getRepository(Channel::class);
+        $channel = $channelRepo->findOneBy(['channel_permalink' => $channelName]);
 
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
+            /**
+             * @var $coubRepo CoubRepository
+             */
             $coubRepo = $this->entityManager->getRepository(Coub::class);
 
             foreach ($data as $coub) {
@@ -349,7 +380,7 @@ class ChannelService
                 $coubItem = $coubRepo->findOneBy(['channel_id' => $channelId]);
 
                 if ($coubItem) {
-                    if ($coubItem->getUpdatedAt() !== (new \DateTime($coub['updated_at']))) {
+                    if ($coubItem->getUpdatedAt() !== (new DateTime($coub['updated_at']))) {
                         $coubItem->setChannelId($channelId);
                         $coubItem->setTitle($coub['title']);
                         $coubItem->setUpdatedAt($coub['updated_at']);
@@ -402,7 +433,7 @@ class ChannelService
      * @param string $url
      *
      * @return bool|string
-     * @throws \Exception
+     * @throws Exception
      */
     private function getInfo(string $url)
     {
@@ -421,8 +452,8 @@ class ChannelService
             }
 
             curl_close($ch);
-        } catch (\Exception $exception) {
-            throw new \Exception($exception);
+        } catch (Exception $exception) {
+            throw new Exception($exception);
         }
 
         return $data;
@@ -432,7 +463,7 @@ class ChannelService
      * @param array $urls
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function getInfoByUrls(array $urls)
     {
@@ -450,8 +481,8 @@ class ChannelService
             } else {
                 $result = $this->getInfoMulti($urls);
             }
-        } catch (\Exception $exception) {
-            throw new \Exception($exception);
+        } catch (Exception $exception) {
+            throw new Exception($exception);
         }
 
         return $result;
@@ -461,7 +492,7 @@ class ChannelService
      * @param $urls
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function getInfoMulti($urls)
     {
@@ -498,8 +529,8 @@ class ChannelService
 
                 curl_multi_close($mh);
             }
-        } catch (\Exception $exception) {
-            throw new \Exception($exception);
+        } catch (Exception $exception) {
+            throw new Exception($exception);
         }
 
         return $result;
@@ -510,7 +541,7 @@ class ChannelService
      * @param $max
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function fillByMonth($min, $max)
     {
@@ -522,15 +553,15 @@ class ChannelService
             $diff = ($diff > 12) ? $diff : 12;
 
             for ($i = 0; $i < $diff; $i++) {
-                $nowTemp = new \DateTime();
-                $dateMonth = $nowTemp->sub(new \DateInterval('P' . $i . 'M'));
+                $nowTemp = new DateTime();
+                $dateMonth = $nowTemp->sub(new DateInterval('P' . $i . 'M'));
 
                 $dateMonth = $dateMonth->format('m.Y');
 
                 $result[] = $dateMonth;
             }
-        } catch (\Exception $exception) {
-            throw new \Exception($exception);
+        } catch (Exception $exception) {
+            throw new Exception($exception);
         }
 
         return $result;
@@ -545,13 +576,13 @@ class ChannelService
     private function getMonthDiff($min, $max)
     {
         try {
-            $min = new \DateTime($min);
-            $max = new \DateTime($max);
+            $min = new DateTime($min);
+            $max = new DateTime($max);
 
             $diff = $max->diff($min);
 
             return ($diff->m + 12 * $diff->y);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return 0;
@@ -562,7 +593,7 @@ class ChannelService
      * @param $key
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function arrayUniqueKey($array, $key)
     {
@@ -581,8 +612,8 @@ class ChannelService
                     $i++;
                 }
             }
-        } catch (\Exception $exception) {
-            throw new \Exception($exception);
+        } catch (Exception $exception) {
+            throw new Exception($exception);
         }
 
         return $result;
@@ -593,11 +624,15 @@ class ChannelService
      * @param $channelId
      *
      * @return bool
+     * @throws Exception
      */
     public function checkDeletedCoubs($data, $channelId)
     {
         $allCoubsIds = [];
         $allDataIds = [];
+        /**
+         * @var $coubRepo CoubRepository
+         */
         $coubRepo = $this->entityManager->getRepository(Coub::class);
 
         if (!empty($data)) {
@@ -623,7 +658,7 @@ class ChannelService
                 foreach ($diff as $coubId) {
                     $coub = $coubRepo->findOneBy(['coub_id' => $coubId]);
 
-                    $coub->setDeletedAt(new \DateTime());
+                    $coub->setDeletedAt(new DateTime());
 
                     $this->entityManager->persist($coub);
                 }
