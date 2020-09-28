@@ -7,4 +7,14 @@
     width: $left-menu-width;
     height: calc(100% - #{$header-height});
     background-color: $header-bg;
+
+    ul {
+        margin: 1em;
+        padding: 0;
+
+        li {
+            margin-left: 1em;
+            margin-bottom: 1em;
+        }
+    }
 }

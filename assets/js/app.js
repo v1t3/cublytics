@@ -1,7 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import vuelidate from 'vuelidate'
-import Vuex from 'vuex';
+import Vuex from 'vuex'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import {faUserSecret, faExternalLinkAlt} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import App from './views/App'
 import Home from './views/Home'
@@ -15,6 +18,10 @@ require('./bootstrap');
 Vue.use(VueRouter);
 Vue.use(vuelidate);
 Vue.use(Vuex);
+
+library.add(faUserSecret, faExternalLinkAlt);
+
+Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 //css
 require('../sass/app.scss');

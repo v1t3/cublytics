@@ -1,8 +1,45 @@
+.home-view {
+    display: block;
+    margin: 1em;
+
+    &_col {
+        height: fit-content;
+        margin-top: 1em;
+    }
+}
+
+.user-block {
+    padding: 10px;
+    margin: 1em 0;
+    background: mistyrose;
+
+    p {
+        margin: 0;
+        font-size: 1.4em;
+    }
+}
+
 .channel-home {
     display: block;
-    margin: 10px;
-    padding: 15px;
+    margin-right: 1em;
+    margin-bottom: 1em;
+    padding: 1em;
     background-color: mistyrose;
+    min-width: 240px;
+    max-width: 320px;
+
+    &_title {
+        display: block;
+        margin-bottom: 0.5em;
+    }
+
+    &_counters {
+        display: block;
+    }
+
+    &.deactivated {
+        background-color: #cecece;
+    }
 
     a, span, img {
         display: block;

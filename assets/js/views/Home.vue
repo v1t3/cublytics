@@ -1,29 +1,39 @@
 <template>
-    <div>
-        <h1>Главная</h1>
-
-        <div v-if="user">
-            <h3>{{ user.username }}</h3>
+    <div class="home-view">
+        <div class="user-block" v-if="user">
+            <p>Привет, {{ user.username }}</p>
         </div>
         <div class="row">
-            <div class="col-md-9 d-flex flex-wrap">
-                <div class="channel-home col-md-3" v-for="channel in user.channels">
-                    <img :src="channel.avatar"
-                         :alt="channel.title">
-                    <a :href="'https://coub.com/' + channel.name"
-                       target="_blank"
-                       rel="noopener norefferer">
-                        {{ channel.title }}
-                    </a>
-                    <span>followers_count: {{ channel.followers_count }}</span>
-                    <span>is_active: {{ channel.is_active }}</span>
-                    <span>is_watching: {{ channel.is_watching }}</span>
-                    <span>likes_count: {{ channel.likes_count }}</span>
-                    <span>recoubs_count: {{ channel.recoubs_count }}</span>
-                    <span>stories_count: {{ channel.stories_count }}</span>
+            <div class="home-view_col col-xs-12 col-lg-9">
+                <h3>Каналы</h3>
+                <hr>
+                <div class="d-flex flex-wrap">
+                    <div class="channel-home col-md-3"
+                         v-for="channel in user.channels"
+                         v-bind:class="{ deactivated: !channel.is_active || !channel.is_watching }">
+                        <img :src="channel.avatar"
+                             :alt="channel.title">
+                        <div class="channel-home_title">
+                            <a :href="'https://coub.com/' + channel.name"
+                               target="_blank"
+                               rel="noopener norefferer">
+                                {{ channel.title }}
+                                <font-awesome-icon icon="external-link-alt"/>
+                            </a>
+                        </div>
+                        <div class="channel-home_counters">
+                            <span>Подписчиков: {{ channel.followers_count || 0 }}</span>
+                            <span>Лайков: {{ channel.likes_count || 0 }}</span>
+                            <span>Репостов: {{ channel.reposts_count || 0 }}</span>
+                            <span>Рекоубов: {{ channel.recoubs_count || 0 }}</span>
+                            <span>Историй: {{ channel.stories_count || 0 }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="home-view_col col-xs-12 col-lg-3">
+                Коуб дня
+                <hr>
                 <div class="kd-frame">
                     Тут будет КД
                 </div>
@@ -51,6 +61,8 @@
                 if (undefined !== this.$store.state.user) {
                     this.user.username = this.$store.state.user.username;
                     this.user.channels = this.$store.state.user.channels;
+
+                    console.log('this.user.channels', this.user.channels);
                 }
             }
         }
