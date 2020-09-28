@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 import App from './views/App'
 import Home from './views/Home'
-import Statistic from './views/Statistic'
+import Channel_data from './views/Channel_data'
 import Settings from './views/Settings'
 import Coubdata from './views/Coubdata'
 // import Page404 from './views/Page404'
@@ -65,19 +65,19 @@ const router = new VueRouter({
             component: Home
         },
         {
-            path: index + '/statistic',
-            name: 'Statistic',
-            component: Statistic
+            path: index + '/channel-statistic',
+            name: 'Channel_data',
+            component: Channel_data
+        },
+        {
+            path: index + '/сoub-statistic',
+            name: 'Coubdata',
+            component: Coubdata
         },
         {
             path: index + '/settings',
             name: 'Settings',
             component: Settings
-        },
-        {
-            path: index + '/сoubdata',
-            name: 'Coubdata',
-            component: Coubdata
         },
         {
             path: index + '/*',

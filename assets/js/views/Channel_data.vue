@@ -31,7 +31,7 @@ import Channel_stat from "../components/channel_stat/channel_stat";
 import Loader_gif from "../components/loader_gif";
 
 export default {
-    name: "Statistic",
+    name: "Channel_data",
     components: {
         Loader_gif,
         Channel_stat
