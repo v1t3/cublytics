@@ -35,351 +35,351 @@
 </template>
 
 <script>
-import axios from "axios";
-import LineChart from './LineChart.js';
-import Loader_gif from "../loader_gif";
+    import axios from "axios";
+    import LineChart from './LineChart.js';
+    import Loader_gif from "../loader_gif";
 
-export default {
-    name: "coub_stat",
-    props: {
-        coub_id: {
-            type: Number,
-            required: true
-        },
-        statistic_type: {
-            type: String,
-            required: false
-        },
-    },
-    components: {
-        Loader_gif,
-        LineChart,
-    },
-    data() {
-        return {
-            coub: {
-                views: '',
-                likes: '',
-                dislikes: '',
-                reposts: '',
-                recoubs: '',
-                kd: '',
-                featured: '',
-                banned: '',
+    export default {
+        name: "coub_stat",
+        props: {
+            coub_id: {
+                type: Number,
+                required: true
             },
-            showLoader: false,
-            showChart: false,
-            tempDataset: [],
-            coubsData: null,
-            error: null,
-            charts: {},
-            chartsInfo: [
-                {
-                    type: 'views_count',
-                    label: 'Просмотры',
-                    color: ''
-                },
-                {
-                    type: 'like_count',
-                    label: 'Лайки',
-                    color: ''
-                },
-                {
-                    type: 'dislikes_count',
-                    label: 'Дизлайки',
-                    color: ''
-                },
-                {
-                    type: 'repost_count',
-                    label: 'Репосты',
-                    color: ''
-                },
-                {
-                    type: 'remixes_count',
-                    label: 'Рекоубы',
-                    color: ''
-                },
-                {
-                    type: 'is_kd',
-                    label: 'КД',
-                    color: ''
-                },
-                {
-                    type: 'featured',
-                    label: 'Фичи',
-                    color: ''
-                },
-                {
-                    type: 'banned',
-                    label: 'Баны',
-                    color: ''
-                }
-            ],
-            dataCollectionOptions: {
-                scales: {
-                    yAxes: [
-                        {ticks: {beginAtZero: true}}
-                    ]
-                },
-                responsive: true,
-                maintainAspectRatio: false,
-                legend: {
-                    display: false,
-                },
+            statistic_type: {
+                type: String,
+                required: false
             },
-            lineChart: {
-                // width: 500,
-                // height: 400
-            }
-        }
-    },
-    mounted() {
-        this.getCoubData();
-    },
-    methods: {
-        getCoubData: function () {
-            let that = this;
-
-            if (this.coub_id) {
-                this.clearData();
-                this.showLoader = true;
-
-                const bodyFormData = new FormData();
-                bodyFormData.set('coub_id', String(this.coub_id));
-                bodyFormData.set('statistic_type', this.statistic_type);
-
-                axios({
-                    method: 'post',
-                    url: '/api/coub/get_coub_stat',
-                    data: bodyFormData,
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
+        },
+        components: {
+            Loader_gif,
+            LineChart,
+        },
+        data() {
+            return {
+                coub: {
+                    views: '',
+                    likes: '',
+                    dislikes: '',
+                    reposts: '',
+                    recoubs: '',
+                    kd: '',
+                    featured: '',
+                    banned: '',
+                },
+                showLoader: false,
+                showChart: false,
+                tempDataset: [],
+                coubsData: null,
+                error: null,
+                charts: {},
+                chartsInfo: [
+                    {
+                        type: 'views_count',
+                        label: 'Просмотры',
+                        color: ''
+                    },
+                    {
+                        type: 'like_count',
+                        label: 'Лайки',
+                        color: ''
+                    },
+                    {
+                        type: 'dislikes_count',
+                        label: 'Дизлайки',
+                        color: ''
+                    },
+                    {
+                        type: 'repost_count',
+                        label: 'Репосты',
+                        color: ''
+                    },
+                    {
+                        type: 'remixes_count',
+                        label: 'Рекоубы',
+                        color: ''
+                    },
+                    {
+                        type: 'is_kd',
+                        label: 'КД',
+                        color: ''
+                    },
+                    {
+                        type: 'featured',
+                        label: 'Фичи',
+                        color: ''
+                    },
+                    {
+                        type: 'banned',
+                        label: 'Баны',
+                        color: ''
                     }
-                })
-                    .then((response) => {
-                        let data = response['data'];
-                        let coubsData;
+                ],
+                dataCollectionOptions: {
+                    scales: {
+                        yAxes: [
+                            {ticks: {beginAtZero: true}}
+                        ]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        display: false,
+                    },
+                },
+                lineChart: {
+                    // width: 500,
+                    // height: 400
+                }
+            }
+        },
+        mounted() {
+            this.getCoubData();
+        },
+        methods: {
+            getCoubData: function () {
+                let that = this;
 
-                        that.error = '';
-                        that.showLoader = false;
+                if (this.coub_id) {
+                    this.clearData();
+                    this.showLoader = true;
 
-                        // console.log('data', data);
+                    const bodyFormData = new FormData();
+                    bodyFormData.set('coub_id', String(this.coub_id));
+                    bodyFormData.set('statistic_type', this.statistic_type);
 
-                        if (data) {
-                            if (typeof data === 'string') {
-                                data = JSON.parse(data);
-                            }
-
-                            let lastCoub = data['data'][data['data'].length - 1];
-
-                            this.coub = {
-                                views: lastCoub['views_count'],
-                                likes: lastCoub['like_count'],
-                                dislikes: lastCoub['dislikes_count'],
-                                reposts: lastCoub['repost_count'],
-                                recoubs: lastCoub['remixes_count'],
-                                kd: lastCoub['is_kd'],
-                                featured: lastCoub['featured'],
-                                banned: lastCoub['banned'],
-                            };
-
-                            coubsData = that.getCoubsCount(data['data']);
-
-                            if (coubsData) {
-                                that.showChart = true;
-
-                                //todo Реализовать отображение одиночной метки для кд, фича, бана
-                                for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
-                                    this.pushDataCollection(
-                                        coubsData,
-                                        this.chartsInfo[i]['type'],
-                                        this.chartsInfo[i]['label'],
-                                        this.chartsInfo[i]['color'],
-                                    );
-                                }
-
-                                // this.pushToDataset(coubsData, 'views_count', 'Просмотры');
-                                // this.pushToDataset(coubsData, 'like_count', 'Лайки');
-                                // this.pushToDataset(coubsData, 'repost_count', 'Репосты');
-                                // this.pushToDataset(coubsData, 'remixes_count', 'Рекоубы');
-                                // this.pushToDataset(coubsData, 'is_kd', 'КД');
-                                // this.pushToDataset(coubsData, 'featured', 'Фич');
-                                // this.pushToDataset(coubsData, 'banned', 'Бан');
-
-                                // //отравим данные для графика
-                                // if (this.tempDataset) {
-                                //     that.fillData(coubsData['dates'], this.tempDataset);
-                                // }
-                            }
-
-                            if (data['error']) {
-                                that.error = 'Error: ' + data['error'];
-                                that.clearData();
-                            }
-                        }
-
-                        if (!data) {
-                            that.clearData();
+                    axios({
+                        method: 'post',
+                        url: '/api/coub/get_coub_stat',
+                        data: bodyFormData,
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
                         }
                     })
-                    .catch((error) => {
-                        console.error('catch error: ', error);
-                        if (String(error) === 'Error: Request failed with status code 404') {
-                            this.error = 'Не найдено';
-                        } else {
-                            this.error = 'Error: ' + error;
-                        }
+                        .then((response) => {
+                            let data = response['data'];
+                            let coubsData;
 
-                        this.clearData();
-                    });
-            }
-        },
+                            that.error = '';
+                            that.showLoader = false;
 
-        getCoubsCount: function (data) {
-            let result = [];
-            let temp = [];
-            let dates = [];
+                            // console.log('data', data);
 
-            if (!data) {
-                return [];
-            }
+                            if (data) {
+                                if (typeof data === 'string') {
+                                    data = JSON.parse(data);
+                                }
 
-            for (let i = 0, len = data.length; i < len; i++) {
-                let date = data[i]['timestamp']['date'];
+                                let lastCoub = data['data'][data['data'].length - 1];
 
-                if (!dates.includes(date)) {
-                    dates.push(date);
+                                this.coub = {
+                                    views: lastCoub['views_count'],
+                                    likes: lastCoub['like_count'],
+                                    dislikes: lastCoub['dislikes_count'],
+                                    reposts: lastCoub['repost_count'],
+                                    recoubs: lastCoub['remixes_count'],
+                                    kd: lastCoub['is_kd'],
+                                    featured: lastCoub['featured'],
+                                    banned: lastCoub['banned'],
+                                };
+
+                                coubsData = that.getCoubsCount(data['data']);
+
+                                if (coubsData) {
+                                    that.showChart = true;
+
+                                    //todo Реализовать отображение одиночной метки для кд, фича, бана
+                                    for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
+                                        this.pushDataCollection(
+                                            coubsData,
+                                            this.chartsInfo[i]['type'],
+                                            this.chartsInfo[i]['label'],
+                                            this.chartsInfo[i]['color'],
+                                        );
+                                    }
+
+                                    // this.pushToDataset(coubsData, 'views_count', 'Просмотры');
+                                    // this.pushToDataset(coubsData, 'like_count', 'Лайки');
+                                    // this.pushToDataset(coubsData, 'repost_count', 'Репосты');
+                                    // this.pushToDataset(coubsData, 'remixes_count', 'Рекоубы');
+                                    // this.pushToDataset(coubsData, 'is_kd', 'КД');
+                                    // this.pushToDataset(coubsData, 'featured', 'Фич');
+                                    // this.pushToDataset(coubsData, 'banned', 'Бан');
+
+                                    // //отравим данные для графика
+                                    // if (this.tempDataset) {
+                                    //     that.fillData(coubsData['dates'], this.tempDataset);
+                                    // }
+                                }
+
+                                if (data['error']) {
+                                    that.error = 'Error: ' + data['error'];
+                                    that.clearData();
+                                }
+                            }
+
+                            if (!data) {
+                                that.clearData();
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('catch error: ', error);
+                            if (String(error) === 'Error: Request failed with status code 404') {
+                                this.error = 'Не найдено';
+                            } else {
+                                this.error = 'Error: ' + error;
+                            }
+
+                            this.clearData();
+                        });
+                }
+            },
+
+            getCoubsCount: function (data) {
+                let result = [];
+                let temp = [];
+                let dates = [];
+
+                if (!data) {
+                    return [];
                 }
 
-                if (!temp[date]) {
-                    temp[date] = [];
-                    temp[date]['views_count'] = 0;
-                    temp[date]['repost_count'] = 0;
-                    temp[date]['remixes_count'] = 0;
-                    temp[date]['like_count'] = 0;
-                    temp[date]['dislikes_count'] = 0;
-                    temp[date]['is_kd'] = 0;
-                    temp[date]['featured'] = 0;
-                    temp[date]['banned'] = 0;
-                }
+                for (let i = 0, len = data.length; i < len; i++) {
+                    let date = data[i]['timestamp']['date'];
 
-                if (data[i]['views_count']) {
-                    temp[date]['views_count'] += +data[i]['views_count'];
-                }
-                if (data[i]['repost_count']) {
-                    temp[date]['repost_count'] += +data[i]['repost_count'];
-                }
-                if (data[i]['remixes_count']) {
-                    temp[date]['remixes_count'] += +data[i]['remixes_count'];
-                }
-                if (data[i]['like_count']) {
-                    temp[date]['like_count'] = +temp[date]['like_count'] + +data[i]['like_count'];
-                }
-                if (data[i]['dislikes_count']) {
-                    temp[date]['dislikes_count'] += +data[i]['dislikes_count'];
-                }
-                if (data[i]['is_kd']) {
-                    temp[date]['is_kd']++;
-                }
-                if (data[i]['featured']) {
-                    temp[date]['featured']++;
-                }
-                if (data[i]['banned']) {
-                    temp[date]['banned']++;
-                }
-            }
-
-            result['views_count'] = [];
-            result['repost_count'] = [];
-            result['remixes_count'] = [];
-            result['like_count'] = [];
-            result['dislikes_count'] = [];
-            result['is_kd'] = [];
-            result['featured'] = [];
-            result['banned'] = [];
-
-            for (let i = 0, len = dates.length; i < len; i++) {
-                let item = temp[dates[i]];
-
-                result['views_count'].push(item['views_count']);
-                result['repost_count'].push(item['repost_count']);
-                result['remixes_count'].push(item['remixes_count']);
-                result['like_count'].push(item['like_count']);
-                result['dislikes_count'].push(item['dislikes_count']);
-                result['is_kd'].push(item['is_kd']);
-                result['featured'].push(item['featured']);
-                result['banned'].push(item['banned']);
-            }
-
-            result['dates'] = dates;
-
-            return result;
-        },
-
-        pushDataCollection: function(coubsData, type, label, bckndColor = '') {
-            let datasets = [];
-            let temp = {};
-
-            if (
-                coubsData[type] &&
-                coubsData[type].some(item => item !== 0)
-            ) {
-                datasets.push({
-                    label: label,
-                    backgroundColor: bckndColor || this.generateColor(),
-                    data: coubsData[type]
-                });
-
-                temp[type] = {
-                    title: label,
-                    dataCollection: {
-                        labels: coubsData['dates'],
-                        datasets: datasets,
-                        options: this.dataCollectionOptions
+                    if (!dates.includes(date)) {
+                        dates.push(date);
                     }
+
+                    if (!temp[date]) {
+                        temp[date] = [];
+                        temp[date]['views_count'] = 0;
+                        temp[date]['repost_count'] = 0;
+                        temp[date]['remixes_count'] = 0;
+                        temp[date]['like_count'] = 0;
+                        temp[date]['dislikes_count'] = 0;
+                        temp[date]['is_kd'] = 0;
+                        temp[date]['featured'] = 0;
+                        temp[date]['banned'] = 0;
+                    }
+
+                    if (data[i]['views_count']) {
+                        temp[date]['views_count'] += +data[i]['views_count'];
+                    }
+                    if (data[i]['repost_count']) {
+                        temp[date]['repost_count'] += +data[i]['repost_count'];
+                    }
+                    if (data[i]['remixes_count']) {
+                        temp[date]['remixes_count'] += +data[i]['remixes_count'];
+                    }
+                    if (data[i]['like_count']) {
+                        temp[date]['like_count'] = +temp[date]['like_count'] + +data[i]['like_count'];
+                    }
+                    if (data[i]['dislikes_count']) {
+                        temp[date]['dislikes_count'] += +data[i]['dislikes_count'];
+                    }
+                    if (data[i]['is_kd']) {
+                        temp[date]['is_kd']++;
+                    }
+                    if (data[i]['featured']) {
+                        temp[date]['featured']++;
+                    }
+                    if (data[i]['banned']) {
+                        temp[date]['banned']++;
+                    }
+                }
+
+                result['views_count'] = [];
+                result['repost_count'] = [];
+                result['remixes_count'] = [];
+                result['like_count'] = [];
+                result['dislikes_count'] = [];
+                result['is_kd'] = [];
+                result['featured'] = [];
+                result['banned'] = [];
+
+                for (let i = 0, len = dates.length; i < len; i++) {
+                    let item = temp[dates[i]];
+
+                    result['views_count'].push(item['views_count']);
+                    result['repost_count'].push(item['repost_count']);
+                    result['remixes_count'].push(item['remixes_count']);
+                    result['like_count'].push(item['like_count']);
+                    result['dislikes_count'].push(item['dislikes_count']);
+                    result['is_kd'].push(item['is_kd']);
+                    result['featured'].push(item['featured']);
+                    result['banned'].push(item['banned']);
+                }
+
+                result['dates'] = dates;
+
+                return result;
+            },
+
+            pushDataCollection: function (coubsData, type, label, bckndColor = '') {
+                let datasets = [];
+                let temp = {};
+
+                if (
+                    coubsData[type] &&
+                    coubsData[type].some(item => item !== 0)
+                ) {
+                    datasets.push({
+                        label: label,
+                        backgroundColor: bckndColor || this.generateColor(),
+                        data: coubsData[type]
+                    });
+
+                    temp[type] = {
+                        title: label,
+                        dataCollection: {
+                            labels: coubsData['dates'],
+                            datasets: datasets,
+                            options: this.dataCollectionOptions
+                        }
+                    };
+
+                    Object.assign(this.charts, temp);
+                }
+            },
+
+            pushToDataset: function (data, item, label) {
+                if (
+                    data[item] &&
+                    data[item].some(item => item !== 0)
+                ) {
+                    this.tempDataset.push({
+                        label: label,
+                        backgroundColor: this.generateColor(),
+                        data: data[item]
+                    });
+                }
+            },
+
+            generateColor: function () {
+                let r, g, b, opacity = 0.8;
+
+                r = Math.floor(Math.random() * (256));
+                g = Math.floor(Math.random() * (256));
+                b = Math.floor(Math.random() * (256));
+
+                return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+            },
+
+            clearData: function () {
+                this.coub = {
+                    views: '',
+                    reposts: '',
+                    likes: '',
+                    dislikes: '',
+                    kd: '',
+                    featured: '',
+                    banned: '',
                 };
-
-                Object.assign(this.charts, temp);
+                this.tempDataset = [];
+                this.showChart = false;
+                this.showLoader = false;
             }
-        },
-
-        pushToDataset: function(data, item, label) {
-            if (
-                data[item] &&
-                data[item].some(item => item !== 0)
-            ) {
-                this.tempDataset.push({
-                    label: label,
-                    backgroundColor: this.generateColor(),
-                    data: data[item]
-                });
-            }
-        },
-
-        generateColor: function () {
-            let r, g, b, opacity = 0.8;
-
-            r = Math.floor(Math.random() * (256));
-            g = Math.floor(Math.random() * (256));
-            b = Math.floor(Math.random() * (256));
-
-            return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
-        },
-
-        clearData: function () {
-            this.coub = {
-                views: '',
-                reposts: '',
-                likes: '',
-                dislikes: '',
-                kd: '',
-                featured: '',
-                banned: '',
-            };
-            this.tempDataset = [];
-            this.showChart = false;
-            this.showLoader = false;
         }
-    }
-};
+    };
 </script>

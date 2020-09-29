@@ -1,5 +1,5 @@
 <template>
-    <div class="user-settings">
+    <div class="view-container user-settings-view user-settings">
         <h1>Настройки</h1>
 
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -20,11 +20,18 @@
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <div class="settings-main">
-                    <div v-if="user.username"><span>Имя: </span><span>{{ user.username }}</span></div>
-                    <div v-if="user.email"><span>Email: </span><span>{{ user.email }}</span></div>
+                    <div v-if="user.username">
+                        <span>Имя: </span>
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <div v-if="user.email">
+                        <span>Email: </span>
+                        <span>{{ user.email }}</span>
+                    </div>
                 </div>
 
-                <form v-on:submit="updateSettings" :class="{ 'form-group--error': $v.user.$anyError }">
+                <form class="form-group" v-on:submit="updateSettings"
+                      :class="{ 'form-group--error': $v.user.$anyError }">
                     <div>
                         <label>
                             <span>E-mail:</span>
@@ -78,7 +85,7 @@
             <div class="tab-pane fade" id="channels" role="tabpanel" aria-labelledby="channels-tab">
                 Каналы:
 
-                <div class="channels-list" v-if="user.channels"  v-for="channel in user.channels" :key="channel.name">
+                <div class="channels-list" v-if="user.channels" v-for="channel in user.channels" :key="channel.name">
                     {{ channel.name }}
                     <br>
                     <label>
@@ -101,166 +108,166 @@
 </template>
 
 <script>
-import {required, sameAs, minLength, email} from 'vuelidate/lib/validators';
-import axios from "axios";
+    import {required, sameAs, minLength, email} from 'vuelidate/lib/validators';
+    import axios from "axios";
 
-export default {
-    name: "Settings",
-    data() {
-        return {
-            user: {
-                email: '',
-                newEmail: '',
-                password: '',
-                repeatPassword: '',
-                username: '',
-                avatar: {
-                    link: '',
+    export default {
+        name: "Settings",
+        data() {
+            return {
+                user: {
+                    email: '',
+                    newEmail: '',
+                    password: '',
+                    repeatPassword: '',
+                    username: '',
+                    avatar: {
+                        link: '',
+                    },
+                    channels: {},
+                    checkboxActive: '',
+                    checkboxWatching: '',
                 },
-                channels: {},
-                checkboxActive: '',
-                checkboxWatching: '',
-            },
-            response: {
-                result: '',
-                message: '',
-            },
-            error: '',
-        }
-    },
-    validations: {
-        user: {
-            newEmail: {
-                required,
-                email
-            },
-            password: {
-                required,
-                minLength: minLength(8)
-            },
-            repeatPassword: {
-                sameAsPassword: sameAs('password'),
-                minLength: minLength(8)
-            }
-        }
-    },
-    mounted() {
-        this.getSettings();
-        this.getChannelsList();
-    },
-    methods: {
-        getSettings: function () {
-            if (undefined !== this.$store.state.user) {
-                this.user.username = this.$store.state.user.username;
-                this.user.email = this.$store.state.user.email || 'Email не задан';
+                response: {
+                    result: '',
+                    message: '',
+                },
+                error: '',
             }
         },
-        updateSettings: function (e) {
-            e.preventDefault();
-
-            //при наличии ошибок ничего не делать
-            this.$v.user.$touch();
-            if (this.$v.user.$anyError) {
-                return;
+        validations: {
+            user: {
+                newEmail: {
+                    required,
+                    email
+                },
+                password: {
+                    required,
+                    minLength: minLength(8)
+                },
+                repeatPassword: {
+                    sameAsPassword: sameAs('password'),
+                    minLength: minLength(8)
+                }
             }
+        },
+        mounted() {
+            this.getSettings();
+            this.getChannelsList();
+        },
+        methods: {
+            getSettings: function () {
+                if (undefined !== this.$store.state.user) {
+                    this.user.username = this.$store.state.user.username;
+                    this.user.email = this.$store.state.user.email || 'Email не задан';
+                }
+            },
+            updateSettings: function (e) {
+                e.preventDefault();
 
-            const formData = new FormData();
-            formData.set('email', this.user.newEmail);
-            formData.set('password', this.user.password);
+                //при наличии ошибок ничего не делать
+                this.$v.user.$touch();
+                if (this.$v.user.$anyError) {
+                    return;
+                }
 
-            axios({
-                method: 'post',
-                url: '/api/user/update_settings',
-                data: formData
-            })
-                .then((response) => {
-                    let data = response['data'];
+                const formData = new FormData();
+                formData.set('email', this.user.newEmail);
+                formData.set('password', this.user.password);
 
-                    // console.log('data', data);
+                axios({
+                    method: 'post',
+                    url: '/api/user/update_settings',
+                    data: formData
+                })
+                    .then((response) => {
+                        let data = response['data'];
 
-                    if (data) {
-                        this.response.result = data['result'];
-                        this.response.message = data['message'];
+                        // console.log('data', data);
 
-                        if ('success' === data['result']) {
-                            this.getSettings();
+                        if (data) {
+                            this.response.result = data['result'];
+                            this.response.message = data['message'];
+
+                            if ('success' === data['result']) {
+                                this.getSettings();
+                            }
+                        } else {
+                            this.clearData();
                         }
-                    } else {
+                    })
+                    .catch((error) => {
+                        console.log('catch error', error);
+
+                        this.error = error;
+
                         this.clearData();
-                    }
-                })
-                .catch((error) => {
-                    console.log('catch error', error);
+                    });
 
-                    this.error = error;
+            },
+            getChannelsList: function () {
+                if (undefined !== this.$store.state.user) {
+                    this.user.channels = this.$store.state.user.channels;
 
-                    this.clearData();
-                });
-
-        },
-        getChannelsList: function () {
-            if (undefined !== this.$store.state.user) {
-                this.user.channels = this.$store.state.user.channels;
-
-                if (this.user.channels.length) {
-                    for (let i = 0, len = this.user.channels.length; i < len; i++) {
-                        this.user.channels[i]['checkboxActive'] = this.user.channels[i]['is_active'];
-                        this.user.channels[i]['checkboxWatching'] = this.user.channels[i]['is_watching'];
+                    if (this.user.channels.length) {
+                        for (let i = 0, len = this.user.channels.length; i < len; i++) {
+                            this.user.channels[i]['checkboxActive'] = this.user.channels[i]['is_active'];
+                            this.user.channels[i]['checkboxWatching'] = this.user.channels[i]['is_watching'];
+                        }
                     }
                 }
+            },
+            updateChannel: function (channel, type, checkboxVal) {
+                const bodyFormData = new FormData();
+                bodyFormData.set('channel_permalink', channel);
+                bodyFormData.set('type', type);
+                bodyFormData.set('new_val', checkboxVal);
+
+                axios({
+                    method: 'post',
+                    url: '/api/channel/update_settings',
+                    data: bodyFormData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then((response) => {
+                        let data = response['data'];
+
+                        // console.log('updateChannel data', data);
+
+                        if (
+                            data &&
+                            'success' === data['result']
+                        ) {
+                            let params = [];
+                            params['channel'] = channel;
+                            params['type'] = type;
+                            params['new_val'] = data['data'][type];
+
+                            this.$store.commit(
+                                'updateChannel',
+                                params
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('catch error: ', error);
+                    });
+            },
+            clearData: function () {
+                this.user = {
+                    email: '',
+                    password: '',
+                    repeatPassword: '',
+                };
+                this.response = {
+                    result: '',
+                    message: ''
+                };
+                this.error = '';
             }
-        },
-        updateChannel: function (channel, type, checkboxVal) {
-            const bodyFormData = new FormData();
-            bodyFormData.set('channel_permalink', channel);
-            bodyFormData.set('type', type);
-            bodyFormData.set('new_val', checkboxVal);
-
-            axios({
-                method: 'post',
-                url: '/api/channel/update_settings',
-                data: bodyFormData,
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-                .then((response) => {
-                    let data = response['data'];
-
-                    // console.log('updateChannel data', data);
-
-                    if (
-                        data &&
-                        'success' === data['result']
-                    ) {
-                        let params = [];
-                        params['channel'] = channel;
-                        params['type'] = type;
-                        params['new_val'] = data['data'][type];
-
-                        this.$store.commit(
-                            'updateChannel',
-                            params
-                        );
-                    }
-                })
-                .catch((error) => {
-                    console.error('catch error: ', error);
-                });
-        },
-        clearData: function () {
-            this.user = {
-                email: '',
-                password: '',
-                repeatPassword: '',
-            };
-            this.response = {
-                result: '',
-                message: ''
-            };
-            this.error = '';
         }
-    }
 
-}
+    }
 </script>
