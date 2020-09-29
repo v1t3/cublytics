@@ -3,29 +3,25 @@
         <h1>Статистика по коубам</h1>
 
         <div class="channel-list">
-            Каналы:
             <select v-model="channel_active_id" @change="getActiveChannel()">
                 <option v-for="channel in channelList" :value="channel.channel_id">{{ channel.name }}</option>
             </select>
         </div>
 
-        <br>
-
-        <div v-if="!coubList.length">No coubs</div>
+        <div v-if="!coubList.length">Коубы отсутсвуют</div>
         <div class="channel-list" v-if="coubList.length">
-            Коуб:
             <select v-model="coub_active_id" @change="getActiveCoub()">
                 <option v-for="coub in coubList" :value="coub.coub_id">{{ coub.title }}</option>
             </select>
+        </div>
 
-            <div>
-                <span class="statistic-btn-time btn" @click="getActiveCoub('day')">День</span>
-                <span class="statistic-btn-time btn" @click="getActiveCoub('week')">Неделя</span>
-                <span class="statistic-btn-time btn" @click="getActiveCoub('month1')">Месяц</span>
-                <span class="statistic-btn-time btn" @click="getActiveCoub('month6')">Пол года</span>
-                <span class="statistic-btn-time btn" @click="getActiveCoub('year')">Год</span>
-                <span class="statistic-btn-time btn" @click="getActiveCoub('all')">Всё время</span>
-            </div>
+        <div class="" v-if="coubList.length">
+            <span class="statistic-btn-time btn" @click="getActiveCoub('day')">День</span>
+            <span class="statistic-btn-time btn" @click="getActiveCoub('week')">Неделя</span>
+            <span class="statistic-btn-time btn" @click="getActiveCoub('month1')">Месяц</span>
+            <span class="statistic-btn-time btn" @click="getActiveCoub('month6')">Пол года</span>
+            <span class="statistic-btn-time btn" @click="getActiveCoub('year')">Год</span>
+            <span class="statistic-btn-time btn" @click="getActiveCoub('all')">Всё время</span>
         </div>
 
         <coub_stat v-if="show_stat && coub_active_id"

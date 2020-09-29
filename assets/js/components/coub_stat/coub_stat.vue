@@ -1,5 +1,5 @@
 <template>
-    <div class="component" id="coub-performance">
+    <div class="" id="coub-performance">
         <loader_gif v-if="showLoader"/>
 
         <div class="views">
@@ -12,17 +12,24 @@
             <div v-if="coub.featured">Фич: {{ coub.featured }}</div>
             <div v-if="coub.banned">Бан: {{ coub.banned }}</div>
         </div>
-        <div class="info">
-            <div class="small">
-                <line-chart
-                    v-if="showChart"
-                    :chart-data="dataCollection"
-                    :options="dataCollection.options"
-                    :width="400"
-                    :height="200"
-                ></line-chart>
+
+        <div class="chart-wrap">
+            <div class="chart chart-info"
+                 v-for="chart in charts">
+                <div class="chart-title">
+                    <span>{{ chart.title }}</span>
+                </div>
+                <div class="small">
+                    <line-chart v-if="showChart"
+                                :chart-data="chart.dataCollection"
+                                :options="chart.dataCollection.options"
+                                :width="lineChart.width"
+                                :height="lineChart.height"
+                    ></line-chart>
+                </div>
             </div>
         </div>
+
         {{ error }}
     </div>
 </template>
@@ -65,22 +72,64 @@ export default {
             tempDataset: [],
             coubsData: null,
             error: null,
-            dataCollection: {
-                labels: null,
-                datasets: [],
-                options: {
-                    scales: {
-                        yAxes: [
-                            {
-                                ticks: {
-                                    beginAtZero: true
-                                }
-                            }
-                        ]
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false
+            charts: {},
+            chartsInfo: [
+                {
+                    type: 'views_count',
+                    label: 'Просмотры',
+                    color: ''
+                },
+                {
+                    type: 'like_count',
+                    label: 'Лайки',
+                    color: ''
+                },
+                {
+                    type: 'dislikes_count',
+                    label: 'Дизлайки',
+                    color: ''
+                },
+                {
+                    type: 'repost_count',
+                    label: 'Репосты',
+                    color: ''
+                },
+                {
+                    type: 'remixes_count',
+                    label: 'Рекоубы',
+                    color: ''
+                },
+                {
+                    type: 'is_kd',
+                    label: 'КД',
+                    color: ''
+                },
+                {
+                    type: 'featured',
+                    label: 'Фичи',
+                    color: ''
+                },
+                {
+                    type: 'banned',
+                    label: 'Баны',
+                    color: ''
                 }
+            ],
+            dataCollectionOptions: {
+                scales: {
+                    yAxes: [
+                        {ticks: {beginAtZero: true}}
+                    ]
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    display: false,
+                },
+            },
+            lineChart: {
+                // width: 500,
+                // height: 400
             }
         }
     },
@@ -88,13 +137,6 @@ export default {
         this.getCoubData();
     },
     methods: {
-        fillData: function (labels, datasets) {
-            this.dataCollection = {
-                labels: labels,
-                datasets: datasets
-            }
-        },
-
         getCoubData: function () {
             let that = this;
 
@@ -146,19 +188,28 @@ export default {
                             if (coubsData) {
                                 that.showChart = true;
 
-                                this.pushToDataset(coubsData, 'views_count', 'Просмотры');
-                                this.pushToDataset(coubsData, 'like_count', 'Лайки');
-                                this.pushToDataset(coubsData, 'repost_count', 'Репосты');
-                                this.pushToDataset(coubsData, 'remixes_count', 'Рекоубы');
                                 //todo Реализовать отображение одиночной метки для кд, фича, бана
+                                for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
+                                    this.pushDataCollection(
+                                        coubsData,
+                                        this.chartsInfo[i]['type'],
+                                        this.chartsInfo[i]['label'],
+                                        this.chartsInfo[i]['color'],
+                                    );
+                                }
+
+                                // this.pushToDataset(coubsData, 'views_count', 'Просмотры');
+                                // this.pushToDataset(coubsData, 'like_count', 'Лайки');
+                                // this.pushToDataset(coubsData, 'repost_count', 'Репосты');
+                                // this.pushToDataset(coubsData, 'remixes_count', 'Рекоубы');
                                 // this.pushToDataset(coubsData, 'is_kd', 'КД');
                                 // this.pushToDataset(coubsData, 'featured', 'Фич');
                                 // this.pushToDataset(coubsData, 'banned', 'Бан');
 
-                                //отравим данные для графика
-                                if (this.tempDataset) {
-                                    that.fillData(coubsData['dates'], this.tempDataset);
-                                }
+                                // //отравим данные для графика
+                                // if (this.tempDataset) {
+                                //     that.fillData(coubsData['dates'], this.tempDataset);
+                                // }
                             }
 
                             if (data['error']) {
@@ -263,6 +314,33 @@ export default {
             result['dates'] = dates;
 
             return result;
+        },
+
+        pushDataCollection: function(coubsData, type, label, bckndColor = '') {
+            let datasets = [];
+            let temp = {};
+
+            if (
+                coubsData[type] &&
+                coubsData[type].some(item => item !== 0)
+            ) {
+                datasets.push({
+                    label: label,
+                    backgroundColor: bckndColor || this.generateColor(),
+                    data: coubsData[type]
+                });
+
+                temp[type] = {
+                    title: label,
+                    dataCollection: {
+                        labels: coubsData['dates'],
+                        datasets: datasets,
+                        options: this.dataCollectionOptions
+                    }
+                };
+
+                Object.assign(this.charts, temp);
+            }
         },
 
         pushToDataset: function(data, item, label) {
