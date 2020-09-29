@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="view-container coub-view">
         <h1>Статистика по коубам</h1>
 
         <div class="channel-list">

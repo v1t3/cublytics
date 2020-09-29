@@ -2,20 +2,24 @@
     <div class="component" id="channel-performance">
         <loader_gif v-if="showLoader"/>
 
-        <div class="views">
+        <div class="channel-stat-info">
             <div v-if="coubsCount">Всего кубов: {{ coubsCount }}</div>
             <div v-if="isSelfCount">Своих: {{ isSelfCount }}</div>
             <div v-if="isRepostCount">Репосты: {{ isRepostCount }}</div>
             <div v-if="banCount">Забаненых: {{ banCount }}</div>
             <div v-if="likesCount">Всего лайков: {{ likesCount }}</div>
         </div>
-        <div class="info">
+        <div class="chart chart-info"
+             v-for="chart in charts">
+            <div class="chart-title">
+                <span>{{ chart.title }}</span>
+            </div>
             <div class="small">
                 <line-chart v-if="showChart"
-                            :chart-data="dataCollection"
-                            :options="dataCollection.options"
-                            :width="400"
-                            :height="200"
+                            :chart-data="chart.dataCollection"
+                            :options="chart.dataCollection.options"
+                            :width="lineChart.width"
+                            :height="lineChart.height"
                 ></line-chart>
             </div>
         </div>
@@ -24,11 +28,11 @@
 </template>
 
 <script>
-import axios from "axios";
-import LineChart from './LineChart.js';
-import Loader_gif from "../loader_gif";
+    import axios from "axios";
+    import LineChart from './LineChart.js';
+    import Loader_gif from "../loader_gif";
 
-export default {
+    export default {
     name: "channel_stat",
     props: {
         channel_name: {
@@ -55,22 +59,64 @@ export default {
             showLoader: false,
             showChart: false,
             error: null,
-            dataCollection: {
-                labels: null,
-                datasets: [],
-                options: {
-                    scales: {
-                        yAxes: [
-                            {
-                                ticks: {
-                                    beginAtZero: true
-                                }
-                            }
-                        ]
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false
+            charts: {},
+            chartsInfo: [
+                {
+                    type: 'views_count',
+                    label: 'Просмотры',
+                    color: ''
+                },
+                {
+                    type: 'like_count',
+                    label: 'Лайки',
+                    color: ''
+                },
+                {
+                    type: 'dislikes_count',
+                    label: 'Дизлайки',
+                    color: ''
+                },
+                {
+                    type: 'repost_count',
+                    label: 'Репосты',
+                    color: ''
+                },
+                {
+                    type: 'remixes_count',
+                    label: 'Рекоубы',
+                    color: ''
+                },
+                {
+                    type: 'is_kd',
+                    label: 'КД',
+                    color: ''
+                },
+                {
+                    type: 'featured',
+                    label: 'Фичи',
+                    color: ''
+                },
+                {
+                    type: 'banned',
+                    label: 'Баны',
+                    color: ''
                 }
+            ],
+            dataCollectionOptions: {
+                scales: {
+                    yAxes: [
+                        {ticks: {beginAtZero: true}}
+                    ]
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    display: false,
+                },
+            },
+            lineChart: {
+                // width: 500,
+                // height: 400
             }
         }
     },
@@ -78,12 +124,6 @@ export default {
         this.getCoubData();
     },
     methods: {
-        fillData: function (labels, datasets) {
-            this.dataCollection = {
-                labels: labels,
-                datasets: datasets
-            }
-        },
         getCoubData: function () {
             let that = this;
 
@@ -105,7 +145,6 @@ export default {
                 })
                     .then((response) => {
                         let data = response['data'];
-                        let datasets = [];
                         let coubsData;
 
                         that.error = '';
@@ -123,89 +162,14 @@ export default {
                             if (coubsData) {
                                 that.showChart = true;
 
-                                if (
-                                    coubsData['views_count'] &&
-                                    coubsData['views_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Просмотры',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['views_count']
-                                    });
+                                for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
+                                    this.pushDataCollection(
+                                        coubsData,
+                                        this.chartsInfo[i]['type'],
+                                        this.chartsInfo[i]['label'],
+                                        this.chartsInfo[i]['color'],
+                                    );
                                 }
-                                if (
-                                    coubsData['like_count'] &&
-                                    coubsData['like_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Лайки',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['like_count']
-                                    });
-                                }
-                                if (
-                                    coubsData['dislikes_count'] &&
-                                    coubsData['dislikes_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Дизлайки',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['dislikes_count']
-                                    });
-                                }
-                                if (
-                                    coubsData['repost_count'] &&
-                                    coubsData['repost_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Репосты',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['repost_count']
-                                    });
-                                }
-                                if (
-                                    coubsData['remixes_count'] &&
-                                    coubsData['remixes_count'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Рекоубы',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['remixes_count']
-                                    });
-                                }
-                                if (
-                                    coubsData['is_kd'] &&
-                                    coubsData['is_kd'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'КД',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['is_kd']
-                                    });
-                                }
-                                if (
-                                    coubsData['featured'] &&
-                                    coubsData['featured'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Фичи',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['featured']
-                                    });
-                                }
-                                if (
-                                    coubsData['banned'] &&
-                                    coubsData['banned'].some(item => item !== 0)
-                                ) {
-                                    datasets.push({
-                                        label: 'Баны',
-                                        backgroundColor: that.generateColor(),
-                                        data: coubsData['banned']
-                                    });
-                                }
-
-                                //отравим данные для графика
-                                that.fillData(coubsData['dates'], datasets);
                             }
 
                             if (data['error']) {
@@ -230,6 +194,7 @@ export default {
                     });
             }
         },
+
         getCoubsCount: function (data) {
             let result = [];
             let temp = [];
@@ -310,6 +275,34 @@ export default {
 
             return result;
         },
+
+        pushDataCollection: function(coubsData, type, label, bckndColor = '') {
+            let datasets = [];
+            let temp = {};
+
+            if (
+                coubsData[type] &&
+                coubsData[type].some(item => item !== 0)
+            ) {
+                datasets.push({
+                    label: label,
+                    backgroundColor: bckndColor || this.generateColor(),
+                    data: coubsData[type]
+                });
+
+                temp[type] = {
+                    title: label,
+                    dataCollection: {
+                        labels: coubsData['dates'],
+                        datasets: datasets,
+                        options: this.dataCollectionOptions
+                    }
+                };
+
+                Object.assign(this.charts, temp);
+            }
+        },
+
         generateColor: function () {
             let r, g, b, opacity = 0.8;
 
@@ -319,6 +312,7 @@ export default {
 
             return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
         },
+
         clearData: function () {
             this.coubsCount = '';
             this.isSelfCount = '';

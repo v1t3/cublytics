@@ -6,17 +6,29 @@
 }
 
 .loader {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     padding: 50px 100px;
 }
 
+.view-container {
+    display: block;
+    padding: 1em;
+}
+
+.view-title {
+    display: block;
+    border-bottom: 1px solid lighten(#000, 80%);
+}
+
 .component {
-    background: $componentBckgnd;
+    display: flex;
+    flex-wrap: wrap;
     padding: 1em;
     margin: 0 auto 1em;
     min-height: 300px;
-    border-radius: .5em;
 }
 
 .charts-types {
@@ -92,5 +104,42 @@
 .statistic-btn-time {
     &:hover {
         background-color: #dcdcdc;
+    }
+}
+
+//channel
+
+.channel-list {
+    margin-bottom: 2em;
+    background: mistyrose;
+
+    select {
+        color: #444;
+        padding: .6em 1.4em .5em .8em;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin: 0;
+        border: 2px solid #ffe4e1;
+        -moz-appearance: none;
+        -webkit-appearance: none;
+        appearance: none;
+        background-color: #ffffff;
+        outline: none;
+    }
+}
+
+.chart {
+    border: 1px solid lighten(#000, 80%);
+    padding: 1em;
+    margin-right: 1em;
+    margin-bottom: 1em;
+
+    &-title {
+        margin-bottom: 1em;
+        border-bottom: 1px solid #cacaca;
+
+        span {
+            font-size: 1.2em;
+        }
     }
 }

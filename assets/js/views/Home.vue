@@ -1,5 +1,5 @@
 <template>
-    <div class="home-view">
+    <div class="view-container home-view">
         <div class="user-block" v-if="user">
             <p>Привет, {{ user.username }}</p>
         </div>
