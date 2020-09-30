@@ -1,3 +1,6 @@
+@import "variables";
+@import "media_mixin";
+
 .home-view {
     &_col {
         height: fit-content;
@@ -20,6 +23,10 @@
     &_channels {
         display: flex;
         flex-wrap: wrap;
+
+        @include max_768 {
+            justify-content: center;
+        }
     }
 }
 
@@ -29,8 +36,8 @@
     margin-bottom: 1em;
     padding: 1em;
     background-color: mistyrose;
-    min-width: 240px;
-    max-width: 320px;
+    min-width: 224px;
+    max-width: 300px;
 
     &_title {
         display: block;
@@ -54,6 +61,10 @@
         max-width: 100px;
         border-radius: 50%;
         margin-bottom: 10px;
+    }
+
+    @include max_480 {
+        margin-right: 0;
     }
 }
 

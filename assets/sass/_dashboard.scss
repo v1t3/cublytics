@@ -1,8 +1,13 @@
 @import "variables";
+@import "media_mixin";
 
 .main-block {
     padding-top: $header-height;
     padding-left: $left-menu-width;
+
+    @include max_979 {
+        padding-left: 0;
+    }
 }
 
 .loader {

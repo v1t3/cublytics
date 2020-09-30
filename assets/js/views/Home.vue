@@ -54,8 +54,6 @@
                 if (undefined !== this.$store.state.user) {
                     this.user.username = this.$store.state.user.username;
                     this.user.channels = this.$store.state.user.channels;
-
-                    console.log('this.user.channels', this.user.channels);
                 }
             }
         }

@@ -1,4 +1,5 @@
 @import "variables";
+@import "media_mixin";
 
 .left-menu-block {
     position: fixed;
@@ -16,5 +17,9 @@
             margin-left: 1em;
             margin-bottom: 1em;
         }
+    }
+
+    @include max_979 {
+        display: none;
     }
 }
