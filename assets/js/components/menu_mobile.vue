@@ -1,18 +1,28 @@
 <template>
     <div class="menu-mobile-block">
-        <nav role="navigation">
-            <div id="menuToggle" @click.prevent="showMenu" v-bind:class="{ active: isActive }" v-on-clickaway="closeMenu">
-                <span></span>
-                <span></span>
-                <span></span>
+        <nav role="navigation" v-on-clickaway="closeMenu">
+            <div id="menuToggle">
+                <div class="burger" @click.prevent="showMenu" v-bind:class="{ active: isActive }">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
                 <ul id="menu">
                     <li><a href="/">Главная</a></li>
                     <hr/>
-                    <li><router-link :to="{ name: 'home' }">Сводка</router-link></li>
-                    <li><router-link :to="{ name: 'Channel_data' }">Каналы</router-link></li>
-                    <li><router-link :to="{ name: 'Coubdata' }">Коубы</router-link></li>
+                    <li>
+                        <router-link :to="{ name: 'home' }">Сводка</router-link>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'Channel_data' }">Каналы</router-link>
+                    </li>
+                    <li>
+                        <router-link :to="{ name: 'Coubdata' }">Коубы</router-link>
+                    </li>
                     <hr/>
-                    <li><router-link :to="{ name: 'Settings' }">Настройки</router-link></li>
+                    <li>
+                        <router-link :to="{ name: 'Settings' }">Настройки</router-link>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -20,7 +30,7 @@
 </template>
 
 <script>
-    import { mixin as clickaway } from 'vue-clickaway';
+    import {mixin as clickaway} from 'vue-clickaway';
 
     export default {
         name: "menu_mobile",
@@ -29,7 +39,7 @@
                 isActive: false,
             }
         },
-        mixins: [ clickaway ],
+        mixins: [clickaway],
         methods: {
             showMenu: function () {
                 this.isActive = !this.isActive;

@@ -18,24 +18,26 @@
     -webkit-user-select: none;
     user-select: none;
 
-    &.active {
-        span {
-            opacity: 1;
-            transform: rotate(45deg) translate(-1px, -1px);
-            background: #36383F;
+    .burger {
+        &.active {
+            span {
+                opacity: 1;
+                transform: rotate(45deg) translate(-8px, -6px);
+                background: #36383F;
 
-            &:nth-last-child(2) {
-                transform: rotate(-45deg) translate(-3px, 3px);
+                &:nth-last-child(2) {
+                    transform: rotate(-45deg) translate(-9px, 9px);
+                }
+
+                &:nth-last-child(3) {
+                    opacity: 0;
+                    transform: rotate(0deg) scale(0.2, 0.2);
+                }
             }
 
-            &:nth-last-child(3) {
-                opacity: 0;
-                transform: rotate(0deg) scale(0.2, 0.2);
+            & ~ ul#menu {
+                transform: none;
             }
-        }
-
-        ul#menu {
-            transform: none;
         }
     }
 
