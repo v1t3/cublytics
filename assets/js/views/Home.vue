@@ -1,13 +1,13 @@
 <template>
     <div class="view-container home-view">
-        <div class="user-block" v-if="user">
+        <div class="user-block_name" v-if="user">
             <p>Привет, {{ user.username }}</p>
         </div>
         <div class="row">
-            <div class="home-view_col col-xs-12 col-lg-9">
+            <div class="home-view_col col-12">
                 <h3>Каналы</h3>
                 <hr>
-                <div class="d-flex flex-wrap">
+                <div class="user-block_channels">
                     <div class="channel-home col-md-3"
                          v-for="channel in user.channels"
                          v-bind:class="{ deactivated: !channel.is_active || !channel.is_watching }">
@@ -29,13 +29,6 @@
                             <span>Историй: {{ channel.stories_count || 0 }}</span>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="home-view_col col-xs-12 col-lg-3">
-                Коуб дня
-                <hr>
-                <div class="kd-frame">
-                    Тут будет КД
                 </div>
             </div>
         </div>
