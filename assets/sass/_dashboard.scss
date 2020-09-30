@@ -83,11 +83,52 @@
 }
 
 .form-group {
+    width: fit-content;
+
+    &_row {
+        display: flex;
+        margin-bottom: 1em;
+    }
+
+    &_label {
+        display: flex;
+
+        span {
+            display: flex;
+            width: 160px;
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        input {
+            border: none;
+            background: #add3ff;
+
+            &:focus {
+                background: darken(#add3ff, 5%);
+            }
+        }
+    }
+
+    &_btn {
+        &--send {
+            display: block;
+            border: none;
+            background: #add3ff;
+            padding: 10px 15px;
+            transition: background-color .1s;
+
+            &:hover {
+                background: darken(#add3ff, 5%);
+            }
+        }
+    }
+
     &--error {
         &-text {
             display: none;
             color: red;
-            margin-top: 0;
+            margin: 0;
             font-size: .85em;
         }
     }

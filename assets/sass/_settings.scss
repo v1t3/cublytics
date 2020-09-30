@@ -1,15 +1,53 @@
 .user-settings {
-    .channels-list {
-        padding: 10px;
-        margin: 10px;
-        background-color: aliceblue;
+    .user-channels-list {
     }
 }
 
-.settings-main {
-    margin-bottom: 15px;
+.user-channel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 10px;
+    margin: 10px;
+    background-color: aliceblue;
+
+    &_field {
+        margin: 0 10px;
+        width: 180px;
+
+        label {
+            margin: 0;
+        }
+    }
+
+    &_avatar {
+        width: 50px;
+
+        img {
+            width: 50px;
+            border-radius: 50%;
+        }
+    }
 }
 
-.small {
-    max-width: 600px;
+.user-info {
+    margin-bottom: 2em;
+
+    &_field {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 5px;
+    }
+
+    &_pre-title {
+        display: flex;
+        width: 160px;
+        margin-right: 10px;
+        font-size: 1.1em;
+    }
+
+    &_title {
+        display: flex;
+        font-size: 1.2em;
+    }
 }

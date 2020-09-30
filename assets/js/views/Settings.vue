@@ -19,62 +19,80 @@
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                <div class="settings-main">
-                    <div v-if="user.username">
-                        <span>Имя: </span>
-                        <span>{{ user.username }}</span>
+                <div class="user-info">
+                    <div class="user-info_name user-info_field" v-if="user.username">
+                        <span class="user-info_pre-title">Имя:</span>
+                        <span class="user-info_title">{{ user.username }}</span>
                     </div>
-                    <div v-if="user.email">
-                        <span>Email: </span>
-                        <span>{{ user.email }}</span>
+                    <div class="user-info_email user-info_field" v-if="user.email">
+                        <span class="user-info_pre-title">Email:</span>
+                        <span class="user-info_title">{{ user.email }}</span>
                     </div>
                 </div>
 
                 <form class="form-group" v-on:submit="updateSettings"
                       :class="{ 'form-group--error': $v.user.$anyError }">
-                    <div>
-                        <label>
-                            <span>E-mail:</span>
-                            <input v-model="user.newEmail" :class="{ 'error': $v.user.newEmail.$error }">
-                        </label>
+                    <h3>Обновить учётные данные:</h3>
 
-                        <p class="form-group--error-text" v-if="!$v.user.newEmail.required">
-                            Поле не может быть пустым
-                        </p>
-                        <p class="form-group--error-text" v-if="!$v.user.newEmail.email">
-                            Некорректный email
-                        </p>
+                    <div class="form-group_row">
+                        <div class="form-group_label">
+                            <span class="form-group_label-title">E-mail:</span>
+                            <div class="form-group_label-input">
+                                <input v-model="user.newEmail"
+                                       :class="{ 'error': $v.user.newEmail.$error }">
+
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.newEmail.required">
+                                    Поле не может быть пустым
+                                </p>
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.newEmail.email">
+                                    Некорректный email
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label>
-                            <span>Пароль:</span>
-                            <input type="password" v-model="user.password"
-                                   :class="{ 'error': $v.user.password.$error }">
-                        </label>
+                    <div class="form-group_row">
+                        <div class="form-group_label">
+                            <span class="form-group_label-title">Пароль:</span>
+                            <div class="form-group_label-input">
+                                <input type="password"
+                                       v-model="user.password"
+                                       :class="{ 'error': $v.user.password.$error }">
 
-                        <p class="form-group--error-text" v-if="!$v.user.password.required">
-                            Поле не может быть пустым
-                        </p>
-                        <p class="form-group--error-text" v-if="!$v.user.password.minLength">
-                            Минимальная длина: {{ $v.user.password.$params.minLength.min }} символов
-                        </p>
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.password.required">
+                                    Поле не может быть пустым
+                                </p>
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.password.minLength">
+                                    Минимальная длина: {{ $v.user.password.$params.minLength.min }} символов
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label>
-                            <span>Повторите пароль:</span>
-                            <input type="password" v-model="user.repeatPassword"
-                                   :class="{ 'error': $v.user.repeatPassword.$error }">
-                        </label>
+                    <div class="form-group_row">
+                        <div class="form-group_label">
+                            <span class="form-group_label-title">Повторите пароль:</span>
+                            <div class="form-group_label-input">
+                                <input type="password"
+                                       v-model="user.repeatPassword"
+                                       :class="{ 'error': $v.user.repeatPassword.$error }">
 
-                        <p class="form-group--error-text" v-if="!$v.user.repeatPassword.minLength">
-                            Минимальная длина: {{ $v.user.repeatPassword.$params.minLength.min }} символов
-                        </p>
-                        <p class="form-group--error-text" v-if="!$v.user.repeatPassword.sameAsPassword">
-                            Пароль не совпадает!
-                        </p>
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.repeatPassword.minLength">
+                                    Минимальная длина: {{ $v.user.repeatPassword.$params.minLength.min }} символов
+                                </p>
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.repeatPassword.sameAsPassword">
+                                    Пароль не совпадает!
+                                </p>
+                            </div>
+                        </div>
                     </div>
-
-                    <button>Отправить</button>
+                    <div class="form-group_row form-group_btn">
+                        <button class="form-group_btn--send">Отправить</button>
+                    </div>
 
                     <p class="form-group--success-text" v-if="response.result">
                         {{ response.message }}
@@ -83,24 +101,34 @@
             </div>
 
             <div class="tab-pane fade" id="channels" role="tabpanel" aria-labelledby="channels-tab">
-                Каналы:
-
-                <div class="channels-list" v-if="user.channels" v-for="channel in user.channels" :key="channel.name">
-                    {{ channel.name }}
-                    <br>
-                    <label>
-                        Активен:
-                        <input type="checkbox"
-                               v-model="channel.checkboxActive"
-                               @change="updateChannel(channel.name, 'is_active', channel.checkboxActive)">
-                    </label>
-                    <br>
-                    <label>
-                        Наблюдается:
-                        <input type="checkbox"
-                               v-model="channel.checkboxWatching"
-                               @change="updateChannel(channel.name, 'is_watching', channel.checkboxWatching)">
-                    </label>
+                <div class="user-channels-list">
+                    <div class="user-channel"
+                         v-if="user.channels"
+                         v-for="channel in user.channels"
+                         :key="channel.name">
+                        <div class="user-channel_field user-channel_avatar">
+                            <img :src="channel.avatar" alt="">
+                        </div>
+                        <div class="user-channel_field user-channel_title">
+                            {{ channel.title }}
+                        </div>
+                        <div class="user-channel_field user-channel_param-active">
+                            <label>
+                                <span>Активен:</span>
+                                <input type="checkbox"
+                                       v-model="channel.checkboxActive"
+                                       @change="updateChannel(channel.name, 'is_active', channel.checkboxActive)">
+                            </label>
+                        </div>
+                        <div class="user-channel_field user-channel_param-active">
+                            <label>
+                                <span>Наблюдается:</span>
+                                <input type="checkbox"
+                                       v-model="channel.checkboxWatching"
+                                       @change="updateChannel(channel.name, 'is_watching', channel.checkboxWatching)">
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
