@@ -4,33 +4,67 @@
 
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="profile-tab" data-toggle="tab" href="#profile" role="tab"
-                   aria-controls="profile" aria-selected="true">
-                    Профиль
+                <a class="nav-link active" id="channels-tab" data-toggle="tab" href="#channels"
+                   role="tab" aria-controls="channels" aria-selected="true">
+                    Каналы
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="channels-tab" data-toggle="tab" href="#channels" role="tab"
-                   aria-controls="channels" aria-selected="false">
-                    Каналы
+                <a class="nav-link" id="profile-tab" data-toggle="tab"
+                   href="#profile" role="tab" aria-controls="profile" aria-selected="false">
+                    Профиль
                 </a>
             </li>
         </ul>
 
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="tab-pane fade show active" id="channels" role="tabpanel" aria-labelledby="channels-tab">
+                <div class="user-channels-list">
+                    <div class="user-channel"
+                         v-if="user.channels"
+                         v-for="channel in user.channels"
+                         :key="channel.name">
+                        <div class="user-channel_field user-channel_avatar">
+                            <img :src="channel.avatar" alt="">
+                        </div>
+                        <div class="user-channel_field user-channel_title">
+                            {{ channel.title }}
+                        </div>
+                        <div class="user-channel_field user-channel_param-active">
+                            <label>
+                                <span>Активен:</span>
+                                <input type="checkbox"
+                                       v-model="channel.checkboxActive"
+                                       @change="updateChannel(channel.name, 'is_active', channel.checkboxActive)">
+                            </label>
+                        </div>
+                        <div class="user-channel_field user-channel_param-active">
+                            <label>
+                                <span>Наблюдается:</span>
+                                <input type="checkbox"
+                                       v-model="channel.checkboxWatching"
+                                       @change="updateChannel(channel.name, 'is_watching', channel.checkboxWatching)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <div class="user-info">
                     <div class="user-info_name user-info_field" v-if="user.username">
-                        <span class="user-info_pre-title">Имя:</span>
+                        <span class="user-info_pre-title">Имя пользователя:</span>
                         <span class="user-info_title">{{ user.username }}</span>
                     </div>
-                    <div class="user-info_email user-info_field" v-if="user.email">
+                    <div class="user-info_email user-info_field" v-if="user.email && isAdmin">
                         <span class="user-info_pre-title">Email:</span>
                         <span class="user-info_title">{{ user.email }}</span>
                     </div>
                 </div>
 
-                <form class="form-group" v-on:submit="updateSettings"
+                <form class="form-group"
+                      v-if="isAdmin"
+                      v-on:submit="updateSettings"
                       :class="{ 'form-group--error': $v.user.$anyError }">
                     <h3>Обновить учётные данные:</h3>
 
@@ -99,38 +133,6 @@
                     </p>
                 </form>
             </div>
-
-            <div class="tab-pane fade" id="channels" role="tabpanel" aria-labelledby="channels-tab">
-                <div class="user-channels-list">
-                    <div class="user-channel"
-                         v-if="user.channels"
-                         v-for="channel in user.channels"
-                         :key="channel.name">
-                        <div class="user-channel_field user-channel_avatar">
-                            <img :src="channel.avatar" alt="">
-                        </div>
-                        <div class="user-channel_field user-channel_title">
-                            {{ channel.title }}
-                        </div>
-                        <div class="user-channel_field user-channel_param-active">
-                            <label>
-                                <span>Активен:</span>
-                                <input type="checkbox"
-                                       v-model="channel.checkboxActive"
-                                       @change="updateChannel(channel.name, 'is_active', channel.checkboxActive)">
-                            </label>
-                        </div>
-                        <div class="user-channel_field user-channel_param-active">
-                            <label>
-                                <span>Наблюдается:</span>
-                                <input type="checkbox"
-                                       v-model="channel.checkboxWatching"
-                                       @change="updateChannel(channel.name, 'is_watching', channel.checkboxWatching)">
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </template>
@@ -177,6 +179,13 @@
                     sameAsPassword: sameAs('password'),
                     minLength: minLength(8)
                 }
+            }
+        },
+        computed: {
+            isAdmin: function () {
+                console.log(this.$store.state.user);
+
+                return this.$store.state.user.roles.includes('ROLE_ADMIN');
             }
         },
         mounted() {

@@ -112,25 +112,29 @@ class TestController extends AbstractController
     public function saveTestUserInfo($tokenData, $userInfo)
     {
         if (isset($userInfo['id'])) {
+            /**
+             * @var $userAccount User
+             */
             $userAccount = $this->entityManager
                 ->getRepository('App:User')
                 ->findOneByUserId($userInfo['id']);
 
             if (!$userAccount) {
-                $user = new User();
-                $user->setToken($tokenData['access_token']);
-                $user->setTokenExpiredAt((int)$tokenData['expires_in'] + (int)$tokenData['created_at']);
-                $user->setRoles(['ROLE_USER']);
-                $user->setUserId($userInfo['id']);
-                $user->setUsername($userInfo['name']);
-                $user->setCreatedAt($userInfo['created_at']);
-                $user->setUpdatedAt($userInfo['updated_at']);
+                $userAccount = new User();
+                $userAccount->setToken($tokenData['access_token']);
+                $userAccount->setTokenExpiredAt(
+                    (int)$tokenData['expires_in'] + (int)$tokenData['created_at']
+                );
+                $userAccount->setRoles(['ROLE_USER']);
+                $userAccount->setUserId($userInfo['id']);
+                $userAccount->setUsername($userInfo['name']);
+                $userAccount->setCreatedAt($userInfo['created_at']);
+                $userAccount->setUpdatedAt($userInfo['updated_at']);
 
-                //todo Добавить таблицу для каналов, добавить сохранение каналов юзера
-
-                $this->entityManager->persist($user);
+                $this->entityManager->persist($userAccount);
             } else {
                 $userAccount->setToken($tokenData['access_token']);
+                $userAccount->setRoles(['ROLE_USER']);
                 $userAccount->setTokenExpiredAt((int)$tokenData['expires_in']);
                 $userAccount->setUpdatedAt($userInfo['updated_at']);
 

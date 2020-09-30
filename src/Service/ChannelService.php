@@ -74,7 +74,7 @@ class ChannelService
 
             foreach ($channels as $channel) {
                 $channelStored = $repo->findOneByChannelId($channel['id']);
-                $avatar = preg_replace(
+                $avatar = str_replace(
                     '%{version}',
                     'profile_pic_big',
                     $channel['avatar_versions']['template']
