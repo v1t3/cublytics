@@ -12,11 +12,21 @@
     background-color: aliceblue;
 
     &_field {
-        margin: 0 10px;
-        width: 180px;
+        margin: 5px 10px;
+
+        span {
+            margin-right: 5px;
+        }
 
         label {
+            display: flex;
+            align-items: center;
             margin: 0;
+            width: 100%;
+
+            @include max_480 {
+                justify-content: space-between;
+            }
         }
     }
 
@@ -27,6 +37,21 @@
             width: 50px;
             border-radius: 50%;
         }
+    }
+
+    &_title {
+        width: 180px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    &_param-active {
+        width: 132px;
+    }
+
+    @include max_480 {
+        flex-direction: column;
+        align-items: start;
     }
 }
 
