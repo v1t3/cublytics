@@ -37,7 +37,7 @@
 <script>
     import axios from "axios";
     import LineChart from './LineChart.js';
-    import Loader_gif from "../loader_gif";
+    import Loader_gif from "./loader_gif";
 
     export default {
         name: "coub_stat",

@@ -34,7 +34,7 @@
 <script>
     import Loader_gif from "../components/loader_gif";
     import axios from "axios";
-    import Coub_stat from "../components/coub_stat/coub_stat";
+    import Coub_stat from "../components/coub_stat";
 
     export default {
         name: "Coubdata",

@@ -28,7 +28,7 @@
 </template>
 
 <script>
-    import Channel_stat from "../components/channel_stat/channel_stat";
+    import Channel_stat from "../components/channel_stat";
     import Loader_gif from "../components/loader_gif";
 
     export default {
