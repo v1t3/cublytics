@@ -183,8 +183,6 @@
         },
         computed: {
             isAdmin: function () {
-                console.log(this.$store.state.user);
-
                 return this.$store.state.user.roles.includes('ROLE_ADMIN');
             }
         },

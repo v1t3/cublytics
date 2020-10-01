@@ -322,8 +322,6 @@
                     // result['banned'].push(item['banned']);
                 }
 
-                console.log('result', result);
-
                 //todo Настроить правильное получение кол-ва подписчиков, кд, фичей
                 // this.channel.followers = result['followers_count'].reduce(reducer, 0);
                 this.channel.views = result['views_count'].reduce(reducer, 0);
