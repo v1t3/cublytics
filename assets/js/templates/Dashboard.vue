@@ -49,10 +49,11 @@
                             'success' === data['result']
                         ) {
                             this.$store.commit('setUserData', data['data']);
+                            this.$store.commit('setStatisticType', 'month1');
                             this.show = true;
                         }
 
-                        // console.log('user', this.$store.state.user);
+                        console.log('user', this.$store.state.user);
                     })
                     .catch((error) => {
                         console.error('catch error: ', error);

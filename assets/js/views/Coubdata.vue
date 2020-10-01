@@ -74,7 +74,7 @@
                 coub_active_id: '',
                 show_stat: true,
                 showLoader: false,
-                statistic_type: 'month1',
+                statistic_type: '',
             }
         },
         mounted() {
@@ -85,6 +85,10 @@
                 //hide coubs list
                 this.coubList = [];
                 this.showLoader = true;
+
+                if (undefined !== this.$store.state.user.statistic_type) {
+                    this.statistic_type = this.$store.state.user.statistic_type;
+                }
 
                 if (
                     undefined !== this.$store.state.user.channels &&
@@ -155,6 +159,7 @@
                 this.showLoader = true;
                 this.$nextTick(function () {
                     if (type) {
+                        this.$store.commit('setStatisticType', type);
                         that.statistic_type = type;
                     }
 

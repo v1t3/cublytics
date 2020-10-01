@@ -67,7 +67,7 @@
                 channels: [],
                 channel_active: '',
                 channel_name: '',
-                statistic_type: 'month1',
+                statistic_type: '',
                 show_stat: true,
                 showLoader: false,
             }
@@ -78,6 +78,10 @@
         methods: {
             getChannelsList: function () {
                 this.showLoader = true;
+
+                if (undefined !== this.$store.state.user.statistic_type) {
+                    this.statistic_type = this.$store.state.user.statistic_type;
+                }
 
                 if (undefined !== this.$store.state.user.channels) {
                     this.channels = this.$store.state.user.channels;
@@ -98,6 +102,7 @@
                 this.$nextTick(function () {
                     that.channel_name = that.channel_active;
                     if (type) {
+                        this.$store.commit('setStatisticType', type);
                         that.statistic_type = type;
                     }
 

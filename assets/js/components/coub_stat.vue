@@ -223,8 +223,11 @@
                                     }
                                 }
 
-                                if (data['error']) {
-                                    that.error = 'Error: ' + data['error'];
+                                if (
+                                    undefined !== data['error'] &&
+                                    undefined !== data['error']['message']
+                                ) {
+                                    that.error = 'Error: ' + data['error']['message'];
                                     that.clearData();
                                 }
                             }

@@ -37,6 +37,12 @@ const store = new Vuex.Store({
             }
         },
 
+        setStatisticType(state, params) {
+            if (state.user && params) {
+                state.user.statistic_type = params;
+            }
+        },
+
         updateChannel(state, params) {
             if (
                 params.hasOwnProperty('channel')
