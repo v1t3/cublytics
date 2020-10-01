@@ -2,8 +2,7 @@
     <div class="logo"></div>
     <div class="top-menu">
         <div class="top-left links">
-            <a href="/" class="top-menu-link">Главная</a>
-            <a href="/about" class="top-menu-link">Где я?</a>
+            <a href="{{ path('main') }}" class="top-menu-link">Главная</a>
         </div>
         <div class="top-right links">
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
