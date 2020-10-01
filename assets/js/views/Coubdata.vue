@@ -141,17 +141,17 @@
             getActiveCoub: function (type = '') {
                 let that = this;
 
-                if (type !== this.statistic_type) {
-                    this.show_stat = false;
-                    this.statistic_type = type;
-
-                    this.$nextTick(function () {
-                        if (type) {
-                            that.statistic_type = type;
-                        }
-                        that.show_stat = true;
-                    });
+                if (type && type === this.statistic_type) {
+                    return;
                 }
+
+                this.show_stat = false;
+                this.$nextTick(function () {
+                    if (type) {
+                        that.statistic_type = type;
+                    }
+                    that.show_stat = true;
+                });
             }
         }
     }

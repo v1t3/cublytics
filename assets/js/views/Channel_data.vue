@@ -7,15 +7,41 @@
                     <option v-for="channel in channels" :key="channel.name">{{ channel.name }}</option>
                 </select>
             </div>
-            <div class="channel-info" v-if="channels">
-                <h3>Статистика по каналу: {{ channel_active }}</h3>
-                <span class="statistic-btn-time btn" @click="getActive('day')">День</span>
-                <span class="statistic-btn-time btn" @click="getActive('week')">Неделя</span>
-                <span class="statistic-btn-time btn" @click="getActive('month1')">Месяц</span>
-                <span class="statistic-btn-time btn" @click="getActive('month6')">Пол года</span>
-                <span class="statistic-btn-time btn" @click="getActive('year')">Год</span>
-                <span class="statistic-btn-time btn" @click="getActive('all')">Всё время</span>
-                <br><br>
+
+            <div class="channel-info">
+                <div class="statistic-btn" v-if="channels.length">
+                    <span class="statistic-btn_time btn"
+                          v-bind:class="{active: statistic_type === 'day'}"
+                          @click="getActive('day')">
+                        День
+                    </span>
+                    <span class="statistic-btn_time btn"
+                          v-bind:class="{active: statistic_type === 'week'}"
+                          @click="getActive('week')">
+                        Неделя
+                    </span>
+                    <span class="statistic-btn_time btn"
+                          v-bind:class="{active: statistic_type === 'month1'}"
+                          @click="getActive('month1')">
+                        Месяц
+                    </span>
+                    <span class="statistic-btn_time btn"
+                          v-bind:class="{active: statistic_type === 'month6'}"
+                          @click="getActive('month6')">
+                          Пол года
+                    </span>
+                    <span class="statistic-btn_time btn"
+                          v-bind:class="{active: statistic_type === 'year'}"
+                          @click="getActive('year')">
+                        Год
+                    </span>
+                    <span class="statistic-btn_time btn"
+                          v-bind:class="{active: statistic_type === 'all'}"
+                          @click="getActive('all')">
+                        Всё время
+                    </span>
+                </div>
+
                 <channel_stat v-if="show_stat && channel_active"
                               :channel_name="channel_active"
                               :statistic_type="statistic_type"
@@ -58,14 +84,18 @@
                 }
             },
             getActive: function (type = '') {
-                this.show_stat = false;
                 let that = this;
+
+                if (type && type === this.statistic_type) {
+                    return;
+                }
+
+                this.show_stat = false;
                 this.$nextTick(function () {
                     that.channel_name = that.channel_active;
                     if (type) {
                         that.statistic_type = type;
                     }
-
                     that.show_stat = true;
                 });
             }
