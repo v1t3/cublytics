@@ -1,6 +1,6 @@
 <template>
     <div class="view-container coub-view">
-        <h1>Статистика по коубам</h1>
+        <h1 class="view-title">Статистика коубов</h1>
 
         <div class="channel-list">
             <select v-model="channel_active_id" @change="getActiveChannel()">
