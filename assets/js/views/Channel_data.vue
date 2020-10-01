@@ -67,7 +67,7 @@
                 channels: [],
                 channel_active: '',
                 channel_name: '',
-                statistic_type: '',
+                statistic_type: 'month1',
                 show_stat: true,
                 showLoader: false,
             }

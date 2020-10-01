@@ -256,7 +256,7 @@
                 }
 
                 for (let i = 0, len = data.length; i < len; i++) {
-                    let date = data[i]['timestamp']['date'];
+                    let date = data[i]['timestamp'];
 
                     if (!dates.includes(date)) {
                         dates.push(date);

@@ -100,7 +100,7 @@ class CoubController extends AbstractController
     public function getCoubStatistic(Request $request, CoubService $coubService)
     {
         $coubId = (string)$request->request->get('coub_id');
-        $statType = (string)$request->request->get('statistic_type') ?: 'month';
+        $statType = (string)$request->request->get('statistic_type');
 
         try {
             //todo проверка по времени

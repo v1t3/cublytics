@@ -235,6 +235,39 @@ class ChannelService
             throw new Exception('Не указано поле channel_name или type');
         }
 
+        $dateFormat = '';
+        $ymdStart = date('Y-m-d');
+        $ymdEnd = date('Y-m-d');
+
+        switch ($statType) {
+            case 'day':
+                $dateFormat = 'H:00';
+                break;
+            case 'week':
+                $dateFormat = 'd.m';
+                $ymdStart = date('Y-m-d', strtotime('-7 day'));
+                break;
+            case 'month1':
+                $dateFormat = 'd.m';
+                $ymdStart = date('Y-m-d', strtotime('-1 month'));
+                break;
+            case 'month6':
+                $dateFormat = 'd.m.Y';
+                $ymdStart = date('Y-m-d', strtotime('-6 month'));
+                break;
+            case 'year':
+                $dateFormat = 'm.Y';
+                $ymdStart = date('Y-m-d', strtotime('-1 year'));
+                break;
+            case 'all':
+                $dateFormat = 'm.Y';
+                $ymdStart = '2010-01-01';
+                break;
+        }
+
+        $dateStart = new \DateTime("{$ymdStart} 00:00:00");
+        $dateEnd = new \DateTime("{$ymdEnd} 23:59.59");
+
         /**
          * @var $channelRepo ChannelRepository
          * @var $channel     Channel
@@ -249,7 +282,7 @@ class ChannelService
              * @var $coubsStat     CoubStat
              */
             $coubsStatRepo = $this->entityManager->getRepository(CoubStat::class);
-            $coubsStat = $coubsStatRepo->findBy(['channel_id' => $channelId]);
+            $coubsStat = $coubsStatRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
 
             if ($coubsStat) {
                 /**
@@ -258,7 +291,7 @@ class ChannelService
                 foreach ($coubsStat as $coub) {
                     $result[] = [
                         'coub_id'        => $coub->getCoubId(),
-                        'timestamp'      => $coub->getDateCreate(),
+                        'timestamp'      => $coub->getDateCreate()->format($dateFormat),
                         'like_count'     => $coub->getLikeCount(),
                         'repost_count'   => $coub->getRepostCount(),
                         'remixes_count'  => $coub->getRemixesCount(),

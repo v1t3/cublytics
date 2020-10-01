@@ -74,7 +74,7 @@
                 coub_active_id: '',
                 show_stat: true,
                 showLoader: false,
-                statistic_type: '',
+                statistic_type: 'month1',
             }
         },
         mounted() {

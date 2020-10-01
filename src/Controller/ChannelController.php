@@ -77,7 +77,7 @@ class ChannelController extends AbstractController
     public function getChannelStatistic(Request $request, ChannelService $channelService)
     {
         $channelName = (string)$request->request->get('channel_name');
-        $statType = (string)$request->request->get('statistic_type') ?: 'month';
+        $statType = (string)$request->request->get('statistic_type');
 
         try {
             //todo проверка по времени

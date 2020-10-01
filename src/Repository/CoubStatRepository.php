@@ -19,6 +19,36 @@ class CoubStatRepository extends ServiceEntityRepository
         parent::__construct($registry, CoubStat::class);
     }
 
+    public function findByPeriodChannel($channelId, \DateTime $dateStart, \DateTime $dateEnd)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.channel_id = :id')
+            ->andWhere('c.date_create >= :date_start')
+            ->andWhere('c.date_create <= :date_end')
+            ->setParameter('id', $channelId)
+            ->setParameter('date_start', $dateStart)
+            ->setParameter('date_end', $dateEnd)
+            ->orderBy('c.date_create', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
+    public function findByPeriodCoub($coubId, \DateTime $dateStart, \DateTime $dateEnd)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.coub_id = :id')
+            ->andWhere('c.date_create >= :date_start')
+            ->andWhere('c.date_create <= :date_end')
+            ->setParameter('id', $coubId)
+            ->setParameter('date_start', $dateStart)
+            ->setParameter('date_end', $dateEnd)
+            ->orderBy('c.date_create', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return CoubStat[] Returns an array of CoubStat objects
     //  */
