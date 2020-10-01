@@ -151,9 +151,20 @@
     }
 }
 
-.statistic-btn-time {
-    &:hover {
-        background-color: #dcdcdc;
+.statistic-btn {
+    &_time {
+        border: none;
+        border-radius: 0;
+        background-color: #c1daf7;
+        margin: 5px;
+
+        &:hover {
+            background-color: darken(#c1daf7, 10%);
+        }
+
+        &.active {
+            background-color: darken(#c1daf7, 25%);
+        }
     }
 }
 
@@ -201,5 +212,26 @@
 
     @include max_480 {
         margin-right: 0;
+    }
+}
+
+// coub
+
+.views-total {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1em 0;
+
+    &_row {
+        padding: 5px 10px;
+        margin: 5px;
+        background: antiquewhite;
+    }
+
+    &_title {
+        margin-right: 5px;
+    }
+
+    &_text {
     }
 }

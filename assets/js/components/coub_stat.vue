@@ -2,15 +2,39 @@
     <div class="" id="coub-performance">
         <loader_gif v-if="showLoader"/>
 
-        <div class="views">
-            <div v-if="coub.views">Просмотры: {{ coub.views }}</div>
-            <div v-if="coub.likes">Лайки: {{ coub.likes }}</div>
-            <div v-if="coub.dislikes">Дизлайки: {{ coub.dislikes }}</div>
-            <div v-if="coub.reposts">Репосты: {{ coub.reposts }}</div>
-            <div v-if="coub.reposts">Рекоубы: {{ coub.recoubs }}</div>
-            <div v-if="coub.kd">КД: {{ coub.kd }}</div>
-            <div v-if="coub.featured">Фич: {{ coub.featured }}</div>
-            <div v-if="coub.banned">Бан: {{ coub.banned }}</div>
+        <div class="views-total">
+            <div class="views-total_row" v-if="coub.views">
+                <span class="views-total_title">Просмотры:</span>
+                <span class="views-total_text">{{ coub.views }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.likes">
+                <span class="views-total_title">Лайки:</span>
+                <span class="views-total_text">{{ coub.likes }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.dislikes">
+                <span class="views-total_title">Дизлайки:</span>
+                <span class="views-total_text">{{ coub.dislikes }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.reposts">
+                <span class="views-total_title">Репосты:</span>
+                <span class="views-total_text">{{ coub.reposts }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.reposts">
+                <span class="views-total_title">Рекоубы:</span>
+                <span class="views-total_text">{{ coub.recoubs }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.kd">
+                <span class="views-total_title">КД:</span>
+                <span class="views-total_text">{{ coub.kd }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.featured">
+                <span class="views-total_title">Фич:</span>
+                <span class="views-total_text">{{ coub.featured }}</span>
+            </div>
+            <div class="views-total_row" v-if="coub.banned">
+                <span class="views-total_title">Бан:</span>
+                <span class="views-total_text">{{ coub.banned }}</span>
+            </div>
         </div>
 
         <div class="chart-wrap">

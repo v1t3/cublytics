@@ -4,7 +4,7 @@
 
         <div class="channel-list">
             <select v-model="channel_active_id" @change="getActiveChannel()">
-                <option v-for="channel in channelList" :value="channel.channel_id">{{ channel.name }}</option>
+                <option v-for="channel in channelList" :value="channel.channel_id">{{ channel.title }}</option>
             </select>
         </div>
 
@@ -15,13 +15,37 @@
             </select>
         </div>
 
-        <div class="" v-if="coubList.length">
-            <span class="statistic-btn-time btn" @click="getActiveCoub('day')">День</span>
-            <span class="statistic-btn-time btn" @click="getActiveCoub('week')">Неделя</span>
-            <span class="statistic-btn-time btn" @click="getActiveCoub('month1')">Месяц</span>
-            <span class="statistic-btn-time btn" @click="getActiveCoub('month6')">Пол года</span>
-            <span class="statistic-btn-time btn" @click="getActiveCoub('year')">Год</span>
-            <span class="statistic-btn-time btn" @click="getActiveCoub('all')">Всё время</span>
+        <div class="statistic-btn" v-if="coubList.length">
+            <span class="statistic-btn_time btn"
+                  v-bind:class="{active: statistic_type === 'day'}"
+                  @click="getActiveCoub('day')">
+                День
+            </span>
+            <span class="statistic-btn_time btn"
+                  v-bind:class="{active: statistic_type === 'week'}"
+                  @click="getActiveCoub('week')">
+                Неделя
+            </span>
+            <span class="statistic-btn_time btn"
+                  v-bind:class="{active: statistic_type === 'month1'}"
+                  @click="getActiveCoub('month1')">
+                Месяц
+            </span>
+            <span class="statistic-btn_time btn"
+                  v-bind:class="{active: statistic_type === 'month6'}"
+                  @click="getActiveCoub('month6')">
+                  Пол года
+            </span>
+            <span class="statistic-btn_time btn"
+                  v-bind:class="{active: statistic_type === 'year'}"
+                  @click="getActiveCoub('year')">
+                Год
+            </span>
+            <span class="statistic-btn_time btn"
+                  v-bind:class="{active: statistic_type === 'all'}"
+                  @click="getActiveCoub('all')">
+                Всё время
+            </span>
         </div>
 
         <coub_stat v-if="show_stat && coub_active_id"
@@ -96,7 +120,7 @@
                         .then((response) => {
                             let data = response['data'];
 
-                            // console.log('data user', data);
+                            // console.log('data coub', data);
 
                             if (
                                 data
@@ -104,7 +128,9 @@
                                 && undefined !== data['data']['coubs'][0]
                             ) {
                                 this.coubList = data['data']['coubs'];
-                                this.coub_active = this.coubList[0].title;
+                                this.coub_active_id = this.coubList[0]['coub_id'];
+
+                                this.getActiveCoub();
                             }
                         })
                         .catch((error) => {
@@ -114,13 +140,18 @@
             },
             getActiveCoub: function (type = '') {
                 let that = this;
-                this.show_stat = false;
-                this.$nextTick(function () {
-                    if (type) {
-                        that.statistic_type = type;
-                    }
-                    that.show_stat = true;
-                });
+
+                if (type !== this.statistic_type) {
+                    this.show_stat = false;
+                    this.statistic_type = type;
+
+                    this.$nextTick(function () {
+                        if (type) {
+                            that.statistic_type = type;
+                        }
+                        that.show_stat = true;
+                    });
+                }
             }
         }
     }
