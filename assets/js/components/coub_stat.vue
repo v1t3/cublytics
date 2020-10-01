@@ -221,19 +221,6 @@
                                             this.chartsInfo[i]['color'],
                                         );
                                     }
-
-                                    // this.pushToDataset(coubsData, 'views_count', 'Просмотры');
-                                    // this.pushToDataset(coubsData, 'like_count', 'Лайки');
-                                    // this.pushToDataset(coubsData, 'repost_count', 'Репосты');
-                                    // this.pushToDataset(coubsData, 'remixes_count', 'Рекоубы');
-                                    // this.pushToDataset(coubsData, 'is_kd', 'КД');
-                                    // this.pushToDataset(coubsData, 'featured', 'Фич');
-                                    // this.pushToDataset(coubsData, 'banned', 'Бан');
-
-                                    // //отравим данные для графика
-                                    // if (this.tempDataset) {
-                                    //     that.fillData(coubsData['dates'], this.tempDataset);
-                                    // }
                                 }
 
                                 if (data['error']) {
