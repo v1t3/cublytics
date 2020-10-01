@@ -34,6 +34,10 @@
     padding: 1em;
     margin: 0 auto 1em;
     min-height: 300px;
+
+    @include max_480 {
+        padding: 1em 0;
+    }
 }
 
 .charts-types {
@@ -184,6 +188,7 @@
     padding: 1em;
     margin-right: 1em;
     margin-bottom: 1em;
+    max-width: 100%;
 
     &-title {
         margin-bottom: 1em;
@@ -192,5 +197,9 @@
         span {
             font-size: 1.2em;
         }
+    }
+
+    @include max_480 {
+        margin-right: 0;
     }
 }
