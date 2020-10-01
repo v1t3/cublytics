@@ -68,7 +68,7 @@
         },
         data() {
             return {
-                channelList: null,
+                channelList: [],
                 channel_active_id: '',
                 coubList: [],
                 coub_active_id: '',
@@ -84,6 +84,7 @@
             getChannelsList: function () {
                 //hide coubs list
                 this.coubList = [];
+                this.showLoader = true;
 
                 if (
                     undefined !== this.$store.state.user.channels &&
@@ -94,6 +95,8 @@
 
                     this.getCoubList();
                 }
+
+                this.showLoader = false;
             },
             getActiveChannel: function () {
                 let that = this;
@@ -105,6 +108,7 @@
             getCoubList: function () {
                 //hide coubs list
                 this.coubList = [];
+                this.showLoader = true;
 
                 if (this.channel_active_id) {
                     this.show_stat = false;
@@ -136,6 +140,8 @@
                         .catch((error) => {
                             console.error('catch error: ', error);
                         });
+
+                    this.showLoader = false;
                 }
             },
             getActiveCoub: function (type = '') {
@@ -146,10 +152,13 @@
                 }
 
                 this.show_stat = false;
+                this.showLoader = true;
                 this.$nextTick(function () {
                     if (type) {
                         that.statistic_type = type;
                     }
+
+                    this.showLoader = false;
                     that.show_stat = true;
                 });
             }

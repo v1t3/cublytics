@@ -7,7 +7,6 @@
                     <option v-for="channel in channels" :key="channel.name">{{ channel.name }}</option>
                 </select>
             </div>
-
             <div class="channel-info">
                 <div class="statistic-btn" v-if="channels.length">
                     <span class="statistic-btn_time btn"
@@ -65,7 +64,7 @@
         },
         data() {
             return {
-                channels: null,
+                channels: [],
                 channel_active: '',
                 channel_name: '',
                 statistic_type: '',
@@ -78,10 +77,14 @@
         },
         methods: {
             getChannelsList: function () {
+                this.showLoader = true;
+
                 if (undefined !== this.$store.state.user.channels) {
                     this.channels = this.$store.state.user.channels;
                     this.channel_active = this.channels[0].name;
                 }
+
+                this.showLoader = false;
             },
             getActive: function (type = '') {
                 let that = this;
@@ -91,11 +94,14 @@
                 }
 
                 this.show_stat = false;
+                this.showLoader = true;
                 this.$nextTick(function () {
                     that.channel_name = that.channel_active;
                     if (type) {
                         that.statistic_type = type;
                     }
+
+                    this.showLoader = false;
                     that.show_stat = true;
                 });
             }
