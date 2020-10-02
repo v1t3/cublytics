@@ -209,9 +209,14 @@ class ChannelService
                     'is_current'      => $userChannel->getIsCurrent(),
                     'views_count'     => $userChannel->getViewsCount(),
                     'likes_count'     => $userChannel->getLikesCount(),
+                    'dislikes_count'  => $userChannel->getDislikesCount(),
                     'followers_count' => $userChannel->getFollowersCount(),
+                    'reposts_count'   => $userChannel->getRepostsCount(),
                     'recoubs_count'   => $userChannel->getRemixesCount(),
-                    'stories_count'   => $userChannel->getStoriesCount()
+                    'stories_count'   => $userChannel->getStoriesCount(),
+                    'kd_count'        => $userChannel->getKdCount(),
+                    'featured_count'  => $userChannel->getFeaturedCount(),
+                    'banned_count'    => $userChannel->getBannedCount(),
                 ];
             }
         }

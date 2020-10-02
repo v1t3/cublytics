@@ -23,10 +23,14 @@
                         </div>
                         <div class="channel-home_counters">
                             <span>Подписчиков: {{ channel.followers_count || 0 }}</span>
+                            <span>Просмотров: {{ channel.views_count || 0 }}</span>
                             <span>Лайков: {{ channel.likes_count || 0 }}</span>
                             <span>Репостов: {{ channel.reposts_count || 0 }}</span>
                             <span>Рекоубов: {{ channel.recoubs_count || 0 }}</span>
+                            <span>КД: {{ channel.kd_count || 0 }}</span>
+                            <span>Фичей: {{ channel.featured_count || 0 }}</span>
                             <span>Историй: {{ channel.stories_count || 0 }}</span>
+                            <span>Банов: {{ channel.banned_count || 0 }}</span>
                         </div>
                     </div>
                 </div>
