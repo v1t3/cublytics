@@ -248,9 +248,25 @@
                 let dates = [];
                 const reducer = (accumulator, currentValue) => accumulator + currentValue;
 
-                if (!data) {
+                if (!data || undefined === data['counts']) {
                     return [];
                 }
+
+                if (undefined !== data['total']) {
+                    this.channel = {
+                        followers: data['total']['followers_count'],
+                        views:     data['total']['views_count'],
+                        likes:     data['total']['likes_count'],
+                        dislikes:  data['total']['dislikes_count'],
+                        reposts:   data['total']['repost_count'],
+                        recoubs:   data['total']['remixes_count'],
+                        kd:        data['total']['kd_count'],
+                        featured:  data['total']['featured_count'],
+                        banned:    data['total']['banned_count'],
+                    };
+                }
+
+                data = data['counts'];
 
                 for (let i = 0, len = data.length; i < len; i++) {
                     let date = data[i]['timestamp'];
@@ -320,21 +336,15 @@
                     result['repost_count'].push(item['repost_count']);
                     result['remixes_count'].push(item['remixes_count']);
                     result['dislikes_count'].push(item['dislikes_count']);
-                    // result['is_kd'].push(item['is_kd']);
-                    // result['featured'].push(item['featured']);
-                    // result['banned'].push(item['banned']);
                 }
 
-                //todo Настроить правильное получение кол-ва подписчиков, кд, фичей
-                // this.channel.followers = result['followers_count'].reduce(reducer, 0);
-                this.channel.views = result['views_count'].reduce(reducer, 0);
-                this.channel.likes = result['like_count'].reduce(reducer, 0);
-                this.channel.dislikes = result['dislikes_count'].reduce(reducer, 0);
-                this.channel.reposts = result['repost_count'].reduce(reducer, 0);
-                this.channel.recoubs = result['remixes_count'].reduce(reducer, 0);
-                // this.channel.kd = result['is_kd'].reduce(reducer, 0);
-                // this.channel.featured = result['featured'].reduce(reducer, 0);
-                // this.channel.banned = result['banned'].reduce(reducer, 0);
+                // //todo Настроить правильное получение кол-ва подписчиков, кд, фичей
+                // // this.channel.followers = result['followers_count'].reduce(reducer, 0);
+                // this.channel.views = result['views_count'].reduce(reducer, 0);
+                // this.channel.likes = result['like_count'].reduce(reducer, 0);
+                // this.channel.dislikes = result['dislikes_count'].reduce(reducer, 0);
+                // this.channel.reposts = result['repost_count'].reduce(reducer, 0);
+                // this.channel.recoubs = result['remixes_count'].reduce(reducer, 0);
 
                 result['dates'] = dates;
 

@@ -53,7 +53,8 @@
                             this.show = true;
                         }
 
-                        console.log('user', this.$store.state.user);
+
+                        // console.log('user', this.$store.state.user);
                     })
                     .catch((error) => {
                         console.error('catch error: ', error);

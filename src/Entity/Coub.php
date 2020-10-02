@@ -65,6 +65,21 @@ class Coub
      */
     private $date_update;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $is_kd;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $featured;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $banned;
+
     public function __construct()
     {
         $this->setDateCreate();
@@ -211,6 +226,42 @@ class Coub
     public function setDateUpdate(): self
     {
         $this->date_update = new DateTime();
+
+        return $this;
+    }
+
+    public function getIsKd(): ?bool
+    {
+        return $this->is_kd;
+    }
+
+    public function setIsKd(?bool $is_kd): self
+    {
+        $this->is_kd = $is_kd;
+
+        return $this;
+    }
+
+    public function getFeatured(): ?bool
+    {
+        return $this->featured;
+    }
+
+    public function setFeatured(?bool $featured): self
+    {
+        $this->featured = $featured;
+
+        return $this;
+    }
+
+    public function getBanned(): ?bool
+    {
+        return $this->banned;
+    }
+
+    public function setBanned(?bool $banned): self
+    {
+        $this->banned = $banned;
 
         return $this;
     }

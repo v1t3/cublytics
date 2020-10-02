@@ -179,22 +179,16 @@ class CoubUpdateCommand extends Command
          */
         $channelRepo = $this->entityManager->getRepository(Channel::class);
 
+        $params = [
+            'is_active'   => true,
+            'is_watching' => true
+        ];
+
         if ('' !== (string)$singleChannel) {
-            $channels = $channelRepo->findBy(
-                [
-                    'is_active'         => true,
-                    'is_watching'       => true,
-                    'channel_permalink' => $singleChannel,
-                ]
-            );
-        } else {
-            $channels = $channelRepo->findBy(
-                [
-                    'is_active'   => true,
-                    'is_watching' => true
-                ]
-            );
+            $params['channel_permalink'] = $singleChannel;
         }
+
+        $channels = $channelRepo->findBy($params);
 
         if (!$channels) {
             $this->output->writeln(

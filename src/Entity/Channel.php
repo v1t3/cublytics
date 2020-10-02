@@ -69,6 +69,11 @@ class Channel
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
+    private $views_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
     private $recoubs_count;
 
     /**
@@ -84,7 +89,32 @@ class Channel
     /**
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $views_count;
+    private $dislikes_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $reposts_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $remixes_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $kd_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $featured_count;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $banned_count;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -271,20 +301,6 @@ class Channel
         return $this;
     }
 
-    public function getRecoubsCount(): ?int
-    {
-        return $this->recoubs_count;
-    }
-
-    public function setRecoubsCount(?int $recoubs_count): self
-    {
-        $this->recoubs_count = $recoubs_count;
-
-        $this->setDateUpdate();
-
-        return $this;
-    }
-
     public function getLikesCount(): ?int
     {
         return $this->likes_count;
@@ -393,6 +409,78 @@ class Channel
         $this->deleted_at = $deleted_at;
 
         $this->setDateUpdate();
+
+        return $this;
+    }
+
+    public function getKdCount(): ?int
+    {
+        return $this->kd_count;
+    }
+
+    public function setKdCount(?int $kd_count): self
+    {
+        $this->kd_count = $kd_count;
+
+        return $this;
+    }
+
+    public function getFeaturedCount(): ?int
+    {
+        return $this->featured_count;
+    }
+
+    public function setFeaturedCount(?int $featured_count): self
+    {
+        $this->featured_count = $featured_count;
+
+        return $this;
+    }
+
+    public function getBannedCount(): ?int
+    {
+        return $this->banned_count;
+    }
+
+    public function setBannedCount(?int $banned_count): self
+    {
+        $this->banned_count = $banned_count;
+
+        return $this;
+    }
+
+    public function getDislikesCount(): ?int
+    {
+        return $this->dislikes_count;
+    }
+
+    public function setDislikesCount(?int $dislikes_count): self
+    {
+        $this->dislikes_count = $dislikes_count;
+
+        return $this;
+    }
+
+    public function getRepostsCount(): ?int
+    {
+        return $this->reposts_count;
+    }
+
+    public function setRepostsCount(?int $reposts_count): self
+    {
+        $this->reposts_count = $reposts_count;
+
+        return $this;
+    }
+
+    public function getRemixesCount(): ?int
+    {
+        return $this->remixes_count;
+    }
+
+    public function setRemixesCount(?int $remixes_count): self
+    {
+        $this->remixes_count = $remixes_count;
 
         return $this;
     }

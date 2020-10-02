@@ -92,7 +92,6 @@ class ChannelService
                     $ch->setCreatedAt($channel['created_at']);
                     $ch->setUpdatedAt($channel['updated_at']);
                     $ch->setFollowersCount($channel['followers_count']);
-                    $ch->setRecoubsCount($channel['recoubs_count']);
                     $ch->setStoriesCount($channel['stories_count']);
                     $ch->setAvatar($avatar);
 
@@ -211,7 +210,7 @@ class ChannelService
                     'views_count'     => $userChannel->getViewsCount(),
                     'likes_count'     => $userChannel->getLikesCount(),
                     'followers_count' => $userChannel->getFollowersCount(),
-                    'recoubs_count'   => $userChannel->getRecoubsCount(),
+                    'recoubs_count'   => $userChannel->getRemixesCount(),
                     'stories_count'   => $userChannel->getStoriesCount()
                 ];
             }
@@ -277,6 +276,20 @@ class ChannelService
 
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
+
+            $result['total'] = [
+                'followers_count' => $channel->getFollowersCount(),
+                'views_count'     => $channel->getViewsCount(),
+                'likes_count'     => $channel->getLikesCount(),
+                'dislikes_count'  => $channel->getDislikesCount(),
+                'repost_count'    => $channel->getRepostsCount(),
+                'remixes_count'   => $channel->getRemixesCount(),
+                'stories_count'   => $channel->getStoriesCount(),
+                'kd_count'        => $channel->getKdCount(),
+                'featured_count'  => $channel->getFeaturedCount(),
+                'banned_count'    => $channel->getBannedCount(),
+            ];
+
             /**
              * @var $coubsStatRepo CoubStatRepository
              * @var $coubsStat     CoubStat
@@ -284,22 +297,21 @@ class ChannelService
             $coubsStatRepo = $this->entityManager->getRepository(CoubStat::class);
             $coubsStat = $coubsStatRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
 
-            if ($coubsStat) {
+            if (!empty($coubsStat)) {
                 /**
                  * @var $coub CoubStat
                  */
                 foreach ($coubsStat as $coub) {
-                    $result[] = [
-                        'coub_id'        => $coub->getCoubId(),
+                    $coubId = $coub->getCoubId();
+
+                    $result['counts'][] = [
+                        'coub_id'        => $coubId,
                         'timestamp'      => $coub->getDateCreate()->format($dateFormat),
                         'like_count'     => $coub->getLikeCount(),
                         'repost_count'   => $coub->getRepostCount(),
-                        'remixes_count'  => $coub->getRemixesCount(),
+                        'recoubs_count'  => $coub->getRemixesCount(),
                         'views_count'    => $coub->getViewsCount(),
                         'dislikes_count' => $coub->getDislikesCount(),
-                        'is_kd'          => $coub->getIsKd(),
-                        'featured'       => $coub->getFeatured(),
-                        'banned'         => $coub->getBanned(),
                     ];
                 }
             }
@@ -407,6 +419,17 @@ class ChannelService
              */
             $coubRepo = $this->entityManager->getRepository(Coub::class);
 
+            $tempChannel = [
+                'views_count'    => 0,
+                'likes_count'    => 0,
+                'reposts_count'  => 0,
+                'remixes_count'  => 0,
+                'dislikes_count' => 0,
+                'kd_count'       => 0,
+                'featured_count' => 0,
+                'banned_count'   => 0,
+            ];
+
             foreach ($data as $coub) {
                 /**
                  * @var $coubItem Coub
@@ -418,9 +441,10 @@ class ChannelService
                         $coubItem->setChannelId($channelId);
                         $coubItem->setTitle($coub['title']);
                         $coubItem->setUpdatedAt($coub['updated_at']);
-                        //todo Реализовать проверку существования coub'a при выполнении задания cron
+                        $coubItem->setIsKd($coub['cotd']);
+                        $coubItem->setFeatured($coub['featured']);
+                        $coubItem->setBanned($coub['banned']);
 
-                        //добавим coub к сохранению
                         $this->entityManager->persist($coubItem);
                     }
                 } elseif (empty($coub['recoub_to'])) {
@@ -431,8 +455,10 @@ class ChannelService
                     $coubItem->setTitle($coub['title']);
                     $coubItem->setCreatedAt($coub['created_at']);
                     $coubItem->setUpdatedAt($coub['updated_at']);
+                    $coubItem->setIsKd($coub['cotd']);
+                    $coubItem->setFeatured($coub['featured']);
+                    $coubItem->setBanned($coub['banned']);
 
-                    //добавим coub к сохранению
                     $this->entityManager->persist($coubItem);
                 }
 
@@ -441,20 +467,48 @@ class ChannelService
                     $coubStatItem = new CoubStat();
                     $coubStatItem->setCoubId($coub['id']);
                     $coubStatItem->setChannelId($channelId);
+                    $coubStatItem->setViewsCount($coub['views_count']);
                     $coubStatItem->setLikeCount($coub['likes_count']);
                     $coubStatItem->setRepostCount($coub['recoubs_count']);
                     $coubStatItem->setRemixesCount($coub['remixes_count']);
                     $coubStatItem->setDislikesCount($coub['dislikes_count']);
-                    $coubStatItem->setViewsCount($coub['views_count']);
-                    $coubStatItem->setFeatured($coub['featured']);
                     $coubStatItem->setIsKd($coub['cotd']);
+                    $coubStatItem->setFeatured($coub['featured']);
                     $coubStatItem->setBanned($coub['banned']);
 
-                    //добавим данные coub'a к сохранению
                     $this->entityManager->persist($coubStatItem);
+
+                    // подготовить данные для канала
+                    $tempChannel['views_count'] = (int)$tempChannel['views_count'] + (int)$coub['views_count'];
+                    $tempChannel['likes_count'] = (int)$tempChannel['likes_count'] + (int)$coub['likes_count'];
+                    $tempChannel['reposts_count'] = (int)$tempChannel['reposts_count'] + (int)$coub['recoubs_count'];
+                    $tempChannel['remixes_count'] = (int)$tempChannel['remixes_count'] + (int)$coub['remixes_count'];
+                    $tempChannel['dislikes_count'] = (int)$tempChannel['dislikes_count'] + (int)$coub['dislikes_count'];
+                    if (true === (bool)$coub['cotd']) {
+                        $tempChannel['kd_count']++;
+                    }
+                    if (true === (bool)$coub['featured']) {
+                        $tempChannel['featured_count']++;
+                    }
+                    if (true === (bool)$coub['banned']) {
+                        $tempChannel['banned_count']++;
+                    }
                 }
             }
 
+            // обновить channel
+            $channel->setViewsCount($tempChannel['views_count']);
+            $channel->setLikesCount($tempChannel['likes_count']);
+            $channel->setRepostsCount($tempChannel['reposts_count']);
+            $channel->setRemixesCount($tempChannel['remixes_count']);
+            $channel->setDislikesCount($tempChannel['dislikes_count']);
+            $channel->setKdCount($tempChannel['kd_count']);
+            $channel->setFeaturedCount($tempChannel['featured_count']);
+            $channel->setBannedCount($tempChannel['banned_count']);
+
+            $this->entityManager->persist($channel);
+
+            // сохранить изменения
             $this->entityManager->flush();
 
             return true;
