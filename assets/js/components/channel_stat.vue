@@ -63,6 +63,7 @@
 
 <script>
     import axios from "axios";
+    import moment from 'moment';
     import LineChart from './LineChart.js';
     import Loader_gif from "./loader_gif";
 
@@ -270,6 +271,8 @@
                     return [];
                 }
 
+                dates = this.getDatesRange(this.statistic_type);
+
                 for (let i = 0, len = data.length; i < len; i++) {
                     let date = data[i]['timestamp'];
 
@@ -317,12 +320,14 @@
                 for (let i = 0, len = dates.length; i < len; i++) {
                     let item = temp[dates[i]];
 
-                    // result['followers_count'].push(item['followers_count']);
-                    result['views_count'].push(item['views_count']);
-                    result['like_count'].push(item['like_count']);
-                    result['repost_count'].push(item['repost_count']);
-                    result['remixes_count'].push(item['remixes_count']);
-                    result['dislikes_count'].push(item['dislikes_count']);
+                    if (item) {
+                        // result['followers_count'].push(item['followers_count']);
+                        result['views_count'].push(item['views_count']);
+                        result['like_count'].push(item['like_count']);
+                        result['repost_count'].push(item['repost_count']);
+                        result['remixes_count'].push(item['remixes_count']);
+                        result['dislikes_count'].push(item['dislikes_count']);
+                    }
                 }
 
                 result['dates'] = dates;
@@ -365,6 +370,74 @@
                 b = Math.floor(Math.random() * (256));
 
                 return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+            },
+
+            getDatesRange: function(type) {
+                let currentDate, stopDate;
+                let result = [];
+                let dateArray = [];
+
+                if (type) {
+                    switch (type) {
+                        case 'day':
+                            currentDate = moment().format('YYYY-MM-DD 23:59');
+                            currentDate = moment(currentDate);
+                            stopDate = moment(currentDate).format('YYYY-MM-DD 00:00');
+
+                            while (currentDate.isAfter(stopDate)) {
+                                dateArray.push(moment(currentDate).format('HH:00'));
+                                currentDate = moment(currentDate).add(-1, 'hours');
+                            }
+
+                            break;
+                        case 'week':
+                            currentDate = moment();
+                            stopDate = moment().add(-7, 'days');
+
+                            while (currentDate >= stopDate) {
+                                dateArray.push(moment(currentDate).format('DD.MM'));
+                                currentDate = moment(currentDate).add(-1, 'days');
+                            }
+
+                            break;
+                        case 'month1':
+                            currentDate = moment();
+                            stopDate = moment().add(-1, 'month');
+
+                            while (currentDate >= stopDate) {
+                                dateArray.push(moment(currentDate).format('DD.MM'));
+                                currentDate = moment(currentDate).add(-1, 'days');
+                            }
+
+                            break;
+                        case 'month6':
+                            currentDate = moment();
+                            stopDate = moment().add(-6, 'month');
+
+                            while (currentDate >= stopDate) {
+                                dateArray.push(moment(currentDate).format('DD.MM.YYYY'));
+                                currentDate = moment(currentDate).add(-1, 'days');
+                            }
+
+                            break;
+                        case 'year':
+                            currentDate = moment();
+                            stopDate = moment().add(-1, 'year');
+
+                            while (currentDate >= stopDate) {
+                                dateArray.push(moment(currentDate).format('MM.YYYY'));
+                                currentDate = moment(currentDate).add(-1, 'month');
+                            }
+
+                            break;
+                    }
+
+                    if (dateArray) {
+                        result = dateArray.reverse();
+                    }
+                }
+
+                return result;
             },
 
             clearData: function () {
