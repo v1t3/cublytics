@@ -7,7 +7,6 @@
         </div>
         <div class="top-right links">
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                <span class="top-menu-link">{{ app.user.username }}</span>
                 <a href="{{ path('spa') }}" class="top-menu-link">Кабинет</a>
                 <a href="{{ path('app_logout') }}" class="top-menu-link">Выйти</a>
             {% else %}

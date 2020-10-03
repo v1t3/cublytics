@@ -1,5 +1,23 @@
-.top-menu a {
-    padding: 1em;
+.top-menu {
+    &_user {
+        display: flex;
+        align-items: center;
+        margin: 0 10px;
+
+        &-avatar {
+            width: 32px;
+            border-radius: 50px;
+            margin: 0 15px;
+        }
+
+        &-title {
+            text-transform: uppercase;
+        }
+    }
+
+    a {
+        padding: 1em;
+    }
 }
 
 .links {

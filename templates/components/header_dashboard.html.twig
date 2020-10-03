@@ -6,7 +6,10 @@
         </div>
         <div class="top-right links">
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                <span class="top-menu-link">{{ app.user.username }}</span>
+                <div class="top-menu_user">
+                    <img class="top-menu_user-avatar" src="{{ channel.avatar }}" alt="">
+                    <span class="top-menu_user-title">{{ channel.title }}</span>
+                </div>
                 <a href="{{ path('app_logout') }}" class="top-menu-link">Выйти</a>
             {% else %}
                 <a href="{{ path('app_login_coub') }}" class="top-menu-link">Войти</a>
