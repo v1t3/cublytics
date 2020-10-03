@@ -201,18 +201,36 @@
                                     data = JSON.parse(data);
                                 }
 
-                                coubsData = that.getCoubsCount(data['data']);
+                                if (
+                                    undefined !== data['data'] &&
+                                    undefined !== data['data']['total'] &&
+                                    undefined !== data['data']['counts']
+                                ) {
+                                    this.channel = {
+                                        followers: data['data']['total']['followers_count'],
+                                        views: data['data']['total']['views_count'],
+                                        likes: data['data']['total']['likes_count'],
+                                        dislikes: data['data']['total']['dislikes_count'],
+                                        reposts: data['data']['total']['repost_count'],
+                                        recoubs: data['data']['total']['remixes_count'],
+                                        kd: data['data']['total']['kd_count'],
+                                        featured: data['data']['total']['featured_count'],
+                                        banned: data['data']['total']['banned_count'],
+                                    };
 
-                                if (coubsData) {
-                                    that.showChart = true;
+                                    coubsData = that.getCoubsCount(data['data']['counts']);
 
-                                    for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
-                                        this.pushDataCollection(
-                                            coubsData,
-                                            this.chartsInfo[i]['type'],
-                                            this.chartsInfo[i]['label'],
-                                            this.chartsInfo[i]['color'],
-                                        );
+                                    if (coubsData) {
+                                        that.showChart = true;
+
+                                        for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
+                                            this.pushDataCollection(
+                                                coubsData,
+                                                this.chartsInfo[i]['type'],
+                                                this.chartsInfo[i]['label'],
+                                                this.chartsInfo[i]['color'],
+                                            );
+                                        }
                                     }
                                 }
 
@@ -248,25 +266,9 @@
                 let dates = [];
                 const reducer = (accumulator, currentValue) => accumulator + currentValue;
 
-                if (!data || undefined === data['counts']) {
+                if (!data) {
                     return [];
                 }
-
-                if (undefined !== data['total']) {
-                    this.channel = {
-                        followers: data['total']['followers_count'],
-                        views:     data['total']['views_count'],
-                        likes:     data['total']['likes_count'],
-                        dislikes:  data['total']['dislikes_count'],
-                        reposts:   data['total']['repost_count'],
-                        recoubs:   data['total']['remixes_count'],
-                        kd:        data['total']['kd_count'],
-                        featured:  data['total']['featured_count'],
-                        banned:    data['total']['banned_count'],
-                    };
-                }
-
-                data = data['counts'];
 
                 for (let i = 0, len = data.length; i < len; i++) {
                     let date = data[i]['timestamp'];
