@@ -109,15 +109,15 @@ class CoubController extends AbstractController
 
             if (!empty($data)) {
                 $result = [
-                    'result'  => 'success',
-                    'message' => '',
-                    'data'    => $data,
+                    'result' => 'success',
+                    'data'   => $data,
                 ];
             } else {
                 $result = [
-                    'result'  => 'error',
-                    'message' => 'Данные отсутствуют',
-                    'data'    => $data
+                    'result' => 'error',
+                    'error'  => [
+                        'message' => 'Данные отсутствуют'
+                    ]
                 ];
             }
         } catch (Exception $exception) {
@@ -133,7 +133,7 @@ class CoubController extends AbstractController
             $this->entityManager->flush();
 
             $result = [
-                'result'  => 'error',
+                'result' => 'error',
                 'error'  => [
                     'message' => $exception->getMessage(),
                 ]

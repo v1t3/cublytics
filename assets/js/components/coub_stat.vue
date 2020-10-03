@@ -194,46 +194,52 @@
                                     data = JSON.parse(data);
                                 }
 
-                                let lastCoub = data['data'][data['data'].length - 1];
+                                if (
+                                    undefined !== data['data'] &&
+                                    data['data'].length
+                                ) {
+                                    let lastCoub = data['data'][data['data'].length - 1];
 
-                                this.coub = {
-                                    views: lastCoub['views_count'],
-                                    likes: lastCoub['like_count'],
-                                    dislikes: lastCoub['dislikes_count'],
-                                    reposts: lastCoub['repost_count'],
-                                    recoubs: lastCoub['remixes_count'],
-                                    kd: lastCoub['is_kd'],
-                                    featured: lastCoub['featured'],
-                                    banned: lastCoub['banned'],
-                                };
+                                    this.coub = {
+                                        views: lastCoub['views_count'],
+                                        likes: lastCoub['like_count'],
+                                        dislikes: lastCoub['dislikes_count'],
+                                        reposts: lastCoub['repost_count'],
+                                        recoubs: lastCoub['remixes_count'],
+                                        kd: lastCoub['is_kd'],
+                                        featured: lastCoub['featured'],
+                                        banned: lastCoub['banned'],
+                                    };
 
-                                coubsData = that.getCoubsCount(data['data']);
+                                    coubsData = that.getCoubsCount(data['data']);
 
-                                if (coubsData) {
-                                    that.showChart = true;
+                                    if (coubsData) {
+                                        that.showChart = true;
 
-                                    //todo Реализовать отображение одиночной метки для кд, фича, бана
-                                    for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
-                                        this.pushDataCollection(
-                                            coubsData,
-                                            this.chartsInfo[i]['type'],
-                                            this.chartsInfo[i]['label'],
-                                            this.chartsInfo[i]['color'],
-                                        );
+                                        //todo Реализовать отображение одиночной метки для кд, фича, бана
+                                        for (let i = 0, len = this.chartsInfo.length; i < len; i++) {
+                                            this.pushDataCollection(
+                                                coubsData,
+                                                this.chartsInfo[i]['type'],
+                                                this.chartsInfo[i]['label'],
+                                                this.chartsInfo[i]['color'],
+                                            );
+                                        }
                                     }
                                 }
 
                                 if (
+                                    'error' === data['result'] &&
                                     undefined !== data['error'] &&
                                     undefined !== data['error']['message']
                                 ) {
-                                    that.error = 'Error: ' + data['error']['message'];
-                                    that.clearData();
+                                    this.error = data['error']['message'];
+                                    this.clearData();
                                 }
                             }
 
                             if (!data) {
-                                that.clearData();
+                                this.clearData();
                             }
                         })
                         .catch((error) => {
