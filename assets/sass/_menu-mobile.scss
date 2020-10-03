@@ -20,7 +20,7 @@
 
     .burger {
         &.active {
-            span {
+            .burger-line {
                 opacity: 1;
                 transform: rotate(45deg) translate(-8px, -6px);
                 background: #36383F;
@@ -41,7 +41,7 @@
         }
     }
 
-    span {
+    .burger-line {
         position: relative;
         z-index: 1;
         display: flex;
