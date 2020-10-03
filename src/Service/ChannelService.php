@@ -89,7 +89,7 @@ class ChannelService
                     $ch->setChannelId($channel['id']);
                     $ch->setChannelPermalink($channel['permalink']);
                     $ch->setUserId($userId);
-                    $ch->setIsWatching(false);
+                    $ch->setIsWatching(true);
                     $ch->setIsActive(true);
                     $ch->setIsCurrent((int)$channel['id'] === (int)$current);
                     $ch->setTitle($channel['title']);
