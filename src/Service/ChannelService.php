@@ -70,17 +70,18 @@ class ChannelService
             /**
              * @var $repo ChannelRepository
              */
-            $repo = $this->entityManager->getRepository('App:Channel');
+            $repo = $this->entityManager->getRepository(Channel::class);
 
             foreach ($channels as $channel) {
                 $channelStored = $repo->findOneByChannelId($channel['id']);
-                $avatar = str_replace(
-                    '%{version}',
-                    'profile_pic_big',
-                    $channel['avatar_versions']['template']
-                );
 
                 if (!$channelStored) {
+                    $avatar = str_replace(
+                        '%{version}',
+                        'profile_pic_big',
+                        $channel['avatar_versions']['template']
+                    );
+
                     $ch = new Channel();
                     $ch->setChannelId($channel['id']);
                     $ch->setChannelPermalink($channel['permalink']);
