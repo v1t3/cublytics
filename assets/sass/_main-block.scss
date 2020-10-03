@@ -5,7 +5,7 @@
     padding: 0;
     margin: 0;
     min-height: 100vh;
-    background: linear-gradient(-45deg, $blue, $cyan);
+    background: linear-gradient(-45deg, #4332a2, #318dd8);
 }
 
 .welcome {
@@ -35,14 +35,15 @@
         a {
             text-decoration: none;
             display: block;
-            border-radius: 1em;
-            background-color: #0069cc;
+            //border-radius: 1em;
+            //background-color: #0069cc;
+            border: 1px solid #101010;
             padding: 2em 2.2em;
             color: #000;
             transition: background-color .2s;
 
             &:hover, &:active {
-                background-color: lighten(#0069cc, 5%);
+                background-color: lighten(#3a5fbd, 2%);
                 color: #000;
             }
         }
