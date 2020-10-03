@@ -1,0 +1,11 @@
+### получить первую страницу коубов канала
+
+http://coub.com/api/v2/timeline/channel/avgust.digital
+
+###
+
+### проверка ответа страницы
+
+http://localhost/test/get_headers?page=avgust.digital
+
+###

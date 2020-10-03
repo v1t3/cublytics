@@ -75,7 +75,10 @@ class ChannelService
             foreach ($channels as $channel) {
                 $channelStored = $repo->findOneByChannelId($channel['id']);
 
-                if (!$channelStored) {
+                if (
+                    !$channelStored
+                    && $this->isChannelExist($channel['permalink'])
+                ) {
                     $avatar = str_replace(
                         '%{version}',
                         'profile_pic_big',
@@ -102,6 +105,26 @@ class ChannelService
             }
 
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Проверка существования канала
+     *
+     * @param $channelName
+     *
+     * @return bool
+     */
+    public function isChannelExist($channelName)
+    {
+        if ('' !== (string)$channelName) {
+            $result = get_headers(AppRegistry::HTTPS_COUB . $channelName);
+
+            if ($result && strpos($result[0], '200')) {
+                return true;
+            }
         }
 
         return false;

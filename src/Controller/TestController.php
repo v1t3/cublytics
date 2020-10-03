@@ -200,36 +200,24 @@ class TestController extends AbstractController
     }
 
     /**
-     * @Route("/test1", name="test1")
+     * @Route("/test/get_headers", name="get_headers")
      */
-    public function test1()
+    public function getHeaders(Request $request)
     {
+        $result = [];
+        $channel = false;
+        $page = $request->query->get('page');
 
-//        return $this->redirectToRoute(
-//            'test2',
-//            [
-//                'registration' => 'success',
-//            ],
-//            307
-//        );
+        if ($page) {
+            $result = get_headers('https://coub.com/' . $page);
 
-        return $this->forward(
-            'App\Controller\TestController::test2', [
-                'registration' => 'success',
-            ]
-        );
-    }
-
-    /**
-     * @Route("/test2", name="test2", requirements={"_methods": "POST"})
-     */
-    public function test2($registration, Request $request)
-    {
-//        $reg = $request->query->get('registration');
-//        $reg2 = $request->request->get('registration');
+            if ($result && strpos($result[0], '200')) {
+                $channel = true;
+            }
+        }
 
         $response = new JsonResponse();
-        $response->setContent(json_encode([$registration]));
+        $response->setData([$result, $channel]);
 
         return $response;
     }

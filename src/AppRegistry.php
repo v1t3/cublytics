@@ -13,6 +13,11 @@ class AppRegistry
     /**
      *
      */
+    public const HTTPS_COUB = 'https://coub.com/';
+
+    /**
+     *
+     */
     public const API_COUB_SINGLE_LINK = 'http://coub.com/api/v2/coubs/';
 
     /**
