@@ -220,7 +220,7 @@
                                     undefined !== data['error'] &&
                                     undefined !== data['error']['message']
                                 ) {
-                                    that.error = 'Error: ' + data['error']['message'];
+                                    that.error = data['error']['message'];
                                     that.clearData();
                                 }
                             }
@@ -283,9 +283,6 @@
                         temp[date]['remixes_count'] = 0;
                         temp[date]['like_count'] = 0;
                         temp[date]['dislikes_count'] = 0;
-                        temp[date]['is_kd'] = 0;
-                        temp[date]['featured'] = 0;
-                        temp[date]['banned'] = 0;
                     }
 
                     // if (data[i]['followers_count']) {
@@ -306,15 +303,6 @@
                     if (data[i]['dislikes_count']) {
                         temp[date]['dislikes_count'] += +data[i]['dislikes_count'];
                     }
-                    // if (data[i]['is_kd']) {
-                    //     temp[date]['is_kd'] = +data[i]['is_kd'];
-                    // }
-                    // if (data[i]['featured']) {
-                    //     temp[date]['featured'] = +data[i]['featured'];
-                    // }
-                    // if (data[i]['banned']) {
-                    //     temp[date]['banned'] = +data[i]['banned'];
-                    // }
                 }
 
                 // result['followers_count'] = [];
@@ -323,9 +311,6 @@
                 result['remixes_count'] = [];
                 result['like_count'] = [];
                 result['dislikes_count'] = [];
-                // result['is_kd'] = [];
-                // result['featured'] = [];
-                // result['banned'] = [];
 
                 for (let i = 0, len = dates.length; i < len; i++) {
                     let item = temp[dates[i]];
@@ -337,14 +322,6 @@
                     result['remixes_count'].push(item['remixes_count']);
                     result['dislikes_count'].push(item['dislikes_count']);
                 }
-
-                // //todo Настроить правильное получение кол-ва подписчиков, кд, фичей
-                // // this.channel.followers = result['followers_count'].reduce(reducer, 0);
-                // this.channel.views = result['views_count'].reduce(reducer, 0);
-                // this.channel.likes = result['like_count'].reduce(reducer, 0);
-                // this.channel.dislikes = result['dislikes_count'].reduce(reducer, 0);
-                // this.channel.reposts = result['repost_count'].reduce(reducer, 0);
-                // this.channel.recoubs = result['remixes_count'].reduce(reducer, 0);
 
                 result['dates'] = dates;
 

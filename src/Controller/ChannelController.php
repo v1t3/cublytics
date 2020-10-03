@@ -94,17 +94,17 @@ class ChannelController extends AbstractController
                 }
             }
 
-            if (!empty($data)) {
+            if (!empty($data) && !empty($data['counts'])) {
                 $result = [
                     'result'  => 'success',
-                    'message' => '',
                     'data'    => $data,
                 ];
             } else {
                 $result = [
                     'result'  => 'error',
-                    'message' => 'Данные отсутствуют',
-                    'data'    => $data
+                    'error'    => [
+                        'message' => 'Данные отсутствуют',
+                    ]
                 ];
             }
         } catch (Exception $exception) {
