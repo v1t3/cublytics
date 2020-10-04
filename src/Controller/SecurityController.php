@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\AppRegistry;
+use App\Entity\User;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -18,29 +19,50 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * SecurityController constructor.
+     *
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
+    /**
      * @Route("/admin/login", name="app_login_admin")
      *
-     * @param Request             $request
      * @param AuthenticationUtils $authenticationUtils
      *
      * @return Response
      */
-    public function login(Request $request, AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('main');
+        if (
+            $this->getUser()
+            && true === $this->getUser()->getConfirmed()
+        ) {
+            $userRoles = $this->getUser()->getRoles();
+
+            // если админ то редирект на админку, иначе на дашборд
+            if ($userRoles && in_array('ROLE_ADMIN', $userRoles)) {
+                return $this->redirectToRoute('admin_page');
+            }
+
+            return $this->redirectToRoute('spa');
         }
 
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        // last username entered by the user
-        $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render(
             'security/login.html.twig',
             [
-                'last_username' => $lastUsername,
-                'error'         => $error
+                'error' => $error
             ]
         );
     }
@@ -50,10 +72,41 @@ class SecurityController extends AbstractController
      */
     public function logout()
     {
-//        throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
-
         return $this->redirectToRoute('main');
     }
 
     //todo Реализовать сценарий revoke (удаления токена)
+
+    /**
+     * @Route("/confirm/{code}", name="email_confirmation")
+     *
+     * @param UserRepository $userRepo
+     * @param string         $code
+     *
+     * @return Response
+     */
+    public function confirmEmail(UserRepository $userRepo, string $code)
+    {
+        /**
+         * @var User $user
+         */
+        $user = $userRepo->findOneBy(['confirmation_code' => $code]);
+
+        if ($user === null) {
+            return new Response('404');
+        }
+
+        $user->setConfirmed(true);
+        $user->setConfirmationCode('');
+        $this->entityManager->persist($user);
+
+        $this->entityManager->flush();
+
+        return $this->render(
+            'security/account_confirm.html.twig',
+            [
+                'user' => $user,
+            ]
+        );
+    }
 }

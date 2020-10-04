@@ -6,6 +6,8 @@ namespace App\Controller;
 use App\Entity\Log;
 use App\Entity\User;
 use App\Service\ChannelService;
+use App\Service\CodeGenerator;
+use App\Service\Mailer;
 use App\Service\UserService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -102,16 +104,23 @@ class UserController extends AbstractController
     /**
      * @Route("/api/user/update_settings", name="update_user_settings")
      *
-     * @param Request     $request
-     * @param UserService $userService
+     * @param Request       $request
+     * @param UserService   $userService
+     * @param Mailer        $mailer
+     * @param CodeGenerator $codeGenerator
      *
      * @return JsonResponse
      * @throws Exception
      */
-    public function updateSettings(Request $request, UserService $userService)
+    public function updateSettings(
+        Request $request,
+        UserService $userService,
+        Mailer $mailer,
+        CodeGenerator $codeGenerator
+    )
     {
         try {
-            $data = $userService->updateSettings($request);
+            $data = $userService->updateSettings($request, $mailer, $codeGenerator);
         } catch (Exception $exception) {
             $user = $this->getUser();
 

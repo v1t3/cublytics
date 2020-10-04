@@ -79,9 +79,26 @@ class User implements UserInterface
      */
     private $date_update;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $confirmation_code;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $confirmed;
+
+    /**
+     *
+     */
+    public const ROLE_USER = 'ROLE_USER';
+
     public function __construct()
     {
         $this->setDateCreate();
+        $this->roles = [self::ROLE_USER];
+        $this->confirmed = false;
     }
 
     /**
@@ -347,6 +364,30 @@ class User implements UserInterface
     public function setDateUpdate(): self
     {
         $this->date_update = new DateTime();
+
+        return $this;
+    }
+
+    public function getConfirmationCode(): ?string
+    {
+        return $this->confirmation_code;
+    }
+
+    public function setConfirmationCode(?string $confirmation_code): self
+    {
+        $this->confirmation_code = $confirmation_code;
+
+        return $this;
+    }
+
+    public function getConfirmed(): ?bool
+    {
+        return $this->confirmed;
+    }
+
+    public function setConfirmed(?bool $confirmed): self
+    {
+        $this->confirmed = $confirmed;
 
         return $this;
     }

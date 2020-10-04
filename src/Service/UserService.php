@@ -152,14 +152,19 @@ class UserService
     }
 
     /**
-     * @param Request $request
+     * @param Request       $request
+     * @param Mailer        $mailer
+     * @param CodeGenerator $codeGenerator
      *
      * @return array
+     *
+     * @throws Exception
      */
-    public function updateSettings(Request $request)
+    public function updateSettings(Request $request, Mailer $mailer, CodeGenerator $codeGenerator)
     {
-        $email = $request->request->get('email');
-        $password = $request->request->get('password');
+        $email = (string)$request->request->get('email');
+        $password = (string)$request->request->get('password');
+        $message = '';
 
         if ('' === $email || '' === $password) {
             return [
@@ -179,25 +184,41 @@ class UserService
             $user->getEmail() === $email
             || $this->encoder->isPasswordValid($user, $password)
         ) {
-            $result = [
-                'result'  => 'error',
-                'message' => 'email или пароль совпадают с текущим'
-            ];
-        } else {
-            //todo Добавить подтверждение почты
-            $user->setEmail($email);
-            $user->setPassword($password);
-            $user->setPassword($this->encoder->encodePassword($user, $password));
-
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
-
-            $result = [
-                'result'  => 'success',
-                'message' => 'Обновлено!'
+            return [
+                'result' => 'error',
+                'error'  => [
+                    'message' => 'email или пароль совпадают с текущим'
+                ]
             ];
         }
 
-        return $result;
+        $user->setEmail($email);
+        $user->setPassword($password);
+        $user->setPassword($this->encoder->encodePassword($user, $password));
+
+        # подтверждение почты
+        if (true !== $user->getConfirmed()) {
+            $user->setConfirmationCode($codeGenerator->getConfirmationCode());
+            $mailerResponse = $mailer->sendConfirmationMessage($user, $email);
+
+            if ($mailerResponse) {
+                $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
+            } else {
+                return [
+                    'result' => 'error',
+                    'error'  => [
+                        'message' => 'Ошибка при обновлении'
+                    ]
+                ];
+            }
+        }
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return [
+            'result'  => 'success',
+            'message' => 'Обновлено! ' . $message
+        ];
     }
 }

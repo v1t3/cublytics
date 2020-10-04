@@ -140,7 +140,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
 
         if (!$user) {
             // fail authentication with a custom error
-            throw new CustomUserMessageAuthenticationException('Email could not be found.');
+            throw new CustomUserMessageAuthenticationException('Пользователь с таким email не найден!');
         }
 
         // сохранить пользователя для дальнейшего использования
@@ -157,7 +157,15 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
      */
     public function checkCredentials($credentials, UserInterface $user)
     {
-        return $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
+        if (true !== $this->user->getConfirmed()) {
+            throw new CustomUserMessageAuthenticationException('Почта не подтверждена');
+        }
+
+        if (!$this->passwordEncoder->isPasswordValid($user, $credentials['password'])) {
+            throw new CustomUserMessageAuthenticationException('Введены неверные данные');
+        }
+
+        return true;
     }
 
     /**
@@ -187,6 +195,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
 
         $userRoles = $this->user->getRoles();
 
+        // если админ то редирект на админку, иначе на дашборд
         if ($userRoles && in_array('ROLE_ADMIN', $userRoles)) {
             return new RedirectResponse($this->urlGenerator->generate(self::ADMIN_ROUTE));
         }
