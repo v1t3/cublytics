@@ -29,12 +29,22 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      *
      */
     public const LOGIN_ROUTE = 'app_login_coub';
+    /**
+     *
+     */
+    public const START_ROUTE = 'main';
+    /**
+     *
+     */
+    public const USER_ROUTE = 'spa';
 
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
-
+    /**
+     * @var UrlGeneratorInterface
+     */
     private UrlGeneratorInterface $urlGenerator;
 
     /**
@@ -78,12 +88,10 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        $credentials = [
+        return [
             'registration' => $request->query->get('registration'),
             'access_token' => $request->getSession()->get(Security::LAST_USERNAME)
         ];
-
-        return $credentials;
     }
 
     /**
@@ -154,7 +162,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->urlGenerator->generate('spa'));
+        return new RedirectResponse($this->urlGenerator->generate(self::USER_ROUTE));
     }
 
     /**
@@ -167,7 +175,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        return new RedirectResponse($this->urlGenerator->generate('main'));
+        return new RedirectResponse($this->urlGenerator->generate(self::START_ROUTE));
     }
 
     /**

@@ -293,8 +293,8 @@ class ChannelService
                 break;
         }
 
-        $dateStart = new \DateTime("{$ymdStart} 00:00:00");
-        $dateEnd = new \DateTime("{$ymdEnd} 23:59.59");
+        $dateStart = new DateTime("{$ymdStart} 00:00:00");
+        $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
 
         /**
          * @var $channelRepo ChannelRepository
