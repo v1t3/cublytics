@@ -90,6 +90,11 @@ class User implements UserInterface
     private $confirmed;
 
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $confirmation_created_at;
+
+    /**
      *
      */
     public const ROLE_USER = 'ROLE_USER';
@@ -388,6 +393,22 @@ class User implements UserInterface
     public function setConfirmed(?bool $confirmed): self
     {
         $this->confirmed = $confirmed;
+
+        return $this;
+    }
+
+    public function getConfirmationCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->confirmation_created_at;
+    }
+
+    public function setConfirmationCreatedAt(?\DateTimeInterface $confirmation_created_at = null): self
+    {
+        if (!$confirmation_created_at) {
+            $confirmation_created_at = new DateTime();
+        }
+
+        $this->confirmation_created_at = $confirmation_created_at;
 
         return $this;
     }

@@ -156,8 +156,7 @@ class UserService
      * @param Mailer        $mailer
      * @param CodeGenerator $codeGenerator
      *
-     * @return array
-     *
+     * @return string
      * @throws Exception
      */
     public function updateSettings(Request $request, Mailer $mailer, CodeGenerator $codeGenerator)
@@ -166,59 +165,87 @@ class UserService
         $password = (string)$request->request->get('password');
         $message = '';
 
-        if ('' === $email || '' === $password) {
-            return [
-                'result' => 'error',
-                'error'  => [
-                    'message' => 'email или пароль не заполнены'
-                ]
-            ];
-        }
-
         /**
          * @var $user User
          */
         $user = $this->security->getUser();
 
         if (
-            $user->getEmail() === $email
-            || $this->encoder->isPasswordValid($user, $password)
+            (!$user->getEmail() && '' === $email)
+            || '' === $password
         ) {
-            return [
-                'result' => 'error',
-                'error'  => [
-                    'message' => 'email или пароль совпадают с текущим'
-                ]
-            ];
+            throw new Exception('email или пароль не заполнены');
         }
 
-        $user->setEmail($email);
-        $user->setPassword($password);
+        if ($this->encoder->isPasswordValid($user, $password)) {
+            throw new Exception('пароль совпадает с текущим');
+        }
+
+        if ('' !== (string)$user->getEmail() && '' !== $email) {
+            $user->setEmail($email);
+        }
         $user->setPassword($this->encoder->encodePassword($user, $password));
 
         # подтверждение почты
         if (true !== $user->getConfirmed()) {
             $user->setConfirmationCode($codeGenerator->getConfirmationCode());
-            $mailerResponse = $mailer->sendConfirmationMessage($user, $email);
+            $user->setConfirmationCreatedAt();
 
-            if ($mailerResponse) {
-                $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
-            } else {
-                return [
-                    'result' => 'error',
-                    'error'  => [
-                        'message' => 'Ошибка при обновлении'
-                    ]
-                ];
+            $mailerResponse = $mailer->sendConfirmationMessage($user, $email);
+            if (!$mailerResponse) {
+                throw new Exception('Ошибка при отправке письма');
             }
+
+            $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
         }
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        return [
-            'result'  => 'success',
-            'message' => 'Обновлено! ' . $message
-        ];
+        return $message;
+    }
+
+    /**
+     * @param Mailer        $mailer
+     * @param CodeGenerator $codeGenerator
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function resendConfirmation(Mailer $mailer, CodeGenerator $codeGenerator)
+    {
+        /**
+         * @var $user User
+         */
+        $user = $this->security->getUser();
+
+        if (!$user) {
+            throw new Exception('Пользователь не найден');
+        }
+
+        if (true === $user->getConfirmed()) {
+            throw new Exception('Email уже подтверждён');
+        }
+
+        $email = $user->getEmail();
+        if (!$email) {
+            throw new Exception('Не задан email');
+        }
+
+        $user->setConfirmationCode($codeGenerator->getConfirmationCode());
+        $user->setConfirmationCreatedAt();
+
+        $mailerResponse = $mailer->sendConfirmationMessage($user, $email);
+
+        if (!$mailerResponse) {
+            throw new Exception('Ошибка при отправке письма');
+        }
+
+        $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $message;
     }
 }

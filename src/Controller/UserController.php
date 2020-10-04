@@ -88,12 +88,12 @@ class UserController extends AbstractController
             [
                 'result' => 'success',
                 'data'   => [
-                    'user_id'  => $user->getUserId(),
-                    'username' => $user->getUsername(),
-                    'email'    => $user->getEmail(),
-                    'roles'    => $user->getRoles(),
-                    'token'    => $user->getToken(),
-                    'channels' => $channels,
+                    'user_id'   => $user->getUserId(),
+                    'username'  => $user->getUsername(),
+                    'email'     => $user->getEmail(),
+                    'roles'     => $user->getRoles(),
+                    'confirmed' => $user->getConfirmed(),
+                    'channels'  => $channels,
                 ]
             ]
         );
@@ -150,7 +150,70 @@ class UserController extends AbstractController
         }
 
         $response = new JsonResponse();
-        $response->setData($data);
+        $response->setData(
+            [
+                'result'  => 'success',
+                'message' => 'Обновлено!' . $data,
+            ]
+        );
+
+        return $response;
+    }
+
+    /**
+     * @Route("/api/user/resend_confirmation", name="resend_confirmation")
+     *
+     * @param UserService   $userService
+     * @param Mailer        $mailer
+     * @param CodeGenerator $codeGenerator
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function resendConfirmation(
+        UserService $userService,
+        Mailer $mailer,
+        CodeGenerator $codeGenerator
+    )
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        try {
+            $data = $userService->resendConfirmation($mailer, $codeGenerator);
+        } catch (Exception $exception) {
+            $user = $this->getUser();
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('resend_confirmation');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
+
+        $response = new JsonResponse();
+        $response->setData(
+            [
+                'result'  => 'success',
+                'message' => $data,
+            ]
+        );
 
         return $response;
     }
@@ -245,7 +308,7 @@ class UserController extends AbstractController
             $this->entityManager->clear();
             $logger = new Log();
             $logger->setDate(new DateTime('now'));
-            $logger->setType('get_user_username');
+            $logger->setType('get_user_settings');
             if ($user) {
                 $logger->setUser((string)$user->getUserId());
             }
@@ -269,6 +332,28 @@ class UserController extends AbstractController
 
         $response = new JsonResponse();
         $response->setData($result);
+
+        return $response;
+    }
+
+    /**
+     * //todo сценарий revoke
+     *
+     * @Route("/api/user/delete_account", name="delete_account")
+     *
+     */
+    public function deleteAccount()
+    {
+
+        $response = new JsonResponse();
+        $response->setData(
+            [
+                'result' => 'error',
+                'error'  => [
+                    'message' => 'Недоступно',
+                ]
+            ]
+        );
 
         return $response;
     }

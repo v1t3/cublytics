@@ -91,6 +91,11 @@ class Log
     private $coub_id;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $email;
+
+    /**
      * Log constructor.
      *
      * @throws Exception
@@ -120,9 +125,14 @@ class Log
      * @param DateTimeInterface|null $date
      *
      * @return $this
+     * @throws Exception
      */
-    public function setDate(?DateTimeInterface $date): self
+    public function setDate(?DateTimeInterface $date = null): self
     {
+        if (!$date) {
+            $date = new DateTime();
+        }
+
         $this->date = $date;
 
         return $this;
@@ -354,6 +364,18 @@ class Log
     public function setCoubId(?int $coub_id): self
     {
         $this->coub_id = $coub_id;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): self
+    {
+        $this->email = $email;
 
         return $this;
     }

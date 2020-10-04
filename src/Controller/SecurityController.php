@@ -84,6 +84,7 @@ class SecurityController extends AbstractController
      * @param string         $code
      *
      * @return Response
+     * @throws \Exception
      */
     public function confirmEmail(UserRepository $userRepo, string $code)
     {
@@ -96,8 +97,23 @@ class SecurityController extends AbstractController
             return new Response('404');
         }
 
+        $createdAt = $user->getConfirmationCreatedAt();
+        $valid = new \DateTime();
+        $valid->modify('-24 hours');
+
+        # меньше == раньше
+        if ($createdAt < $valid) {
+            $user->setConfirmed(false);
+            $this->entityManager->persist($user);
+
+            $this->entityManager->flush();
+
+            return $this->render('security/account_confirm_reject.html.twig', []);
+        }
+
         $user->setConfirmed(true);
         $user->setConfirmationCode('');
+        $user->setConfirmationCreatedAt(null);
         $this->entityManager->persist($user);
 
         $this->entityManager->flush();

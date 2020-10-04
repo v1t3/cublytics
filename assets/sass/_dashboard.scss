@@ -130,6 +130,10 @@
             &:hover {
                 background: darken(#add3ff, 5%);
             }
+
+            &.red {
+                background: #f85a52;
+            }
         }
     }
 

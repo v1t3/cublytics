@@ -52,14 +52,17 @@
 
             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                 <div class="user-info">
-                    <div class="user-info_name user-info_field" v-if="user.username">
+                    <div class="user-info_name user-info_field">
                         <span class="user-info_pre-title">Имя пользователя:</span>
                         <span class="user-info_title">{{ user.username }}</span>
                     </div>
-                    <div class="user-info_email user-info_field" v-if="user.email && isAdmin">
+                    <div class="user-info_email user-info_field">
                         <span class="user-info_pre-title">Email:</span>
-                        <span class="user-info_title">{{ user.email }}</span>
+                        <span class="user-info_title">{{ user.email || 'Не задан' }}</span>
                     </div>
+                    <p v-if="user.email && !isConfirmed && !send_confirm">
+                        Почта не подтверждена! <a class="classic-link" @click="resendConfirmation">Выслать ещё раз</a>
+                    </p>
                 </div>
 
                 <form class="form-group"
@@ -76,10 +79,6 @@
                                        :class="{ 'error': $v.user.newEmail.$error && !response.success }"
                                        @change="clearResponse">
 
-                                <p class="form-group--error-text"
-                                   v-if="!$v.user.newEmail.required && !response.success">
-                                    Поле не может быть пустым
-                                </p>
                                 <p class="form-group--error-text"
                                    v-if="!$v.user.newEmail.email && !response.success">
                                     Некорректный email
@@ -109,7 +108,9 @@
                     </div>
                     <div class="form-group_row">
                         <div class="form-group_label">
-                            <span class="form-group_label-title">Повторите пароль:</span>
+                            <span class="form-group_label-title">
+                                Повторите пароль:
+                            </span>
                             <div class="form-group_label-input">
                                 <input type="password"
                                        v-model="user.repeatPassword"
@@ -128,13 +129,24 @@
                         </div>
                     </div>
                     <div class="form-group_row form-group_btn">
-                        <button class="form-group_btn--send">Отправить</button>
+                        <button class="form-group_btn--send">
+                            Отправить
+                        </button>
                     </div>
 
                     <p class="form-group--success-text" v-if="response.result">
                         {{ response.message }}
                     </p>
                 </form>
+
+                <br>
+
+                <div class="form-group_row form-group_btn">
+                    <button class="form-group_btn--send red"
+                            @click="deleteAccount">
+                        Удалить учётную запись
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -166,13 +178,13 @@
                     success: false,
                     message: '',
                 },
+                send_confirm: false,
                 error: '',
             }
         },
         validations: {
             user: {
                 newEmail: {
-                    required,
                     email
                 },
                 password: {
@@ -188,7 +200,10 @@
         computed: {
             isAdmin: function () {
                 return this.$store.state.user.roles.includes('ROLE_USER');
-            }
+            },
+            isConfirmed: function () {
+                return this.$store.state.user.confirmed;
+            },
         },
         mounted() {
             this.getSettings();
@@ -199,7 +214,7 @@
                 this.clearResponse();
                 if (undefined !== this.$store.state.user) {
                     this.user.username = this.$store.state.user.username;
-                    this.user.email = this.$store.state.user.email || 'Email не задан';
+                    this.user.email = this.$store.state.user.email;
                 }
             },
             updateSettings: function (e) {
@@ -230,10 +245,18 @@
                             this.response.message = data['message'];
 
                             if ('success' === data['result']) {
+                                this.send_confirm = true;
                                 this.response.success = true;
-                                this.user.email = this.user.newEmail;
+                                if (this.user.newEmail) {
+                                    this.user.email = this.user.newEmail;
+                                }
 
                                 this.clearForm();
+                            }
+
+                            if ('error' === data['result']) {
+                                this.response.result = data['result'];
+                                this.response.message = data['error']['message'];
                             }
                         } else {
                             this.clearData();
@@ -277,8 +300,6 @@
                     .then((response) => {
                         let data = response['data'];
 
-                        // console.log('updateChannel data', data);
-
                         if (
                             data &&
                             'success' === data['result']
@@ -292,6 +313,64 @@
                                 'updateChannel',
                                 params
                             );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('catch error: ', error);
+                    });
+            },
+            resendConfirmation: function() {
+                axios({
+                    method: 'post',
+                    url: '/api/user/resend_confirmation',
+                    data: {},
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then((response) => {
+                        let data = response['data'];
+
+                        if (data) {
+                            if ('success' === data['result']) {
+                                this.send_confirm = true;
+                                this.response.result = data['result'];
+                                this.response.message = data['message'];
+                            }
+
+                            if ('error' === data['result']) {
+                                this.response.result = data['result'];
+                                this.response.message = data['error']['message'];
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('catch error: ', error);
+                    });
+            },
+            deleteAccount: function() {
+                axios({
+                    method: 'post',
+                    url: '/api/user/delete_account',
+                    data: {},
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then((response) => {
+                        let data = response['data'];
+
+                        if (data) {
+                            if ('success' === data['result']) {
+                                this.send_confirm = true;
+                                this.response.result = data['result'];
+                                this.response.message = data['message'];
+                            }
+
+                            if ('error' === data['result']) {
+                                this.response.result = data['result'];
+                                this.response.message = data['error']['message'];
+                            }
                         }
                     })
                     .catch((error) => {
