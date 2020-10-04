@@ -73,14 +73,15 @@
                             <span class="form-group_label-title">E-mail:</span>
                             <div class="form-group_label-input">
                                 <input v-model="user.newEmail"
-                                       :class="{ 'error': $v.user.newEmail.$error }">
+                                       :class="{ 'error': $v.user.newEmail.$error && !response.success }"
+                                       @change="clearResponse">
 
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.newEmail.required">
+                                   v-if="!$v.user.newEmail.required && !response.success">
                                     Поле не может быть пустым
                                 </p>
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.newEmail.email">
+                                   v-if="!$v.user.newEmail.email && !response.success">
                                     Некорректный email
                                 </p>
                             </div>
@@ -92,14 +93,15 @@
                             <div class="form-group_label-input">
                                 <input type="password"
                                        v-model="user.password"
-                                       :class="{ 'error': $v.user.password.$error }">
+                                       :class="{ 'error': $v.user.password.$error && !response.success }"
+                                       @change="clearResponse">
 
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.password.required">
+                                   v-if="!$v.user.password.required && !response.success">
                                     Поле не может быть пустым
                                 </p>
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.password.minLength">
+                                   v-if="!$v.user.password.minLength && !response.success">
                                     Минимальная длина: {{ $v.user.password.$params.minLength.min }} символов
                                 </p>
                             </div>
@@ -111,14 +113,15 @@
                             <div class="form-group_label-input">
                                 <input type="password"
                                        v-model="user.repeatPassword"
-                                       :class="{ 'error': $v.user.repeatPassword.$error }">
+                                       :class="{ 'error': $v.user.repeatPassword.$error && !response.success }"
+                                       @change="clearResponse">
 
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.repeatPassword.minLength">
+                                   v-if="!$v.user.repeatPassword.minLength && !response.success">
                                     Минимальная длина: {{ $v.user.repeatPassword.$params.minLength.min }} символов
                                 </p>
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.repeatPassword.sameAsPassword">
+                                   v-if="!$v.user.repeatPassword.sameAsPassword && !response.success">
                                     Пароль не совпадает!
                                 </p>
                             </div>
@@ -160,6 +163,7 @@
                 },
                 response: {
                     result: '',
+                    success: false,
                     message: '',
                 },
                 error: '',
@@ -183,7 +187,7 @@
         },
         computed: {
             isAdmin: function () {
-                return this.$store.state.user.roles.includes('ROLE_ADMIN');
+                return this.$store.state.user.roles.includes('ROLE_USER');
             }
         },
         mounted() {
@@ -192,6 +196,7 @@
         },
         methods: {
             getSettings: function () {
+                this.clearResponse();
                 if (undefined !== this.$store.state.user) {
                     this.user.username = this.$store.state.user.username;
                     this.user.email = this.$store.state.user.email || 'Email не задан';
@@ -225,7 +230,10 @@
                             this.response.message = data['message'];
 
                             if ('success' === data['result']) {
-                                this.getSettings();
+                                this.response.success = true;
+                                this.user.email = this.user.newEmail;
+
+                                this.clearForm();
                             }
                         } else {
                             this.clearData();
@@ -290,16 +298,20 @@
                         console.error('catch error: ', error);
                     });
             },
-            clearData: function () {
-                this.user = {
-                    email: '',
-                    password: '',
-                    repeatPassword: '',
-                };
+            clearForm: function () {
+                this.user.newEmail = '';
+                this.user.password = '';
+                this.user.repeatPassword = '';
+            },
+            clearResponse: function () {
                 this.response = {
                     result: '',
+                    success: false,
                     message: ''
                 };
+            },
+            clearData: function () {
+                this.clearForm();
                 this.error = '';
             }
         }

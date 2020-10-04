@@ -4,9 +4,6 @@
 
 {% block body %}
     <div class="container col-md-6" style="margin-top: 70px">
-        <a href="{{ path('app_login_coub') }}?login_type=coub">
-            <button class="btn btn-primary">Войти через COUB</button>
-        </a>
         <form method="post">
             {% if error %}
                 <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>

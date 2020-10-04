@@ -18,32 +18,17 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
     /**
-     * @Route("/login-admin", name="app_login_admin")
+     * @Route("/admin/login", name="app_login_admin")
      *
      * @param Request             $request
      * @param AuthenticationUtils $authenticationUtils
      *
      * @return Response
      */
-    public function login(
-        Request $request,
-        AuthenticationUtils $authenticationUtils
-    ): Response
+    public function login(Request $request, AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('main');
-        }
-
-        $loginType = (string)$request->query->get('login_type');
-        if ('coub' === $loginType) {
-            if ('' !== (string)$_ENV['COUB_KEY']) {
-                $url = AppRegistry::REQUEST_AUTHORIZE_APP
-                    . '?response_type=code'
-                    . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
-                    . '&client_id=' . $_ENV['COUB_KEY'];
-
-                return $this->redirect($url);
-            }
         }
 
         // get the login error if there is one

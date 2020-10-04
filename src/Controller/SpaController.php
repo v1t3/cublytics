@@ -39,16 +39,25 @@ class SpaController extends AbstractController
         $channelRepo = $this->entityManager->getRepository(Channel::class);
         $channel = $channelRepo->findOneBy(['is_current' => true]);
 
+        if ($channel) {
+            $params = [
+                'title'     => $channel->getTitle(),
+                'permalink' => $channel->getChannelPermalink(),
+                'avatar'    => $channel->getAvatar(),
+            ];
+        } else {
+            $params = [
+                'title'     => $this->getUser()->getUsername(),
+                'permalink' => '',
+                'avatar'    => '',
+            ];
+        }
 
         return $this->render(
             'spa/index.html.twig',
             [
                 'controller_name' => 'SpaController',
-                'channel'         => [
-                    'title'     => $channel->getTitle(),
-                    'permalink' => $channel->getChannelPermalink(),
-                    'avatar'    => $channel->getAvatar(),
-                ],
+                'channel'         => $params,
             ]
         );
     }

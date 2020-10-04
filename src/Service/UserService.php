@@ -9,6 +9,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Security;
 
 /**
@@ -29,13 +30,24 @@ class UserService
     private Security $security;
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param Security               $security
+     * @var UserPasswordEncoderInterface
      */
-    public function __construct(EntityManagerInterface $entityManager, Security $security)
+    private UserPasswordEncoderInterface $encoder;
+
+    /**
+     * @param EntityManagerInterface       $entityManager
+     * @param Security                     $security
+     * @param UserPasswordEncoderInterface $encoder
+     */
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        Security $security,
+        UserPasswordEncoderInterface $encoder
+    )
     {
         $this->entityManager = $entityManager;
         $this->security = $security;
+        $this->encoder = $encoder;
     }
 
     /**
@@ -163,7 +175,10 @@ class UserService
          */
         $user = $this->security->getUser();
 
-        if ($user->getEmail() === $email || $user->getPassword() === $password) {
+        if (
+            $user->getEmail() === $email
+            || $this->encoder->isPasswordValid($user, $password)
+        ) {
             $result = [
                 'result'  => 'error',
                 'message' => 'email или пароль совпадают с текущим'
@@ -171,8 +186,8 @@ class UserService
         } else {
             //todo Добавить подтверждение почты
             $user->setEmail($email);
-            //todo Хешировать пароли при сохранении
             $user->setPassword($password);
+            $user->setPassword($this->encoder->encodePassword($user, $password));
 
             $this->entityManager->persist($user);
             $this->entityManager->flush();
