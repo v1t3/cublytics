@@ -86,7 +86,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group_row">
+                    <div class="form-group_row" v-if="isPassword">
                         <div class="form-group_label">
                             <span class="form-group_label-title">Пароль:</span>
                             <div class="form-group_label-input">
@@ -108,21 +108,41 @@
                     </div>
                     <div class="form-group_row">
                         <div class="form-group_label">
+                            <span class="form-group_label-title">Новый пароль:</span>
+                            <div class="form-group_label-input">
+                                <input type="password"
+                                       v-model="user.newPassword"
+                                       :class="{ 'error': $v.user.newPassword.$error && !response.success }"
+                                       @change="clearResponse">
+
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.newPassword.required && !response.success">
+                                    Поле не может быть пустым
+                                </p>
+                                <p class="form-group--error-text"
+                                   v-if="!$v.user.newPassword.minLength && !response.success">
+                                    Минимальная длина: {{ $v.user.password.$params.minLength.min }} символов
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group_row">
+                        <div class="form-group_label">
                             <span class="form-group_label-title">
                                 Повторите пароль:
                             </span>
                             <div class="form-group_label-input">
                                 <input type="password"
-                                       v-model="user.repeatPassword"
-                                       :class="{ 'error': $v.user.repeatPassword.$error && !response.success }"
+                                       v-model="user.repeatNewPassword"
+                                       :class="{ 'error': $v.user.repeatNewPassword.$error && !response.success }"
                                        @change="clearResponse">
 
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.repeatPassword.minLength && !response.success">
-                                    Минимальная длина: {{ $v.user.repeatPassword.$params.minLength.min }} символов
+                                   v-if="!$v.user.repeatNewPassword.minLength && !response.success">
+                                    Минимальная длина: {{ $v.user.repeatNewPassword.$params.minLength.min }} символов
                                 </p>
                                 <p class="form-group--error-text"
-                                   v-if="!$v.user.repeatPassword.sameAsPassword && !response.success">
+                                   v-if="!$v.user.repeatNewPassword.sameAsPassword && !response.success">
                                     Пароль не совпадает!
                                 </p>
                             </div>
@@ -139,6 +159,8 @@
                     </p>
                 </form>
 
+                <br>
+                <br>
                 <br>
 
                 <div class="form-group_row form-group_btn">
@@ -164,7 +186,8 @@
                     email: '',
                     newEmail: '',
                     password: '',
-                    repeatPassword: '',
+                    newPassword: '',
+                    repeatNewPassword: '',
                     username: '',
                     avatar: {
                         link: '',
@@ -188,11 +211,17 @@
                     email
                 },
                 password: {
+                    required: function () {
+                        return !this.isPassword;
+                    },
+                    minLength: minLength(8)
+                },
+                newPassword: {
                     required,
                     minLength: minLength(8)
                 },
-                repeatPassword: {
-                    sameAsPassword: sameAs('password'),
+                repeatNewPassword: {
+                    sameAsPassword: sameAs('newPassword'),
                     minLength: minLength(8)
                 }
             }
@@ -203,6 +232,9 @@
             },
             isConfirmed: function () {
                 return this.$store.state.user.confirmed;
+            },
+            isPassword: function () {
+                return this.$store.state.user.password_set;
             },
         },
         mounted() {
@@ -229,6 +261,7 @@
                 const formData = new FormData();
                 formData.set('email', this.user.newEmail);
                 formData.set('password', this.user.password);
+                formData.set('newPassword', this.user.newPassword);
 
                 axios({
                     method: 'post',
@@ -380,7 +413,8 @@
             clearForm: function () {
                 this.user.newEmail = '';
                 this.user.password = '';
-                this.user.repeatPassword = '';
+                this.user.newPassword = '';
+                this.user.repeatNewPassword = '';
             },
             clearResponse: function () {
                 this.response = {

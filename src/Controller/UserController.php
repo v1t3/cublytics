@@ -88,12 +88,13 @@ class UserController extends AbstractController
             [
                 'result' => 'success',
                 'data'   => [
-                    'user_id'   => $user->getUserId(),
-                    'username'  => $user->getUsername(),
-                    'email'     => $user->getEmail(),
-                    'roles'     => $user->getRoles(),
-                    'confirmed' => $user->getConfirmed(),
-                    'channels'  => $channels,
+                    'user_id'      => $user->getUserId(),
+                    'username'     => $user->getUsername(),
+                    'email'        => $user->getEmail(),
+                    'roles'        => $user->getRoles(),
+                    'confirmed'    => $user->getConfirmed(),
+                    'password_set' => ('' !== (string)$user->getPassword()),
+                    'channels'     => $channels,
                 ]
             ]
         );

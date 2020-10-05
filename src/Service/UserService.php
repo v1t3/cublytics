@@ -163,6 +163,7 @@ class UserService
     {
         $email = (string)$request->request->get('email');
         $password = (string)$request->request->get('password');
+        $newPassword = (string)$request->request->get('newPassword');
         $message = '';
 
         /**
@@ -172,19 +173,27 @@ class UserService
 
         if (
             (!$user->getEmail() && '' === $email)
-            || '' === $password
+            || ($user->getPassword() && '' === $password)
+            || '' === $newPassword
         ) {
-            throw new Exception('email или пароль не заполнены');
+            throw new Exception('Email или пароль не заполнены');
         }
 
-        if ($this->encoder->isPasswordValid($user, $password)) {
-            throw new Exception('пароль совпадает с текущим');
+        if (
+            $user->getPassword()
+            && !$this->encoder->isPasswordValid($user, $password)
+        ) {
+            throw new Exception('Неправильный пароль');
         }
 
-        if ('' !== (string)$user->getEmail() && '' !== $email) {
+        if ($this->encoder->isPasswordValid($user, $newPassword)) {
+            throw new Exception('Новый пароль совпадает с текущим');
+        }
+
+        if ('' !== $email) {
             $user->setEmail($email);
         }
-        $user->setPassword($this->encoder->encodePassword($user, $password));
+        $user->setPassword($this->encoder->encodePassword($user, $newPassword));
 
         # подтверждение почты
         if (true !== $user->getConfirmed()) {
