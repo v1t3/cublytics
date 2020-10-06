@@ -64,8 +64,6 @@ class ChannelService
         $channels = $data['channels'];
         $current = $data['current_channel']['id'];
 
-        //todo Добавить проверку активности канала
-
         if (!empty($channels)) {
             /**
              * @var $repo ChannelRepository
