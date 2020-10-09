@@ -6,6 +6,7 @@ use App\Repository\CoubStatRepository;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 
 /**
  * @ORM\Entity(repositoryClass=CoubStatRepository::class)
@@ -79,156 +80,311 @@ class CoubStat
      */
     private $date_update;
 
+    /**
+     * CoubStat constructor.
+     *
+     * @throws Exception
+     */
     public function __construct()
     {
         $this->setDateCreate();
-        $this->setDateUpdate();
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return int|null
+     */
     public function getCoubId(): ?int
     {
         return $this->coub_id;
     }
 
+    /**
+     * @param int $coub_id
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setCoubId(int $coub_id): self
     {
         $this->coub_id = $coub_id;
 
-        return $this;
-    }
-
-    public function getChannelId(): ?int
-    {
-        return $this->channel_id;
-    }
-
-    public function setChannelId(int $channel_id): self
-    {
-        $this->channel_id = $channel_id;
-
-        return $this;
-    }
-
-    public function getLikeCount(): ?int
-    {
-        return $this->like_count;
-    }
-
-    public function setLikeCount(?int $like_count): self
-    {
-        $this->like_count = $like_count;
-
-        return $this;
-    }
-
-    public function getRepostCount(): ?int
-    {
-        return $this->repost_count;
-    }
-
-    public function setRepostCount(?int $repost_count): self
-    {
-        $this->repost_count = $repost_count;
-
-        return $this;
-    }
-
-    public function getRemixesCount(): ?int
-    {
-        return $this->remixes_count;
-    }
-
-    public function setRemixesCount(?int $remixes_count): self
-    {
-        $this->remixes_count = $remixes_count;
-
-        return $this;
-    }
-
-    public function getViewsCount(): ?int
-    {
-        return $this->views_count;
-    }
-
-    public function setViewsCount(?int $views_count): self
-    {
-        $this->views_count = $views_count;
-
-        return $this;
-    }
-
-    public function getDislikesCount(): ?int
-    {
-        return $this->dislikes_count;
-    }
-
-    public function setDislikesCount(?int $dislikes_count): self
-    {
-        $this->dislikes_count = $dislikes_count;
-
-        return $this;
-    }
-
-    public function getIsKd(): ?bool
-    {
-        return $this->is_kd;
-    }
-
-    public function setIsKd(?bool $is_kd): self
-    {
-        $this->is_kd = $is_kd;
-
-        return $this;
-    }
-
-    public function getFeatured(): ?bool
-    {
-        return $this->featured;
-    }
-
-    public function setFeatured(?bool $featured): self
-    {
-        $this->featured = $featured;
-
-        return $this;
-    }
-
-    public function getBanned(): ?bool
-    {
-        return $this->banned;
-    }
-
-    public function setBanned(?bool $banned): self
-    {
-        $this->banned = $banned;
-
-        return $this;
-    }
-
-    public function getDateCreate(): ?DateTimeInterface
-    {
-        return $this->date_create;
-    }
-
-    public function setDateCreate(): self
-    {
-        if (!$this->date_create) {
-            $this->date_create = new DateTime();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
         }
 
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
+    public function getChannelId(): ?int
+    {
+        return $this->channel_id;
+    }
+
+    /**
+     * @param int $channel_id
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setChannelId(int $channel_id): self
+    {
+        $this->channel_id = $channel_id;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getLikeCount(): ?int
+    {
+        return $this->like_count;
+    }
+
+    /**
+     * @param int|null $like_count
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setLikeCount(?int $like_count): self
+    {
+        $this->like_count = $like_count;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRepostCount(): ?int
+    {
+        return $this->repost_count;
+    }
+
+    /**
+     * @param int|null $repost_count
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setRepostCount(?int $repost_count): self
+    {
+        $this->repost_count = $repost_count;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRemixesCount(): ?int
+    {
+        return $this->remixes_count;
+    }
+
+    /**
+     * @param int|null $remixes_count
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setRemixesCount(?int $remixes_count): self
+    {
+        $this->remixes_count = $remixes_count;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getViewsCount(): ?int
+    {
+        return $this->views_count;
+    }
+
+    /**
+     * @param int|null $views_count
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setViewsCount(?int $views_count): self
+    {
+        $this->views_count = $views_count;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getDislikesCount(): ?int
+    {
+        return $this->dislikes_count;
+    }
+
+    /**
+     * @param int|null $dislikes_count
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setDislikesCount(?int $dislikes_count): self
+    {
+        $this->dislikes_count = $dislikes_count;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getIsKd(): ?bool
+    {
+        return $this->is_kd;
+    }
+
+    /**
+     * @param bool|null $is_kd
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setIsKd(?bool $is_kd): self
+    {
+        $this->is_kd = $is_kd;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getFeatured(): ?bool
+    {
+        return $this->featured;
+    }
+
+    /**
+     * @param bool|null $featured
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setFeatured(?bool $featured): self
+    {
+        $this->featured = $featured;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getBanned(): ?bool
+    {
+        return $this->banned;
+    }
+
+    /**
+     * @param bool|null $banned
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setBanned(?bool $banned): self
+    {
+        $this->banned = $banned;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getDateCreate(): ?DateTimeInterface
+    {
+        return $this->date_create;
+    }
+
+    /**
+     * @return $this
+     * @throws Exception
+     */
+    public function setDateCreate(): self
+    {
+        if (!$this->date_create) {
+            $this->date_create = new DateTime();
+
+            if (!$this->date_update) {
+                $this->setDateUpdate();
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getDateUpdate(): ?DateTimeInterface
     {
         return $this->date_update;
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function setDateUpdate(): self
     {
         $this->date_update = new DateTime();

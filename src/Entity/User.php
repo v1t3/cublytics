@@ -99,6 +99,11 @@ class User implements UserInterface
      */
     public const ROLE_USER = 'ROLE_USER';
 
+    /**
+     * User constructor.
+     *
+     * @throws Exception
+     */
     public function __construct()
     {
         $this->setDateCreate();
@@ -126,12 +131,15 @@ class User implements UserInterface
      * @param int $user_id
      *
      * @return $this
+     * @throws Exception
      */
     public function setUserId(int $user_id): self
     {
         $this->user_id = $user_id;
 
-        $this->setDateUpdate();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -154,12 +162,15 @@ class User implements UserInterface
      * @param array $roles
      *
      * @return $this
+     * @throws Exception
      */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
 
-        $this->setDateUpdate();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -180,13 +191,16 @@ class User implements UserInterface
      * @param string $username
      *
      * @return User
+     * @throws Exception
      * @see UserInterface
      */
     public function setUsername(string $username): self
     {
         $this->username = $username;
 
-        $this->setDateUpdate();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -203,12 +217,15 @@ class User implements UserInterface
      * @param string $email
      *
      * @return $this
+     * @throws Exception
      */
     public function setEmail(string $email = null): self
     {
         $this->email = $email;
 
-        $this->setDateUpdate();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -225,12 +242,15 @@ class User implements UserInterface
      * @param string $password
      *
      * @return $this
+     * @throws Exception
      */
     public function setPassword(string $password): self
     {
         $this->password = $password;
 
-        $this->setDateUpdate();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -247,12 +267,15 @@ class User implements UserInterface
      * @param string $token
      *
      * @return $this
+     * @throws Exception
      */
     public function setToken(string $token): self
     {
         $this->token = $token;
 
-        $this->setDateUpdate();
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -266,7 +289,7 @@ class User implements UserInterface
     }
 
     /**
-     * @param DateTimeInterface|null $token_expired_at
+     * @param int $token_expired_at
      *
      * @return $this
      */
@@ -274,10 +297,12 @@ class User implements UserInterface
     {
         try {
             if (0 < (int)$token_expired_at) {
-                $this->token_expired_at = new DateTime(date('Y-m-d H:i:s', $token_expired_at)) ;
+                $this->token_expired_at = new DateTime(date('Y-m-d H:i:s', $token_expired_at));
             }
 
-            $this->setDateUpdate();
+            if (!$this->date_update) {
+                $this->setDateUpdate();
+            }
         } catch (Exception $exception) {
             trigger_error($exception);
         }
@@ -293,6 +318,11 @@ class User implements UserInterface
         return $this->created_at;
     }
 
+    /**
+     * @param $created_at
+     *
+     * @return $this
+     */
     public function setCreatedAt($created_at): self
     {
         try {
@@ -300,7 +330,9 @@ class User implements UserInterface
                 $dateObj = new DateTime($created_at);
                 $this->created_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
 
-                $this->setDateUpdate();
+                if (!$this->date_update) {
+                    $this->setDateUpdate();
+                }
             }
         } catch (Exception $exception) {
             trigger_error($exception);
@@ -309,11 +341,19 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updated_at;
     }
 
+    /**
+     * @param $updated_at
+     *
+     * @return $this
+     */
     public function setUpdatedAt($updated_at): self
     {
         try {
@@ -321,7 +361,9 @@ class User implements UserInterface
                 $dateObj = new DateTime($updated_at);
                 $this->updated_at = new DateTime($dateObj->format('Y-m-d H:i:s'));
 
-                $this->setDateUpdate();
+                if (!$this->date_update) {
+                    $this->setDateUpdate();
+                }
             }
         } catch (Exception $exception) {
             trigger_error($exception);
@@ -347,27 +389,43 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getDateCreate(): ?DateTimeInterface
     {
         return $this->date_create;
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
             $this->date_create = new DateTime();
 
-            $this->setDateUpdate();
+            if (!$this->date_update) {
+                $this->setDateUpdate();
+            }
         }
 
         return $this;
     }
 
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getDateUpdate(): ?DateTimeInterface
     {
         return $this->date_update;
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function setDateUpdate(): self
     {
         $this->date_update = new DateTime();
@@ -375,35 +433,70 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getConfirmationCode(): ?string
     {
         return $this->confirmation_code;
     }
 
+    /**
+     * @param string|null $confirmation_code
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setConfirmationCode(?string $confirmation_code): self
     {
         $this->confirmation_code = $confirmation_code;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
+    /**
+     * @return bool|null
+     */
     public function getConfirmed(): ?bool
     {
         return $this->confirmed;
     }
 
+    /**
+     * @param bool|null $confirmed
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setConfirmed(?bool $confirmed): self
     {
         $this->confirmed = $confirmed;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
+    /**
+     * @return DateTimeInterface|null
+     */
     public function getConfirmationCreatedAt(): ?\DateTimeInterface
     {
         return $this->confirmation_created_at;
     }
 
+    /**
+     * @param DateTimeInterface|null $confirmation_created_at
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setConfirmationCreatedAt(?\DateTimeInterface $confirmation_created_at = null): self
     {
         if (!$confirmation_created_at) {
@@ -411,6 +504,10 @@ class User implements UserInterface
         }
 
         $this->confirmation_created_at = $confirmation_created_at;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }

@@ -135,6 +135,10 @@ class Log
 
         $this->date = $date;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
@@ -150,10 +154,15 @@ class Log
      * @param string|null $type
      *
      * @return $this
+     * @throws Exception
      */
     public function setType(?string $type): self
     {
         $this->type = $type;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -170,10 +179,15 @@ class Log
      * @param bool|null $status
      *
      * @return $this
+     * @throws Exception
      */
     public function setStatus(?bool $status): self
     {
         $this->status = $status;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -190,10 +204,15 @@ class Log
      * @param string|null $error
      *
      * @return $this
+     * @throws Exception
      */
     public function setError(?string $error): self
     {
         $this->error = $error;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -210,34 +229,65 @@ class Log
      * @param string $user
      *
      * @return $this
+     * @throws Exception
      */
     public function setUser(string $user): self
     {
         $this->user = $user;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getRegCode(): ?string
     {
         return $this->reg_code;
     }
 
+    /**
+     * @param string|null $reg_code
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setRegCode(?string $reg_code): self
     {
         $this->reg_code = $reg_code;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getToken(): ?string
     {
         return $this->token;
     }
 
+    /**
+     * @param string|null $token
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setToken(?string $token): self
     {
         $this->token = $token;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -254,10 +304,15 @@ class Log
      * @param string|null $channel
      *
      * @return $this
+     * @throws Exception
      */
     public function setChannel(?string $channel): self
     {
         $this->channel = $channel;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -274,10 +329,15 @@ class Log
      * @param int|null $channel_id
      *
      * @return $this
+     * @throws Exception
      */
     public function setChannelId(?int $channel_id): self
     {
         $this->channel_id = $channel_id;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -294,22 +354,40 @@ class Log
      * @param string|null $coub
      *
      * @return $this
+     * @throws Exception
      */
     public function setCoub(?string $coub): self
     {
         $this->coub = $coub;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getStatisticType(): ?string
     {
         return $this->statistic_type;
     }
 
+    /**
+     * @param string|null $statistic_type
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setStatisticType(?string $statistic_type): self
     {
         $this->statistic_type = $statistic_type;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
@@ -331,7 +409,9 @@ class Log
         if (!$this->date_create) {
             $this->date_create = new DateTime();
 
-            $this->setDateUpdate();
+            if (!$this->date_update) {
+                $this->setDateUpdate();
+            }
         }
 
         return $this;
@@ -356,26 +436,52 @@ class Log
         return $this;
     }
 
+    /**
+     * @return int|null
+     */
     public function getCoubId(): ?int
     {
         return $this->coub_id;
     }
 
+    /**
+     * @param int|null $coub_id
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setCoubId(?int $coub_id): self
     {
         $this->coub_id = $coub_id;
 
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
+    /**
+     * @param string|null $email
+     *
+     * @return $this
+     * @throws Exception
+     */
     public function setEmail(?string $email): self
     {
         $this->email = $email;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }
