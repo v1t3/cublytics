@@ -66,10 +66,10 @@
                 </div>
 
                 <form class="form-group"
-                      v-if="isAdmin"
                       v-on:submit="updateSettings"
                       :class="{ 'form-group--error': $v.user.$anyError }">
-                    <h3>Обновить учётные данные:</h3>
+                    <h3 v-if="!isPassword">Установить учётные данные:</h3>
+                    <h3 v-if="isPassword">Обновить учётные данные:</h3>
 
                     <div class="form-group_row">
                         <div class="form-group_label">
@@ -159,6 +159,7 @@
                     </p>
                 </form>
 
+                <a v-if="isPassword" href="/reset-password" target="_blank" rel="noreferrer noopener">Забыл пароль</a>
                 <br>
                 <br>
                 <br>
@@ -228,7 +229,7 @@
         },
         computed: {
             isAdmin: function () {
-                return this.$store.state.user.roles.includes('ROLE_USER');
+                return this.$store.state.user.roles.includes('ROLE_ADMIN');
             },
             isConfirmed: function () {
                 return this.$store.state.user.confirmed;

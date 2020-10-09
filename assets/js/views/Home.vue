@@ -1,6 +1,6 @@
 <template>
     <div class="view-container home-view">
-        <div class="user-block_name" v-if="user">
+        <div class="user-block_name" v-if="user && false">
             <p>Привет, {{ user.username }}</p>
         </div>
         <div class="row">
