@@ -8,6 +8,13 @@
     background: linear-gradient(-45deg, #4332a2, #318dd8);
 }
 
+.page {
+    display: flex;
+    padding-top: 70px;
+    background-color: #3e63c4;
+    height: 100vh;
+}
+
 .welcome {
     display: flex;
     justify-content: center;

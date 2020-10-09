@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Page not found{% endblock %}
+{% block body %}
+    {{ include('components/header_main.html.twig') }}
+    <div class="page">
+        <div class="container d-flex align-items-center justify-content-center">
+            <div class="content">
+                <h1>
+                    Запрошенная страница не найдена.
+                </h1>
+                <p>
+                    <a href="{{ path('main') }}">Вернуться на главную</a>
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
