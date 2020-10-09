@@ -6,6 +6,7 @@ use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -20,14 +21,22 @@ class AppUserCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        return [
-            IntegerField::new('user_id'),
-            TextField::new('username'),
-            EmailField::new('email'),
-            ArrayField::new('roles'),
-            DateTimeField::new('created_at'),
-            DateTimeField::new('updated_at'),
-            BooleanField::new('confirmed'),
-        ];
+        $roles = ChoiceField::new('roles')
+            ->setChoices(
+                [
+                    'User' => 'ROLE_USER',
+                    'Admin' => 'ROLE_ADMIN',
+                ]
+            )
+            ->setFormTypeOption('multiple', true);
+
+        yield IntegerField::new('user_id');
+        yield TextField::new('username');
+        yield EmailField::new('email');
+//        yield PasswordField::new('password');
+        yield $roles;
+        yield DateTimeField::new('created_at');
+        yield DateTimeField::new('updated_at');
+        yield BooleanField::new('confirmed');
     }
 }

@@ -34,9 +34,10 @@ class AdminPanelController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linktoDashboard('Dashboard', 'fa fa-home');
+        yield MenuItem::section('Таблицы');
         yield MenuItem::linkToCrud('User', 'fa fa-user', User::class);
         yield MenuItem::linkToCrud('Channel', 'fa fa-tv', Channel::class);
+        yield MenuItem::section('Контент');
     }
 
     public function configureUserMenu(UserInterface $user): UserMenu

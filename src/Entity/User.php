@@ -94,6 +94,8 @@ class User implements UserInterface
      */
     private $confirmation_created_at;
 
+//    private ?string $plainPassword = null;
+
     /**
      *
      */
@@ -244,7 +246,7 @@ class User implements UserInterface
      * @return $this
      * @throws Exception
      */
-    public function setPassword(string $password): self
+    public function setPassword(string $password = null): self
     {
         $this->password = $password;
 
@@ -386,7 +388,7 @@ class User implements UserInterface
     public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+//         $this->plainPassword = null;
     }
 
     /**
@@ -511,4 +513,14 @@ class User implements UserInterface
 
         return $this;
     }
+
+//    public function getPlainPassword(): ?string
+//    {
+//        return $this->plainPassword;
+//    }
+//
+//    public function setPlainPassword(string $password): void
+//    {
+//        $this->plainPassword = $password;
+//    }
 }

@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Channel;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AvatarField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -19,15 +20,14 @@ class ChannelCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        return [
-            IdField::new('channel_id'),
-            TextField::new('channel_permalink'),
-            IntegerField::new('user_id'),
-            TextField::new('title'),
-            BooleanField::new('is_watching'),
-            BooleanField::new('is_active'),
-            DateTimeField::new('created_at'),
-            DateTimeField::new('updated_at'),
-        ];
+        yield AvatarField::new('avatar');
+        yield IdField::new('channel_id');
+        yield TextField::new('channel_permalink');
+        yield IntegerField::new('user_id');
+        yield TextField::new('title');
+        yield BooleanField::new('is_watching');
+        yield BooleanField::new('is_active');
+        yield DateTimeField::new('created_at');
+        yield DateTimeField::new('updated_at');
     }
 }
