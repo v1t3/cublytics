@@ -21,7 +21,7 @@ class Channel
     private $id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", unique=true)
      */
     private $channel_id;
 
@@ -33,7 +33,8 @@ class Channel
     /**
      * ID пользователя
      *
-     * @ORM\Column(type="integer")
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id", onDelete="CASCADE")
      */
     private $user_id;
 

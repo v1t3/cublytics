@@ -26,7 +26,8 @@ class Coub
     private $coub_id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\ManyToOne(targetEntity=Channel::class)
+     * @ORM\JoinColumn(name="channel_id", referencedColumnName="channel_id", onDelete="CASCADE")
      */
     private $channel_id;
 

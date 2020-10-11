@@ -21,6 +21,8 @@ class AppUserCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        //todo Вынести запрос подтверждения почты в отдельную таблицу
+
         $roles = ChoiceField::new('roles')
             ->setChoices(
                 [
