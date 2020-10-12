@@ -21,7 +21,7 @@ class Channel
     private $id;
 
     /**
-     * @ORM\Column(type="integer", unique=true)
+     * @ORM\Column(type="integer")
      */
     private $channel_id;
 
@@ -33,8 +33,7 @@ class Channel
     /**
      * ID пользователя
      *
-     * @ORM\ManyToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id", onDelete="CASCADE")
+     * @ORM\Column(type="integer")
      */
     private $user_id;
 
@@ -151,6 +150,12 @@ class Channel
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $date_update;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(name="owner_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $owner_id;
 
     /**
      * Channel constructor.
@@ -743,6 +748,31 @@ class Channel
     public function setRemixesCount(?int $remixes_count): self
     {
         $this->remixes_count = $remixes_count;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOwnerId()
+    {
+        return $this->owner_id;
+    }
+
+    /**
+     * @param User $owner_id
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setOwnerId(User $owner_id): self
+    {
+        $this->owner_id = $owner_id;
 
         if (!$this->date_update) {
             $this->setDateUpdate();

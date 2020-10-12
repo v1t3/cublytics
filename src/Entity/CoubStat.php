@@ -26,8 +26,7 @@ class CoubStat
     private $coub_id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Channel::class)
-     * @ORM\JoinColumn(name="channel_id", referencedColumnName="channel_id", onDelete="CASCADE")
+     * @ORM\Column(type="integer")
      */
     private $channel_id;
 
@@ -80,6 +79,12 @@ class CoubStat
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $date_update;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Channel::class)
+     * @ORM\JoinColumn(name="owner_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $owner_id;
 
     /**
      * CoubStat constructor.
@@ -389,6 +394,31 @@ class CoubStat
     public function setDateUpdate(): self
     {
         $this->date_update = new DateTime();
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOwnerId()
+    {
+        return $this->owner_id;
+    }
+
+    /**
+     * @param Channel $owner_id
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setOwnerId(Channel $owner_id): self
+    {
+        $this->owner_id = $owner_id;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
 
         return $this;
     }

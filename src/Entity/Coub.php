@@ -26,8 +26,7 @@ class Coub
     private $coub_id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Channel::class)
-     * @ORM\JoinColumn(name="channel_id", referencedColumnName="channel_id", onDelete="CASCADE")
+     * @ORM\Column(type="integer")
      */
     private $channel_id;
 
@@ -80,6 +79,12 @@ class Coub
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $banned;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Channel::class)
+     * @ORM\JoinColumn(name="owner_id", referencedColumnName="id", onDelete="CASCADE")
+     */
+    private $owner_id;
 
     /**
      * Coub constructor.
@@ -397,6 +402,31 @@ class Coub
     public function setBanned(?bool $banned): self
     {
         $this->banned = $banned;
+
+        if (!$this->date_update) {
+            $this->setDateUpdate();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOwnerId()
+    {
+        return $this->owner_id;
+    }
+
+    /**
+     * @param Channel $owner_id
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function setOwnerId(Channel $owner_id): self
+    {
+        $this->owner_id = $owner_id;
 
         if (!$this->date_update) {
             $this->setDateUpdate();

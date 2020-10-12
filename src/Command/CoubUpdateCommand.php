@@ -216,7 +216,7 @@ class CoubUpdateCommand extends Command
                 $data = $this->channelService->getOriginalCoubs($permalink);
 
                 if (!empty($data)) {
-                    $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink);
+                    $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink, $channel);
 
                     if ($saveRes) {
                         $this->output->writeln(

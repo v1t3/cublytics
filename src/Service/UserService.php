@@ -95,6 +95,7 @@ class UserService
      * @param $userData
      *
      * @return bool
+     * @throws Exception
      */
     public function saveUser($tokenData, $userData)
     {

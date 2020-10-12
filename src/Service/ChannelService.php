@@ -11,6 +11,7 @@ use App\Entity\User;
 use App\Repository\ChannelRepository;
 use App\Repository\CoubRepository;
 use App\Repository\CoubStatRepository;
+use App\Repository\UserRepository;
 use DateInterval;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,6 +50,7 @@ class ChannelService
      * @param $data
      *
      * @return bool
+     * @throws Exception
      */
     public function saveUserChannelsList($data)
     {
@@ -64,7 +66,15 @@ class ChannelService
         $channels = $data['channels'];
         $current = $data['current_channel']['id'];
 
-        if (!empty($channels)) {
+        /**
+         * Получим пользователя для установки связи
+         *
+         * @var $userRepo UserRepository
+         */
+        $userRepo = $this->entityManager->getRepository(User::class);
+        $user = $userRepo->findOneBy(['user_id' => $userId]);
+
+        if ($user && !empty($channels)) {
             /**
              * @var $repo ChannelRepository
              */
@@ -84,6 +94,7 @@ class ChannelService
                     );
 
                     $ch = new Channel();
+                    $ch->setOwnerId($user);
                     $ch->setChannelId($channel['id']);
                     $ch->setChannelPermalink($channel['permalink']);
                     $ch->setUserId($userId);
@@ -420,24 +431,27 @@ class ChannelService
     }
 
     /**
-     * @param $data
-     * @param $channelName
+     * @param      $data
+     * @param      $channelName
+     * @param null $channel
      *
      * @return bool
      * @throws Exception
      */
-    public function saveOriginalCoubs($data, $channelName)
+    public function saveOriginalCoubs($data, $channelName, $channel = null)
     {
         if (!$data) {
             return false;
         }
 
-        /**
-         * @var $channelRepo ChannelRepository
-         * @var $channel     Channel
-         */
-        $channelRepo = $this->entityManager->getRepository(Channel::class);
-        $channel = $channelRepo->findOneBy(['channel_permalink' => $channelName]);
+        if (!$channel) {
+            /**
+             * @var $channelRepo ChannelRepository
+             * @var $channel     Channel
+             */
+            $channelRepo = $this->entityManager->getRepository(Channel::class);
+            $channel = $channelRepo->findOneBy(['channel_permalink' => $channelName]);
+        }
 
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
@@ -474,8 +488,12 @@ class ChannelService
 
                         $this->entityManager->persist($coubItem);
                     }
-                } elseif (empty($coub['recoub_to'])) {
+                }
+
+                # Если recoub_to не существует, то coub свой
+                if (empty($coub['recoub_to'])) {
                     $coubItem = new Coub();
+                    $coubItem->setOwnerId($channel);
                     $coubItem->setCoubId($coub['id']);
                     $coubItem->setChannelId($channelId);
                     $coubItem->setPermalink($coub['permalink']);
@@ -485,13 +503,10 @@ class ChannelService
                     $coubItem->setIsKd($coub['cotd']);
                     $coubItem->setFeatured($coub['featured']);
                     $coubItem->setBanned($coub['banned']);
-
                     $this->entityManager->persist($coubItem);
-                }
 
-                # Если recoub_to не существует, то coub свой
-                if (empty($coub['recoub_to'])) {
                     $coubStatItem = new CoubStat();
+                    $coubStatItem->setOwnerId($channel);
                     $coubStatItem->setCoubId($coub['id']);
                     $coubStatItem->setChannelId($channelId);
                     $coubStatItem->setViewsCount($coub['views_count']);
@@ -502,7 +517,6 @@ class ChannelService
                     $coubStatItem->setIsKd($coub['cotd']);
                     $coubStatItem->setFeatured($coub['featured']);
                     $coubStatItem->setBanned($coub['banned']);
-
                     $this->entityManager->persist($coubStatItem);
 
                     // подготовить данные для канала
