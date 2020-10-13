@@ -50,18 +50,26 @@ class SecurityController extends AbstractController
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        if (
-            $this->getUser()
-            && true === $this->getUser()->getConfirmed()
-        ) {
-            $userRoles = $this->getUser()->getRoles();
+        if ($this->getUser()) {
+            /**
+             * @var $confRepo ConfirmationRequestRepository
+             */
+            $confRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
+            $confirm = $confRepo->findOneBy(['owner_id' => $this->getUser()->getId()]);
 
-            // если админ то редирект на админку, иначе на дашборд
-            if ($userRoles && in_array('ROLE_ADMIN', $userRoles)) {
-                return $this->redirectToRoute('admin_page');
+            if (
+                $confirm
+                && true === $confirm->getConfirmed()
+            ) {
+                $userRoles = $this->getUser()->getRoles();
+
+                // если админ то редирект на админку, иначе на дашборд
+                if ($userRoles && in_array('ROLE_ADMIN', $userRoles)) {
+                    return $this->redirectToRoute('admin_page');
+                }
+
+                return $this->redirectToRoute('spa');
             }
-
-            return $this->redirectToRoute('spa');
         }
 
         // get the login error if there is one

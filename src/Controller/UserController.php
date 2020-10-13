@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\ConfirmationRequest;
 use App\Entity\Log;
 use App\Entity\User;
+use App\Repository\ConfirmationRequestRepository;
 use App\Service\ChannelService;
 use App\Service\CodeGenerator;
 use App\Service\Mailer;
@@ -83,6 +85,12 @@ class UserController extends AbstractController
             return $response;
         }
 
+        /**
+         * @var $confRepo ConfirmationRequestRepository
+         */
+        $confRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
+        $confirm = $confRepo->findOneBy(['owner_id' => $user->getId()]);
+
         $response = new JsonResponse();
         $response->setData(
             [
@@ -92,7 +100,7 @@ class UserController extends AbstractController
                     'username'     => $user->getUsername(),
                     'email'        => $user->getEmail(),
                     'roles'        => $user->getRoles(),
-                    'confirmed'    => $user->getConfirmed(),
+                    'confirmed'    => $confirm->getConfirmed(),
                     'password_set' => ('' !== (string)$user->getPassword()),
                     'channels'     => $channels,
                 ]

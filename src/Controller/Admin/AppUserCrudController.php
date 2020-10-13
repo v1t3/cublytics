@@ -74,7 +74,7 @@ class AppUserCrudController extends AbstractCrudController
         yield $roles;
         yield DateTimeField::new('created_at', 'Дата создания');
         yield DateTimeField::new('updated_at', 'Дата обновления');
-        yield BooleanField::new('confirmed', 'Подтверждено');
+        yield BooleanField::new('blocked', 'Заблокирован');
     }
 
     /**

@@ -2,7 +2,9 @@
 
 namespace App\Security;
 
+use App\Entity\ConfirmationRequest;
 use App\Entity\User;
+use App\Repository\ConfirmationRequestRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -157,7 +159,13 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
      */
     public function checkCredentials($credentials, UserInterface $user)
     {
-        if (true !== $this->user->getConfirmed()) {
+        /**
+         * @var $confRepo ConfirmationRequestRepository
+         */
+        $confRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
+        $confirm = $confRepo->findOneBy(['owner_id' => $this->user->getId()]);
+
+        if (!$confirm || true !== $confirm->getConfirmed()) {
             throw new CustomUserMessageAuthenticationException('Почта не подтверждена');
         }
 
