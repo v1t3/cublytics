@@ -85,6 +85,11 @@ class User implements UserInterface
     private ?string $plainPassword = null;
 
     /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $blocked;
+
+    /**
      *
      */
     public const ROLE_USER = 'ROLE_USER';
@@ -437,5 +442,25 @@ class User implements UserInterface
     public function setPlainPassword(string $password): void
     {
         $this->plainPassword = $password;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getBlocked(): ?bool
+    {
+        return $this->blocked;
+    }
+
+    /**
+     * @param bool|null $blocked
+     *
+     * @return $this
+     */
+    public function setBlocked(?bool $blocked): self
+    {
+        $this->blocked = $blocked;
+
+        return $this;
     }
 }
