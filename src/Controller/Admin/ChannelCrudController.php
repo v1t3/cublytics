@@ -27,7 +27,9 @@ class ChannelCrudController extends AbstractCrudController
         yield TextField::new('title');
         yield BooleanField::new('is_watching');
         yield BooleanField::new('is_active');
-        yield DateTimeField::new('created_at');
-        yield DateTimeField::new('updated_at');
+        yield DateTimeField::new('created_at')
+            ->setFormat('dd-M-yy hh:mm');
+        yield DateTimeField::new('updated_at')
+            ->setFormat('dd-M-yy hh:mm');
     }
 }

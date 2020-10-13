@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\AccessList;
 use App\Entity\Channel;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -34,18 +35,21 @@ class AdminPanelController extends AbstractDashboardController
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::section('Таблицы');
-        yield MenuItem::linkToCrud('User', 'fa fa-user', User::class);
-        yield MenuItem::linkToCrud('Channel', 'fa fa-tv', Channel::class);
+        yield MenuItem::section('Дашборд');
+        yield MenuItem::linkToCrud('Пользователи', 'fa fa-user', User::class);
+        yield MenuItem::linkToCrud('Каналы', 'fa fa-tv', Channel::class);
+        yield MenuItem::linkToCrud('Список доступа', 'fa fa-id-badge', AccessList::class);
         yield MenuItem::section('Контент');
     }
 
     public function configureUserMenu(UserInterface $user): UserMenu
     {
         return parent::configureUserMenu($user)
-            ->setMenuItems([
-                MenuItem::section(),
-                MenuItem::linkToLogout('Выйти', 'fa fa-sign-out'),
-            ]);
+            ->setMenuItems(
+                [
+                    MenuItem::section(),
+                    MenuItem::linkToLogout('Выйти', 'fa fa-sign-out'),
+                ]
+            );
     }
 }
