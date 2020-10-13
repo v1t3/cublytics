@@ -356,7 +356,7 @@
             resendConfirmation: function() {
                 axios({
                     method: 'post',
-                    url: '/api/user/resend_confirmation',
+                    url: '/resend_confirmation',
                     data: {},
                     headers: {
                         "X-Requested-With": "XMLHttpRequest"

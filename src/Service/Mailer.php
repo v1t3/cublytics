@@ -8,6 +8,9 @@ use Exception;
 use Swift_Mailer;
 use Swift_Message;
 use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
  * Class Mailer
@@ -34,8 +37,8 @@ class Mailer
     /**
      * Mailer constructor.
      *
-     * @param Swift_Mailer           $mailer
-     * @param Environment            $twig
+     * @param Swift_Mailer $mailer
+     * @param Environment  $twig
      */
     public function __construct(Swift_Mailer $mailer, Environment $twig)
     {
@@ -46,20 +49,25 @@ class Mailer
     /**
      * @param User   $user
      * @param string $email
+     * @param string $code
      *
      * @return bool
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      * @throws Exception
      */
-    public function sendConfirmationMessage(User $user, string $email)
+    public function sendConfirmationMessage(User $user, string $email, string $code)
     {
-        if ('' === $email) {
-            throw new Exception('Не задан email');
+        if ('' === $email || '' === $code) {
+            throw new Exception('Не заданы обязательные параметры');
         }
 
         $messageBody = $this->twig->render(
             'security/confirmation.html.twig',
             [
-                'user' => $user
+                'user' => $user,
+                'code' => $code
             ]
         );
 

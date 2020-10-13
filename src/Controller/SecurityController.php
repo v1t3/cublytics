@@ -3,10 +3,18 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Entity\ConfirmationRequest;
+use App\Entity\Log;
+use App\Repository\ConfirmationRequestRepository;
+use App\Service\CodeGenerator;
+use App\Service\Mailer;
+use App\Service\UserService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -69,6 +77,8 @@ class SecurityController extends AbstractController
 
     /**
      * @Route("/logout", name="app_logout")
+     *
+     * @return RedirectResponse
      */
     public function logout()
     {
@@ -80,49 +90,105 @@ class SecurityController extends AbstractController
     /**
      * @Route("/confirm/{code}", name="email_confirmation")
      *
-     * @param UserRepository $userRepo
-     * @param string         $code
+     * @param string $code
      *
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
-    public function confirmEmail(UserRepository $userRepo, string $code)
+    public function confirmEmail(string $code = '')
     {
-        /**
-         * @var User $user
-         */
-        $user = $userRepo->findOneBy(['confirmation_code' => $code]);
+        if ('' === (string)$code) {
+            return $this->redirectToRoute('main');
+        }
 
-        if ($user === null) {
+        /**
+         * @var $confirmRepo  ConfirmationRequestRepository
+         * @var $confirmation ConfirmationRequest
+         */
+        $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
+        $confirmation = $confirmRepo->findOneBy(['code' => $code]);
+
+        if (!$confirmation) {
             return new Response('404');
         }
 
-        $createdAt = $user->getConfirmationCreatedAt();
-        $valid = new \DateTime();
-        $valid->modify('-24 hours');
+        $expiredAt = $confirmation->getExpiresAt();
 
         # меньше == раньше
-        if ($createdAt < $valid) {
-            $user->setConfirmed(false);
-            $this->entityManager->persist($user);
+        if ($expiredAt < new DateTime()) {
+            $confirmation->setConfirmed(false);
+            $this->entityManager->persist($confirmation);
 
             $this->entityManager->flush();
 
             return $this->render('security/account_confirm_reject.html.twig', []);
         }
 
-        $user->setConfirmed(true);
-        $user->setConfirmationCode('');
-        $user->setConfirmationCreatedAt(null);
-        $this->entityManager->persist($user);
+        $confirmation->setConfirmed(true);
+        $confirmation->setCode('');
+        $confirmation->setExpiresAt(null);
+        $this->entityManager->persist($confirmation);
 
         $this->entityManager->flush();
 
-        return $this->render(
-            'security/account_confirm.html.twig',
+        return $this->render('security/account_confirm.html.twig', []);
+    }
+
+    /**
+     * @Route("/resend_confirmation", name="resend_confirmation")
+     *
+     * @param UserService   $userService
+     * @param Mailer        $mailer
+     * @param CodeGenerator $codeGenerator
+     *
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function resendConfirmation(
+        UserService $userService,
+        Mailer $mailer,
+        CodeGenerator $codeGenerator
+    )
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        try {
+            $data = $userService->resendConfirmation($mailer, $codeGenerator);
+        } catch (Exception $exception) {
+            $user = $this->getUser();
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('resend_confirmation');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
+                'result' => 'error',
+                'error'  => [
+                    'message' => $exception->getMessage(),
+                ]
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
+
+        $response = new JsonResponse();
+        $response->setData(
             [
-                'user' => $user,
+                'result'  => 'success',
+                'message' => $data,
             ]
         );
+
+        return $response;
     }
 }

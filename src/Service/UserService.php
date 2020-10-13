@@ -4,8 +4,11 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\AppRegistry;
+use App\Entity\ConfirmationRequest;
 use App\Entity\User;
+use App\Repository\ConfirmationRequestRepository;
 use App\Repository\UserRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
@@ -172,6 +175,10 @@ class UserService
          */
         $user = $this->security->getUser();
 
+        if (!$user) {
+            return $message;
+        }
+
         if (
             (!$user->getEmail() && '' === $email)
             || ($user->getPassword() && '' === $password)
@@ -196,12 +203,44 @@ class UserService
         }
         $user->setPassword($this->encoder->encodePassword($user, $newPassword));
 
-        # подтверждение почты
-        if (true !== $user->getConfirmed()) {
-            $user->setConfirmationCode($codeGenerator->getConfirmationCode());
-            $user->setConfirmationCreatedAt();
+        /**
+         * @var $confirmRepo ConfirmationRequestRepository
+         * @var $confirmation     ConfirmationRequest
+         */
+        $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
+        $confirmation = $confirmRepo->findOneBy(['owner_id' => $user->getId()]);
 
-            $mailerResponse = $mailer->sendConfirmationMessage($user, $email);
+        # подтверждение почты
+        if ($confirmation) {
+            if (true !== $confirmation->getConfirmed()) {
+                $code = $codeGenerator->getConfirmationCode();
+                $confirmation->setCode($code);
+                $confirmation->setRequestedAt();
+                $dateExpired = new DateTime();
+                $dateExpired->modify('24 hours');
+                $confirmation->setExpiresAt($dateExpired);
+                $this->entityManager->persist($confirmation);
+
+                $mailerResponse = $mailer->sendConfirmationMessage($user, $email, $code);
+                if (!$mailerResponse) {
+                    throw new Exception('Ошибка при отправке письма');
+                }
+
+                $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
+            }
+        } else {
+            $code = $codeGenerator->getConfirmationCode();
+            $confirmation = new ConfirmationRequest();
+            $confirmation->setOwnerId($user);
+            $confirmation->setCode($code);
+            $confirmation->setConfirmed(false);
+            $confirmation->setRequestedAt();
+            $dateExpired = new DateTime();
+            $dateExpired->modify('24 hours');
+            $confirmation->setExpiresAt($dateExpired);
+            $this->entityManager->persist($confirmation);
+
+            $mailerResponse = $mailer->sendConfirmationMessage($user, $email, $code);
             if (!$mailerResponse) {
                 throw new Exception('Ошибка при отправке письма');
             }
@@ -228,33 +267,47 @@ class UserService
          * @var $user User
          */
         $user = $this->security->getUser();
+        $message = '';
 
         if (!$user) {
             throw new Exception('Пользователь не найден');
         }
 
-        if (true === $user->getConfirmed()) {
-            throw new Exception('Email уже подтверждён');
+        /**
+         * @var $confirmRepo ConfirmationRequestRepository
+         * @var $confirmation ConfirmationRequest
+         */
+        $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
+        $confirmation = $confirmRepo->findOneBy(['owner_id' => $user->getId()]);
+
+        if ($confirmation) {
+            if (true === $confirmation->getConfirmed()) {
+                throw new Exception('Email уже подтверждён');
+            }
+
+            $email = $user->getEmail();
+            if ('' === (string)$email) {
+                throw new Exception('Не задан email');
+            }
+
+            $confCode = $codeGenerator->getConfirmationCode();
+            $confirmation->setCode($confCode);
+            $confirmation->setRequestedAt();
+            $dateExpired = new DateTime();
+            $dateExpired->modify('24 hours');
+            $confirmation->setExpiresAt($dateExpired);
+
+            $mailerResponse = $mailer->sendConfirmationMessage($user, $email, $confCode);
+
+            if (!$mailerResponse) {
+                throw new Exception('Ошибка при отправке письма');
+            }
+
+            $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
+
+            $this->entityManager->persist($confirmation);
+            $this->entityManager->flush();
         }
-
-        $email = $user->getEmail();
-        if (!$email) {
-            throw new Exception('Не задан email');
-        }
-
-        $user->setConfirmationCode($codeGenerator->getConfirmationCode());
-        $user->setConfirmationCreatedAt();
-
-        $mailerResponse = $mailer->sendConfirmationMessage($user, $email);
-
-        if (!$mailerResponse) {
-            throw new Exception('Ошибка при отправке письма');
-        }
-
-        $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
-
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
 
         return $message;
     }

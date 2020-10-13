@@ -12,7 +12,7 @@
     <p>Привет, {{ user.username }}!</p>
     <p>Успешно установлены email и пароль от личного кабинета.</p>
     <p>Для возможности выполнять вход в систему с помощью email и пароля,
-        <a href="{{ url('email_confirmation', {'code': user.confirmationCode }) }}">подтвердите</a>
+        <a href="{{ url('email_confirmation', {'code': code }) }}">подтвердите</a>
         электронный адрес</p>
 </div>
 </body>

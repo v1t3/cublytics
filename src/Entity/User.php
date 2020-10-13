@@ -80,20 +80,8 @@ class User implements UserInterface
     private $date_update;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @var string|null
      */
-    private $confirmation_code;
-
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $confirmed;
-
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $confirmation_created_at;
-
     private ?string $plainPassword = null;
 
     /**
@@ -438,87 +426,14 @@ class User implements UserInterface
     /**
      * @return string|null
      */
-    public function getConfirmationCode(): ?string
-    {
-        return $this->confirmation_code;
-    }
-
-    /**
-     * @param string|null $confirmation_code
-     *
-     * @return $this
-     * @throws Exception
-     */
-    public function setConfirmationCode(?string $confirmation_code): self
-    {
-        $this->confirmation_code = $confirmation_code;
-
-        if (!$this->date_update) {
-            $this->setDateUpdate();
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return bool|null
-     */
-    public function getConfirmed(): ?bool
-    {
-        return $this->confirmed;
-    }
-
-    /**
-     * @param bool|null $confirmed
-     *
-     * @return $this
-     * @throws Exception
-     */
-    public function setConfirmed(?bool $confirmed): self
-    {
-        $this->confirmed = $confirmed;
-
-        if (!$this->date_update) {
-            $this->setDateUpdate();
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return DateTimeInterface|null
-     */
-    public function getConfirmationCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->confirmation_created_at;
-    }
-
-    /**
-     * @param DateTimeInterface|null $confirmation_created_at
-     *
-     * @return $this
-     * @throws Exception
-     */
-    public function setConfirmationCreatedAt(?\DateTimeInterface $confirmation_created_at = null): self
-    {
-        if (!$confirmation_created_at) {
-            $confirmation_created_at = new DateTime();
-        }
-
-        $this->confirmation_created_at = $confirmation_created_at;
-
-        if (!$this->date_update) {
-            $this->setDateUpdate();
-        }
-
-        return $this;
-    }
-
     public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
 
+    /**
+     * @param string $password
+     */
     public function setPlainPassword(string $password): void
     {
         $this->plainPassword = $password;

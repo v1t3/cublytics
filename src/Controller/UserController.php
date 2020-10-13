@@ -162,64 +162,6 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/resend_confirmation", name="resend_confirmation")
-     *
-     * @param UserService   $userService
-     * @param Mailer        $mailer
-     * @param CodeGenerator $codeGenerator
-     *
-     * @return JsonResponse
-     * @throws Exception
-     */
-    public function resendConfirmation(
-        UserService $userService,
-        Mailer $mailer,
-        CodeGenerator $codeGenerator
-    )
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        try {
-            $data = $userService->resendConfirmation($mailer, $codeGenerator);
-        } catch (Exception $exception) {
-            $user = $this->getUser();
-            $this->entityManager->clear();
-            $logger = new Log();
-            $logger->setDate(new DateTime('now'));
-            $logger->setType('resend_confirmation');
-            if ($user) {
-                $logger->setUser((string)$user->getUserId());
-            }
-            $logger->setStatus(false);
-            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
-            $this->entityManager->persist($logger);
-            $this->entityManager->flush();
-
-            $result = [
-                'result' => 'error',
-                'error'  => [
-                    'message' => $exception->getMessage(),
-                ]
-            ];
-
-            $response = new JsonResponse();
-            $response->setData($result);
-
-            return $response;
-        }
-
-        $response = new JsonResponse();
-        $response->setData(
-            [
-                'result'  => 'success',
-                'message' => $data,
-            ]
-        );
-
-        return $response;
-    }
-
-    /**
      * @Route("/api/user/get_username", name="get_user_username")
      *
      * @param Request $request
