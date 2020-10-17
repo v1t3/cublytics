@@ -2,7 +2,8 @@
     <div class="view-container channel-view">
         <h1 class="view-title">Статистика каналов</h1>
         <div class="channel-block">
-            <div class="channel-list">
+            <div v-if="!channels.length">Каналы отсутсвуют</div>
+            <div class="channel-list" v-if="channels.length">
                 <select v-model="channel_active" @change="getActive()">
                     <option v-for="channel in channels" :key="channel.name">{{ channel.name }}</option>
                 </select>
@@ -83,7 +84,10 @@
                     this.statistic_type = this.$store.state.user.statistic_type;
                 }
 
-                if (undefined !== this.$store.state.user.channels) {
+                if (
+                    undefined !== this.$store.state.user.channels &&
+                    this.$store.state.user.channels.length
+                ) {
                     this.channels = this.$store.state.user.channels;
                     this.channel_active = this.channels[0].name;
                 }

@@ -2,7 +2,7 @@
     <div class="view-container coub-view">
         <h1 class="view-title">Статистика коубов</h1>
 
-        <div class="channel-list">
+        <div class="channel-list" v-if="channelList.length">
             <select v-model="channel_active_id" @change="getActiveChannel()">
                 <option v-for="channel in channelList" :value="channel.channel_id">{{ channel.title }}</option>
             </select>
@@ -92,6 +92,7 @@
 
                 if (
                     undefined !== this.$store.state.user.channels &&
+                    this.$store.state.user.channels.length &&
                     undefined !== this.$store.state.user.channels[0]['channel_id']
                 ) {
                     this.channelList = this.$store.state.user.channels;

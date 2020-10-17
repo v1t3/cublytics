@@ -8,6 +8,7 @@
                 <h3>Каналы</h3>
                 <hr>
                 <div class="user-block_channels">
+                    <div v-if="!user.channels.length">Каналы отсутсвуют</div>
                     <div class="channel-home col-md-3"
                          v-for="channel in user.channels"
                          v-bind:class="{ deactivated: !channel.is_active || !channel.is_watching }">
@@ -46,7 +47,7 @@
             return {
                 user: {
                     username: '',
-                    channels: null,
+                    channels: [],
                 },
             }
         },
