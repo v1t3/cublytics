@@ -31,9 +31,9 @@ class AccessList
     private $active;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="boolean", nullable=true)
      */
-    private $requested_at;
+    private $is_registered;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
@@ -115,26 +115,22 @@ class AccessList
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @return bool|null
      */
-    public function getRequestedAt(): ?DateTimeInterface
+    public function getIsRegistered(): ?bool
     {
-        return $this->requested_at;
+        return $this->is_registered;
     }
 
     /**
-     * @param DateTimeInterface|null $requested_at
+     * @param bool|null $is_registered
      *
      * @return $this
      * @throws Exception
      */
-    public function setRequestedAt(?DateTimeInterface $requested_at = null): self
+    public function setIsRegistered(?bool $is_registered): self
     {
-        if (!$requested_at) {
-            $requested_at = new DateTime();
-        }
-
-        $this->requested_at = $requested_at;
+        $this->is_registered = $is_registered;
 
         if (!$this->date_update) {
             $this->setDateUpdate();

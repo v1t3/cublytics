@@ -5,7 +5,9 @@ namespace App\Service;
 
 use App\AppRegistry;
 use App\Entity\AccessList;
+use App\Entity\User;
 use App\Repository\AccessListRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Client;
@@ -104,6 +106,7 @@ class CoubAuthService
      * @param $data
      *
      * @return bool
+     * @throws Exception
      */
     public function checkAccessGranted($data): bool
     {
@@ -118,6 +121,17 @@ class CoubAuthService
         $channels = [];
 
         if (!empty($data) && !empty($data['channels'])) {
+
+            /**
+             * @var $userRepo UserRepository
+             */
+            $userRepo = $this->entityManager->getRepository(User::class);
+            $user = $userRepo->findOneByUserId($data['id']);
+            # пользователь уже проходил регистрацию
+            if ($user) {
+                return true;
+            }
+
             # выберем только названия каналов
             foreach ($data['channels'] as $channel) {
                 $channels[] = $channel['permalink'];
@@ -131,6 +145,11 @@ class CoubAuthService
 
             foreach ($accessList as $item) {
                 if (in_array($item->getUser(), $channels)) {
+                    $item->setIsRegistered(true);
+
+                    $this->entityManager->persist($item);
+                    $this->entityManager->flush();
+
                     return true;
                 }
             }
