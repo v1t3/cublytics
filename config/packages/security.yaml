@@ -13,11 +13,6 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
-        in_memory:
-            memory:
-                users:
-                    admin: { password: superstrongpass, roles: 'ROLE_ADMIN' }
-                    testuser: { password: testtest, roles: 'ROLE_USER' }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
