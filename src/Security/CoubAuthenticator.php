@@ -6,13 +6,13 @@ namespace App\Security;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Exception;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -73,8 +73,6 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
             self::LOGIN_ROUTE === $request->attributes->get('_route')
             && 'success' === $request->query->get('registration')
         ) {
-//            throw new \Exception(json_encode($result));
-
             return true;
         }
 
@@ -99,13 +97,10 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      * @param UserProviderInterface $userProvider
      *
      * @return User|object|UserInterface|null
+     * @throws Exception
      */
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        if (!isset($credentials['access_token'])) {
-            return null;
-        }
-
         /**
          * @var $userRepo UserRepository
          */
@@ -113,7 +108,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
         $user = $userRepo->findOneBy(['token' => $credentials['access_token']]);
 
         if (!$user) {
-            return null;
+            throw new CustomUserMessageAuthenticationException('Пользователь не найден');
         }
 
         return $user;
@@ -127,6 +122,10 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      */
     public function checkCredentials($credentials, UserInterface $user)
     {
+        if (true === $user->getBlocked()) {
+            throw new CustomUserMessageAuthenticationException('Пользователь заблокирован');
+        }
+
         $token = $user->getToken();
         if ($token === $credentials['access_token']) {
             //todo проверка даты токена
@@ -142,15 +141,17 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      * @param Request                 $request
      * @param AuthenticationException $exception
      *
-     * @return JsonResponse|Response|null
+     * @return null
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        $data = [
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-        ];
+        $request->getSession()->set(
+            'login_error',
+            $exception->getMessage()
+        );
 
-        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
+//        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
+        return null;
     }
 
     /**
@@ -158,7 +159,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      * @param TokenInterface $token
      * @param string         $providerKey
      *
-     * @return Response|null
+     * @return RedirectResponse
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {

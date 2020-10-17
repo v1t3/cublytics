@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\AppRegistry;
+use App\Entity\AccessList;
+use App\Repository\AccessListRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Client;
@@ -75,13 +77,10 @@ class CoubAuthService
             try {
                 $responseData = \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
             } catch (Exception $exception) {
-                return [
-                    'success' => false,
-                    'error'   => [
-                        'code'    => 0,
-                        'message' => 'Неизвестный ответ от сервиса'
-                    ]
-                ];
+                throw new Exception(
+                    $exception->getCode(),
+                    $exception->getMessage()
+                );
             }
 
             if (!isset($responseData['access_token'])) {
@@ -101,4 +100,42 @@ class CoubAuthService
         return $responseData;
     }
 
+    /**
+     * @param $data
+     *
+     * @return bool
+     */
+    public function checkAccessGranted($data): bool
+    {
+        # если проверка отключена
+        if (
+            $_ENV['ACCESS_BY_LIST']
+            && 'true' !== $_ENV['ACCESS_BY_LIST']
+        ) {
+            return true;
+        }
+
+        $channels = [];
+
+        if (!empty($data) && !empty($data['channels'])) {
+            # выберем только названия каналов
+            foreach ($data['channels'] as $channel) {
+                $channels[] = $channel['permalink'];
+            }
+
+            /**
+             * @var $accessListRepo AccessListRepository
+             */
+            $accessListRepo = $this->entityManager->getRepository(AccessList::class);
+            $accessList = $accessListRepo->findAll();
+
+            foreach ($accessList as $item) {
+                if (in_array($item->getUser(), $channels)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Coub;
 use App\Entity\User;
 use App\Service\ChannelService;
+use App\Service\CoubAuthService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -70,11 +71,22 @@ class TestController extends AbstractController
 //    }
 
     /**
-     * формат /test/coub/callback?access_token=f98c13e91e128b4c859f2ec15e77a3780ea46f9d65dbafce95a7b9e2209675ef
+     * @Route("/test/auth/callback", name="test_user_info")
      *
-     * @Route("/test/coub/callback", name="test_user_info")
+     * @param Request         $request
+     * @param UserService     $userService
+     * @param ChannelService  $channelService
+     * @param CoubAuthService $coubAuthService
+     *
+     * @return JsonResponse
+     * @throws \Exception
      */
-    public function getTestUserInfo(Request $request, UserService $userService, ChannelService $channelService)
+    public function getTestUserInfo(
+        Request $request,
+        UserService $userService,
+        ChannelService $channelService,
+        CoubAuthService $coubAuthService
+    )
     {
         $token = (string)$request->query->get('access_token');
 
@@ -90,21 +102,41 @@ class TestController extends AbstractController
             'created_at'   => 0,
         ];
 
-        $testUserInfo = $_ENV['TEST_DATA'];
-        $testUserInfo = json_decode($testUserInfo, true);
+        $userInfo = $_ENV['TEST_DATA'];
+        $userInfo = json_decode($userInfo, true);
 
-//        $userSaved = $this->saveTestUserInfo($testTokenData, $testUserInfo);
-        $userSaved = $userService->saveUser($testTokenData, $testUserInfo);
+        if ('true' === $_ENV['ACCESS_BY_LIST']) {
+            $isAcccessGranted = $coubAuthService->checkAccessGranted($userInfo);
+
+            if (true !== $isAcccessGranted) {
+                $response = new JsonResponse();
+                $response->setData(
+                    [
+                        'Пользователя нет в списке разрешенных!',
+                        $isAcccessGranted,
+                        'ACCESS_BY_LIST' => $_ENV['ACCESS_BY_LIST']
+                    ]
+                );
+
+                return $response;
+            }
+        }
+
+        $userSaved = $userService->saveUser($testTokenData, $userInfo);
 
         if ($userSaved) {
-            if (isset($testUserInfo['channels'])) {
-//                $testSavedCh = $this->saveTestUserChannels($testUserInfo);
-                $channelSaved = $channelService->saveUserChannelsList($testUserInfo);
+            if (isset($userInfo['channels'])) {
+                $channelSaved = $channelService->saveUserChannelsList($userInfo);
             }
         }
 
         $response = new JsonResponse();
-        $response->setData([$userSaved, $channelSaved]);
+        $response->setData(
+            [
+                'Пользователь сохранён' => $userSaved,
+                'Каналы сохранены'      => $channelSaved
+            ]
+        );
 
         return $response;
     }
@@ -187,14 +219,16 @@ class TestController extends AbstractController
         $this->entityManager->flush();
 
         $response = new JsonResponse();
-        $response->setData([
-            'result'=> 'success',
-            'message'=> [
-                'id' => $coubItem->getCoubId(),
-                'create'=> $coubItem->getDateCreate(),
-                'update'=> $coubItem->getDateUpdate(),
+        $response->setData(
+            [
+                'result'  => 'success',
+                'message' => [
+                    'id'     => $coubItem->getCoubId(),
+                    'create' => $coubItem->getDateCreate(),
+                    'update' => $coubItem->getDateUpdate(),
+                ]
             ]
-        ]);
+        );
 
         return $response;
     }

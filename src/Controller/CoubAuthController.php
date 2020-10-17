@@ -52,14 +52,29 @@ class CoubAuthController extends AbstractController
     public function loginCoub(Request $request)
     {
         try {
-            if ('dev' === $_ENV['APP_ENV']) {
-                return $this->redirectToRoute('coub_callback');
+            # ловим ошибку если есть
+            if ('' !== (string)$request->getSession()->get('login_error')) {
+                $error = $request->getSession()->get('login_error');
+                $request->getSession()->set('login_error', '');
+                throw new Exception($error);
             }
+
             if ($this->getUser()) {
+                if ($this->getUser()->getBlocked()) {
+                    throw new Exception('Пользователь заблокирован');
+                }
+
                 return $this->redirectToRoute('main');
             }
 
             $reg = (string)$request->query->get('registration');
+
+            if (
+                'success' !== $reg
+                && 'dev' === $_ENV['APP_ENV']
+            ) {
+                return $this->redirectToRoute('coub_callback');
+            }
 
             if (
                 'success' !== $reg
@@ -82,10 +97,21 @@ class CoubAuthController extends AbstractController
             $this->entityManager->persist($logger);
             $this->entityManager->flush();
 
-            return $this->redirectToRoute('main');
+            return $this->render(
+                'coub_auth/login.html.twig',
+                [
+                    'registration' => false,
+                    'error'        => $exception
+                ]
+            );
         }
 
-        return $this->redirectToRoute('main');
+        return $this->render(
+            'coub_auth/login.html.twig',
+            [
+                'registration' => true,
+            ]
+        );
     }
 
     /**
@@ -116,8 +142,20 @@ class CoubAuthController extends AbstractController
             if ('' !== $code && 'dev' !== $_ENV['APP_ENV']) {
                 $tokenData = $coubAuthService->getUserToken($code);
 
-                if (isset($tokenData['access_token'])) {
-                    $userInfo = $userService->getInfo($tokenData['access_token']);
+                if (empty($tokenData['access_token'])) {
+                    throw new Exception('Не задан токен');
+                }
+                $userInfo = $userService->getInfo($tokenData['access_token']);
+
+                if (
+                    $_ENV['ACCESS_BY_LIST']
+                    && 'true' === $_ENV['ACCESS_BY_LIST']
+                ) {
+                    $isAcccessGranted = $coubAuthService->checkAccessGranted($userInfo);
+
+                    if (true !== $isAcccessGranted) {
+                        throw new Exception('Пользователя нет в списке разрешенных!');
+                    }
                 }
 
                 $userSaved = $userService->saveUser($tokenData, $userInfo);
@@ -129,9 +167,7 @@ class CoubAuthController extends AbstractController
             }
 
             if (!$userSaved) {
-                throw new Exception(
-                    'Ошибка при регистрации пользователя'
-                );
+                throw new Exception('Ошибка при регистрации пользователя');
             }
 
             if (isset($userInfo['channels'])) {
@@ -148,18 +184,20 @@ class CoubAuthController extends AbstractController
             $logger->setDate(new DateTime('now'));
             $logger->setType('coub_callback');
             $logger->setRegCode($code);
-            $logger->setToken($tokenData);
+            if (!empty($tokenData['access_token'])) {
+                $logger->setToken($tokenData['access_token']);
+            }
             $logger->setStatus(false);
             $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
             $this->entityManager->persist($logger);
             $this->entityManager->flush();
 
-            return $this->redirectToRoute(
-                'app_login_coub',
-                [
-                    'registration' => false
-                ]
+            $request->getSession()->set(
+                'login_error',
+                $exception->getMessage()
             );
+
+            return $this->redirectToRoute('app_login_coub');
         }
 
         return $this->redirectToRoute(
@@ -169,5 +207,4 @@ class CoubAuthController extends AbstractController
             ]
         );
     }
-
 }

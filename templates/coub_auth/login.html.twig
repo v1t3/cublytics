@@ -1,15 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Вход{% endblock %}
 
 {% block body %}
-    <div class="container col-md-6" style="margin-top: 70px">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
-        <br/>
-        <a href="{{ path('app_login_coub') }}?login_type=coub">
-            <button class="btn btn-primary">Войти через COUB</button>
-        </a>
+    {{ include('components/header_main.html.twig') }}
+
+    <div class="main-page">
+        <div class="container col-md-6" style="margin-top: 100px">
+            {% if error %}
+                <div class="alert alert-danger text-center">{{ error.message }}</div>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
