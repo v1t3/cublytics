@@ -100,7 +100,7 @@ class UserController extends AbstractController
                     'username'     => $user->getUsername(),
                     'email'        => $user->getEmail(),
                     'roles'        => $user->getRoles(),
-                    'confirmed'    => $confirm->getConfirmed(),
+                    'confirmed'    => $confirm ? $confirm->getConfirmed() : false,
                     'password_set' => ('' !== (string)$user->getPassword()),
                     'channels'     => $channels,
                 ]
