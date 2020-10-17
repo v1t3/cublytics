@@ -167,7 +167,7 @@
                 <div class="form-group_row form-group_btn">
                     <button class="form-group_btn--send red"
                             @click="deleteAccount">
-                        Удалить учётную запись
+                        Удалить учётную запись c сервиса
                     </button>
                 </div>
             </div>

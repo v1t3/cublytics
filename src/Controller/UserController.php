@@ -128,45 +128,57 @@ class UserController extends AbstractController
         CodeGenerator $codeGenerator
     )
     {
-        try {
-            $data = $userService->updateSettings($request, $mailer, $codeGenerator);
-        } catch (Exception $exception) {
-            $user = $this->getUser();
-
-            $this->entityManager->clear();
-            $logger = new Log();
-            $logger->setDate(new DateTime('now'));
-            $logger->setType('update_user_settings');
-            if ($user) {
-                $logger->setUser((string)$user->getUserId());
-            }
-            $logger->setStatus(false);
-            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
-            $this->entityManager->persist($logger);
-            $this->entityManager->flush();
-
-            $result = [
-                'result' => 'error',
-                'error'  => [
-                    'message' => $exception->getMessage(),
-                ]
-            ];
-
-            $response = new JsonResponse();
-            $response->setData($result);
-
-            return $response;
-        }
+        $result = [
+            'result' => 'error',
+            'error'  => [
+                'message' => 'Временно не доступно',
+            ]
+        ];
 
         $response = new JsonResponse();
-        $response->setData(
-            [
-                'result'  => 'success',
-                'message' => 'Обновлено!' . $data,
-            ]
-        );
+        $response->setData($result);
 
         return $response;
+
+//        try {
+//            $data = $userService->updateSettings($request, $mailer, $codeGenerator);
+//        } catch (Exception $exception) {
+//            $user = $this->getUser();
+//
+//            $this->entityManager->clear();
+//            $logger = new Log();
+//            $logger->setDate(new DateTime('now'));
+//            $logger->setType('update_user_settings');
+//            if ($user) {
+//                $logger->setUser((string)$user->getUserId());
+//            }
+//            $logger->setStatus(false);
+//            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+//            $this->entityManager->persist($logger);
+//            $this->entityManager->flush();
+//
+//            $result = [
+//                'result' => 'error',
+//                'error'  => [
+//                    'message' => $exception->getMessage(),
+//                ]
+//            ];
+//
+//            $response = new JsonResponse();
+//            $response->setData($result);
+//
+//            return $response;
+//        }
+//
+//        $response = new JsonResponse();
+//        $response->setData(
+//            [
+//                'result'  => 'success',
+//                'message' => 'Обновлено!' . $data,
+//            ]
+//        );
+//
+//        return $response;
     }
 
     /**
@@ -295,13 +307,12 @@ class UserController extends AbstractController
      */
     public function deleteAccount()
     {
-
         $response = new JsonResponse();
         $response->setData(
             [
                 'result' => 'error',
                 'error'  => [
-                    'message' => 'Недоступно',
+                    'message' => 'В разработке',
                 ]
             ]
         );
