@@ -32,7 +32,12 @@ class AccessListCrudController extends AbstractCrudController
     {
         yield TextField::new('user');
         yield BooleanField::new('active');
-        yield DateTimeField::new('requested_at')
+        yield BooleanField::new('is_registered');
+        yield DateTimeField::new('date_create')
+            ->onlyOnIndex()
+            ->setFormat('dd-M-yy hh:mm');
+        yield DateTimeField::new('date_update')
+            ->onlyOnIndex()
             ->setFormat('dd-M-yy hh:mm');
     }
 }

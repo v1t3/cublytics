@@ -57,7 +57,8 @@ class AppUserCrudController extends AbstractCrudController
             )
             ->setFormTypeOption('multiple', true);
 
-        yield IntegerField::new('user_id', 'ID пользователя');
+        yield IntegerField::new('user_id', 'ID пользователя')
+            ->onlyOnIndex();
         yield TextField::new('username', 'Имя');
         yield EmailField::new('email', 'Почта');
 
@@ -73,8 +74,10 @@ class AppUserCrudController extends AbstractCrudController
 
         yield $roles;
         yield DateTimeField::new('created_at', 'Дата создания')
+            ->onlyOnIndex()
             ->setFormat('dd-M-yy hh:mm');
         yield DateTimeField::new('updated_at', 'Дата обновления')
+            ->onlyOnIndex()
             ->setFormat('dd-M-yy hh:mm');
         yield BooleanField::new('blocked', 'Заблокирован');
     }
