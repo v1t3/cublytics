@@ -2,12 +2,14 @@
 
 namespace App\Controller;
 
+use App\AppRegistry;
 use App\Entity\Coub;
 use App\Entity\User;
 use App\Service\ChannelService;
 use App\Service\CoubAuthService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -255,4 +257,86 @@ class TestController extends AbstractController
 
         return $response;
     }
+
+    /**
+     * @Route("/test/get_original_coubs", name="test_get_original_coubs")
+     *
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @param \App\Service\ChannelService               $channelService
+     *
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
+     */
+    public function getTestOriginalCoubs(Request $request, ChannelService $channelService)
+    {
+        $result = [];
+
+        $channelName = $request->query->get('channel_name');
+
+        if ('' === $channelName) {
+            throw new Exception('Не корректно или не заполнено поле channel_name');
+        }
+
+        $urlTale = '&per_page=' . AppRegistry::TIMELINE_PER_PAGE . '&order_by=' . AppRegistry::TIMELINE_ORDER_BY;
+        //получим основные данные канала
+        $data = $channelService->getInfo(AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
+
+        if ('' === (string)$data) {
+            throw new Exception('Возвращён пустой ответ');
+        }
+        // проверим, что вернулся не html
+        if (false !== strpos((string)$data, '<!DOCTYPE html>')) {
+            throw new Exception('Некорректный ответ от сервиса');
+        }
+
+        $decodeData = json_decode(html_entity_decode($data), true);
+
+        if (
+            !is_array($decodeData)
+            || !array_key_exists('total_pages', $decodeData)
+        ) {
+            throw new Exception('Ошибка при получении данных data: ' . json_encode($data));
+        }
+
+        if (array_key_exists('total_pages', $decodeData)) {
+            if (1 < (int)$decodeData['total_pages']) {
+                $urls = [];
+                $allCoubs = [];
+                $allCoubsTemp = [];
+                # сохраним уже полученную 1ю страницу
+                $encodeData[] = $data;
+
+                # получим грязный список страниц всех коубов
+                for ($i = 2; $i <= $decodeData['total_pages']; $i++) {
+                    $urls[] = AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=' . $i . $urlTale;
+                }
+
+                $others = $channelService->getInfoByUrls($urls);
+
+                if (is_array($others) && !empty($others)) {
+                    $encodeData = array_merge($encodeData, $others);
+                }
+
+                # получаем коубы постранично и объединяем в общий массив
+                foreach ($encodeData as $item) {
+                    $decodeTemp = json_decode(html_entity_decode($item), true);
+                    if (is_array($decodeTemp['coubs'])) {
+                        $allCoubs[] = $decodeTemp['coubs'];
+                    }
+                }
+                # сольём массив
+                $result = array_merge([], ...$allCoubs);
+                # уберём дубликаты коубов
+                $result = $channelService->arrayUniqueKey($result, 'id');
+            } elseif (1 === $decodeData['total_pages']) {
+                $result = $decodeData['coubs'];
+            }
+        }
+
+        $response = new JsonResponse();
+        $response->setData($result);
+
+        return $response;
+    }
+
 }

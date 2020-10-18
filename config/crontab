@@ -1,0 +1,8 @@
+###
+# Данный файл лишь хранилище комманд для cron
+# Использование:
+# 1. Добавить комманды
+# 2. Скопировать комманды в crontab -e
+###
+
+0 * * * * /usr/bin/php -f /home/vit/PhpstormProjects/symf2.test/bin/console app:coub-update > /home/vit/PhpstormProjects/symf2.test/logs/crons/coub-update.txt

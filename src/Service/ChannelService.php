@@ -416,12 +416,14 @@ class ChannelService
                 foreach ($encodeData as $item) {
                     $decodeTemp = json_decode(html_entity_decode($item), true);
                     if (is_array($decodeTemp['coubs'])) {
-                        $allCoubs = array_merge($allCoubs, $decodeTemp['coubs']);
+                        $allCoubs[] = $decodeTemp['coubs'];
                     }
                 }
+                # сольём массив
+                $result = array_merge([], ...$allCoubs);
 
                 # уберём дубликаты коубов
-                $result = $this->arrayUniqueKey($allCoubs, 'id');
+                $result = $this->arrayUniqueKey($result, 'id');
             } elseif (1 === $decodeData['total_pages']) {
                 $result = $decodeData['coubs'];
             }
@@ -473,9 +475,11 @@ class ChannelService
 
             foreach ($data as $coub) {
                 /**
+                 * Проверить существует ли текущий coub
+                 *
                  * @var $coubItem Coub
                  */
-                $coubItem = $coubRepo->findOneBy(['channel_id' => $channelId]);
+                $coubItem = $coubRepo->findOneBy(['coub_id' => $coub['id']]);
 
                 if ($coubItem) {
                     if ($coubItem->getUpdatedAt() !== (new DateTime($coub['updated_at']))) {
@@ -488,23 +492,26 @@ class ChannelService
 
                         $this->entityManager->persist($coubItem);
                     }
+                } else {
+                    # Если recoub_to не существует, то coub свой
+                    if (empty($coub['recoub_to'])) {
+                        $coubItem = new Coub();
+                        $coubItem->setOwnerId($channel);
+                        $coubItem->setCoubId($coub['id']);
+                        $coubItem->setChannelId($channelId);
+                        $coubItem->setPermalink($coub['permalink']);
+                        $coubItem->setTitle($coub['title']);
+                        $coubItem->setCreatedAt($coub['created_at']);
+                        $coubItem->setUpdatedAt($coub['updated_at']);
+                        $coubItem->setIsKd($coub['cotd']);
+                        $coubItem->setFeatured($coub['featured']);
+                        $coubItem->setBanned($coub['banned']);
+                        $this->entityManager->persist($coubItem);
+                    }
                 }
 
                 # Если recoub_to не существует, то coub свой
                 if (empty($coub['recoub_to'])) {
-                    $coubItem = new Coub();
-                    $coubItem->setOwnerId($channel);
-                    $coubItem->setCoubId($coub['id']);
-                    $coubItem->setChannelId($channelId);
-                    $coubItem->setPermalink($coub['permalink']);
-                    $coubItem->setTitle($coub['title']);
-                    $coubItem->setCreatedAt($coub['created_at']);
-                    $coubItem->setUpdatedAt($coub['updated_at']);
-                    $coubItem->setIsKd($coub['cotd']);
-                    $coubItem->setFeatured($coub['featured']);
-                    $coubItem->setBanned($coub['banned']);
-                    $this->entityManager->persist($coubItem);
-
                     $coubStatItem = new CoubStat();
                     $coubStatItem->setOwnerId($channel);
                     $coubStatItem->setCoubId($coub['id']);
@@ -549,7 +556,6 @@ class ChannelService
 
             $this->entityManager->persist($channel);
 
-            // сохранить изменения
             $this->entityManager->flush();
 
             return true;
@@ -564,7 +570,7 @@ class ChannelService
      * @return bool|string
      * @throws Exception
      */
-    private function getInfo(string $url)
+    public function getInfo(string $url)
     {
         try {
             $ch = curl_init();
@@ -594,19 +600,23 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    private function getInfoByUrls(array $urls)
+    public function getInfoByUrls(array $urls): array
     {
-        $result = [];
-
         try {
+            $resultTemp = [];
+
             if (count($urls) > 50) {
                 $urlsMulti = array_chunk($urls, 50);
 
                 foreach ($urlsMulti as $url) {
                     $temp = $this->getInfoMulti($url);
-
-                    $result = array_merge($result, $temp);
+                    if (is_array($temp)) {
+                        $resultTemp = $temp;
+                    }
                 }
+
+                # сольём массив
+                $result = array_merge([], ...$resultTemp);
             } else {
                 $result = $this->getInfoMulti($urls);
             }
@@ -623,7 +633,7 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    private function getInfoMulti($urls)
+    private function getInfoMulti($urls): array
     {
         try {
             $result = [];
@@ -724,25 +734,24 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    private function arrayUniqueKey($array, $key)
+    public function arrayUniqueKey($array, $key): array
     {
-        try {
-            $result = [];
-            $key_array = [];
+        $result = [];
+        $key_array = [];
 
-            if (count($array) > 0) {
-                $i = 0;
-                foreach ($array as $val) {
-                    if (!in_array($val[$key], $key_array)) {
-                        $key_array[$i] = $val[$key];
+        if (count($array) > 0) {
+            $i = 0;
+            foreach ($array as $val) {
+                if (
+                    array_key_exists($key, $val)
+                    && !in_array($val[$key], $key_array)
+                ) {
+                    $key_array[$i] = $val[$key];
 
-                        $result[$i] = $val;
-                    }
-                    $i++;
+                    $result[$i] = $val;
                 }
+                $i++;
             }
-        } catch (Exception $exception) {
-            throw new Exception($exception);
         }
 
         return $result;
@@ -755,7 +764,7 @@ class ChannelService
      * @return bool
      * @throws Exception
      */
-    public function checkDeletedCoubs($data, $channelId)
+    public function checkDeletedCoubs($data, $channelId): bool
     {
         $allCoubsIds = [];
         $allDataIds = [];

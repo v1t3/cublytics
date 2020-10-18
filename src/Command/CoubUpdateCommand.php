@@ -202,6 +202,8 @@ class CoubUpdateCommand extends Command
         }
 
         if (is_array($channels)) {
+            # посчитаем количесво обновлённых каналов
+            $updated = 0;
             foreach ($channels as $channel) {
                 $permalink = $channel->getChannelPermalink();
                 $channelId = $channel->getChannelId();
@@ -219,6 +221,7 @@ class CoubUpdateCommand extends Command
                     $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink, $channel);
 
                     if ($saveRes) {
+                        $updated++;
                         $this->output->writeln(
                             [
                                 '[' . date('Y-m-d H:i:s') . '] Данные канала обновлены'
@@ -248,6 +251,12 @@ class CoubUpdateCommand extends Command
             }
 
             $this->entityManager->flush();
+
+            $this->output->writeln(
+                [
+                    '[' . date('Y-m-d H:i:s') . '] Обновлено каналов: ' . $updated
+                ]
+            );
 
             return true;
         }
