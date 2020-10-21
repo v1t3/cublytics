@@ -13,11 +13,19 @@
                     <p>на сервис отслеживания статистики вашего&nbsp;coub&nbsp;канала</p>
                 </div>
                 <div class="welcome-btn">
-                    <a href="{{ path('app_login_coub') }}">
+                    <a href="{{ path('app_login_coub') }}" class="btn">
                         Войти с помощью COUB
                     </a>
+                </div>
+                <div class="welcome-policy">
+                    Авторизуясь, вы соглашаетесь с
+                    <a href="{{ path('about_page') }}">правилами пользования сайтом</a>
+                    и даете
+                    <a href="{{ path('about_page') }}">согласие на обработку персональных данных</a>.
                 </div>
             </div>
         </div>
     </div>
+
+    {{ include('components/footer.html.twig') }}
 {% endblock %}

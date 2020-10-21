@@ -1,0 +1,32 @@
+@import "media_mixin";
+@import "variables";
+
+.modal {
+    &-content {
+        border-radius: 0;
+        background-color: aliceblue;
+
+        .welcome {
+
+        }
+    }
+
+    &-header {
+        border-bottom: none;
+    }
+
+    &-body {
+        text-align: center;
+
+        .btn {
+            border: 1px solid;
+            border-radius: 0;
+            padding: 1em;
+            margin-bottom: 2em;
+        }
+    }
+
+    &.show .modal-dialog {
+        margin-top: 10em;
+    }
+}

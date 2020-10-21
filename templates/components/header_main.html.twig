@@ -13,8 +13,8 @@
                 <a href="{{ path('spa') }}" class="top-menu-link">Кабинет</a>
                 <a href="{{ path('app_logout') }}" class="top-menu-link">Выйти</a>
             {% else %}
-                <a href="{{ path('app_login_admin') }}" class="top-menu-link">Админка</a>
-                <a href="{{ path('app_login_coub') }}" class="top-menu-link">Войти</a>
+                <a class="top-menu-link"
+                   type="button" data-toggle="modal" data-target="#modal-login">Войти</a>
             {% endif %}
         </div>
     </div>

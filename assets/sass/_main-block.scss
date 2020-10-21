@@ -1,3 +1,4 @@
+@import "media_mixin";
 @import "variables";
 
 .main-page {
@@ -39,12 +40,11 @@
     &-btn {
         display: flex;
 
-        a {
+        .btn {
             text-decoration: none;
             display: block;
-            //border-radius: 1em;
-            //background-color: #0069cc;
             border: 1px solid #101010;
+            border-radius: 0;
             padding: 2em 2.2em;
             color: #000;
             transition: background-color .2s;
@@ -53,6 +53,23 @@
                 background-color: lighten(#3a5fbd, 2%);
                 color: #000;
             }
+
+            @include max_480 {
+                padding: 1em 1.2em;
+            }
+        }
+    }
+
+    &-policy {
+        margin: 0 auto;
+        padding: 10px;
+        font-size: 0.8em;
+        max-width: 380px;
+        text-align: center;
+
+        a {
+            text-decoration: underline;
+            text-transform: initial;
         }
     }
 }
