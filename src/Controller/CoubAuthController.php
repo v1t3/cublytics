@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\AppRegistry;
 use App\Entity\Log;
+use App\Repository\UserRepository;
 use App\Service\ChannelService;
 use App\Service\CoubAuthService;
 use App\Service\UserService;
@@ -135,7 +136,7 @@ class CoubAuthController extends AbstractController
     {
         $tokenData = [];
         $userInfo = [];
-        $userSaved = false;
+        $userId = false;
         $code = (string)$request->query->get('code');
 
         try {
@@ -158,25 +159,35 @@ class CoubAuthController extends AbstractController
                     }
                 }
 
-                $userSaved = $userService->saveUser($tokenData, $userInfo);
+                $userId = $userService->saveUser($tokenData, $userInfo);
             }
 
             if ('dev' === $_ENV['APP_ENV']) {
-                $userSaved = true;
+                /**
+                 * @var $userAccountRepo UserRepository
+                 */
+                $userAccountRepo = $this->entityManager->getRepository('App:User');
+                $userId = $userAccountRepo
+                    ->findOneByUserId(2039853)
+                    ->getId();
+
                 $tokenData['access_token'] = $_ENV['COUB_TEST_TOKEN'];
             }
 
-            if (!$userSaved) {
+            if (!$userId) {
                 throw new Exception('Ошибка при регистрации пользователя');
             }
 
-            if (isset($userInfo['channels'])) {
+            if (!empty($userInfo['channels'])) {
                 $channelClient->saveUserChannelsList($userInfo);
             }
 
+            # сохранить токен во временную БД
+            $coubAuthService->setUserToken(Security::LAST_USERNAME, $tokenData['access_token']);
+
             $request->getSession()->set(
                 Security::LAST_USERNAME,
-                $tokenData['access_token']
+                $userId
             );
         } catch (Exception $exception) {
             $this->entityManager->clear();

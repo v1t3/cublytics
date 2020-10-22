@@ -97,7 +97,7 @@ class UserService
      * @param $tokenData
      * @param $userData
      *
-     * @return bool
+     * @return bool|int|null
      * @throws Exception
      */
     public function saveUser($tokenData, $userData)
@@ -130,7 +130,9 @@ class UserService
 
             $this->entityManager->flush();
 
-            return true;
+            $user = $userAccountRepo->findOneByUserId($userData['id']);
+
+            return $user ? $user->getId() : false;
         }
 
         return false;
@@ -204,7 +206,7 @@ class UserService
         $user->setPassword($this->encoder->encodePassword($user, $newPassword));
 
         /**
-         * @var $confirmRepo ConfirmationRequestRepository
+         * @var $confirmRepo      ConfirmationRequestRepository
          * @var $confirmation     ConfirmationRequest
          */
         $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
@@ -274,7 +276,7 @@ class UserService
         }
 
         /**
-         * @var $confirmRepo ConfirmationRequestRepository
+         * @var $confirmRepo  ConfirmationRequestRepository
          * @var $confirmation ConfirmationRequest
          */
         $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);

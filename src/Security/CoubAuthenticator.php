@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\Entity\CoubAuthorization;
 use App\Entity\User;
+use App\Repository\CoubAuthorizationRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -87,8 +89,9 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         return [
-            'registration' => $request->query->get('registration'),
-            'access_token' => $request->getSession()->get(Security::LAST_USERNAME)
+            'registration'  => $request->query->get('registration'),
+            'last_username' => Security::LAST_USERNAME,
+            'id'            => $request->getSession()->get(Security::LAST_USERNAME)
         ];
     }
 
@@ -105,7 +108,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
          * @var $userRepo UserRepository
          */
         $userRepo = $this->entityManager->getRepository(User::class);
-        $user = $userRepo->findOneBy(['token' => $credentials['access_token']]);
+        $user = $userRepo->find($credentials['id']);
 
         if (!$user) {
             throw new CustomUserMessageAuthenticationException('Пользователь не найден');
@@ -119,6 +122,7 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
      * @param UserInterface $user
      *
      * @return bool
+     * @throws Exception
      */
     public function checkCredentials($credentials, UserInterface $user)
     {
@@ -126,12 +130,30 @@ class CoubAuthenticator extends AbstractGuardAuthenticator
             throw new CustomUserMessageAuthenticationException('Пользователь заблокирован');
         }
 
-        $token = $user->getToken();
-        if ($token === $credentials['access_token']) {
-            //todo проверка даты токена
-            //$token_expired_at = $user->getTokenExpiredAt();
+        /**
+         * @var $coubAuthRepo CoubAuthorizationRepository
+         */
+        $coubAuthRepo = $this->entityManager->getRepository(CoubAuthorization::class);
+        $coubAuth = $coubAuthRepo->findOneBy(['last_username' => $credentials['last_username']]);
 
-            return true;
+        if ($coubAuth) {
+            $userToken = (string)$user->getToken();
+            $authToken = (string)$coubAuth->getToken();
+            if (
+                '' !== $userToken
+                && '' !== $authToken
+                && $userToken === $authToken
+            ) {
+                //todo проверка даты токена
+                //$token_expired_at = $user->getTokenExpiredAt();
+
+                $coubAuth->setToken('');
+
+                $this->entityManager->persist($coubAuth);
+                $this->entityManager->flush();
+
+                return true;
+            }
         }
 
         return false;
