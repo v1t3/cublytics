@@ -72,13 +72,6 @@ class CoubAuthController extends AbstractController
 
             if (
                 'success' !== $reg
-                && 'dev' === $_ENV['APP_ENV']
-            ) {
-                return $this->redirectToRoute('coub_callback');
-            }
-
-            if (
-                'success' !== $reg
                 && '' !== (string)$_ENV['COUB_KEY']
             ) {
                 $url = AppRegistry::REQUEST_AUTHORIZE_APP
@@ -140,7 +133,7 @@ class CoubAuthController extends AbstractController
         $code = (string)$request->query->get('code');
 
         try {
-            if ('' !== $code && 'dev' !== $_ENV['APP_ENV']) {
+            if ('' !== $code) {
                 $tokenData = $coubAuthService->getUserToken($code);
 
                 if (empty($tokenData['access_token'])) {
@@ -160,18 +153,6 @@ class CoubAuthController extends AbstractController
                 }
 
                 $userId = $userService->saveUser($tokenData, $userInfo);
-            }
-
-            if ('dev' === $_ENV['APP_ENV']) {
-                /**
-                 * @var $userAccountRepo UserRepository
-                 */
-                $userAccountRepo = $this->entityManager->getRepository('App:User');
-                $userId = $userAccountRepo
-                    ->findOneByUserId(2039853)
-                    ->getId();
-
-                $tokenData['access_token'] = $_ENV['COUB_TEST_TOKEN'];
             }
 
             if (!$userId) {
