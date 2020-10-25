@@ -16,6 +16,11 @@
     min-height: 100vh;
 }
 
+.default-link {
+    text-decoration: underline;
+    text-transform: initial;
+}
+
 .welcome {
     display: flex;
     justify-content: center;
@@ -66,10 +71,5 @@
         font-size: 0.8em;
         max-width: 380px;
         text-align: center;
-
-        a {
-            text-decoration: underline;
-            text-transform: initial;
-        }
     }
 }
