@@ -26,10 +26,25 @@
 }
 
 .logo {
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: auto;
     width: $left-menu-width;
     min-width: $left-menu-width;
+
+    a {
+        font-size: 1.8em;
+        color: blue;
+        text-transform: none;
+
+        &:hover {
+            font-size: 1.8em;
+            color: blue;
+            text-transform: none;
+            text-decoration: none;
+        }
+    }
 
     @include max_979 {
         display: none;
