@@ -8,7 +8,7 @@
             </select>
         </div>
 
-        <div v-if="!coubList.length">Коубы отсутсвуют</div>
+        <div v-if="!coubList.length">Коубы отсутсвуют (Данные начнут поступать в скором времени)</div>
         <div class="channel-list" v-if="coubList.length">
             <select v-model="coub_active_id" @change="getActiveCoub()">
                 <option v-for="coub in coubList" :value="coub.coub_id">{{ coub.title }}</option>

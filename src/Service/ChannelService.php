@@ -81,35 +81,44 @@ class ChannelService
             $repo = $this->entityManager->getRepository(Channel::class);
 
             foreach ($channels as $channel) {
-                $channelStored = $repo->findOneByChannelId($channel['id']);
+                if ($this->isChannelExist($channel['permalink'])) {
+                    $channelStored = $repo->findOneByChannelId($channel['id']);
 
-                if (
-                    !$channelStored
-                    && $this->isChannelExist($channel['permalink'])
-                ) {
                     $avatar = str_replace(
                         '%{version}',
                         'profile_pic_big',
                         $channel['avatar_versions']['template']
                     );
 
-                    $ch = new Channel();
-                    $ch->setOwnerId($user);
-                    $ch->setChannelId($channel['id']);
-                    $ch->setChannelPermalink($channel['permalink']);
-                    $ch->setUserId($userId);
-                    $ch->setIsWatching(true);
-                    $ch->setIsActive(true);
-                    $ch->setIsCurrent((int)$channel['id'] === (int)$current);
-                    $ch->setTitle($channel['title']);
-                    $ch->setCreatedAt($channel['created_at']);
-                    $ch->setUpdatedAt($channel['updated_at']);
-                    $ch->setFollowersCount($channel['followers_count']);
-                    $ch->setStoriesCount($channel['stories_count']);
-                    $ch->setAvatar($avatar);
+                    if (!$channelStored) {
+                        $ch = new Channel();
+                        $ch->setOwnerId($user);
+                        $ch->setChannelId($channel['id']);
+                        $ch->setChannelPermalink($channel['permalink']);
+                        $ch->setUserId($userId);
+                        $ch->setIsWatching(true);
+                        $ch->setIsActive(true);
+                        $ch->setIsCurrent((int)$channel['id'] === (int)$current);
+                        $ch->setTitle($channel['title']);
+                        $ch->setCreatedAt($channel['created_at']);
+                        $ch->setUpdatedAt($channel['updated_at']);
+                        $ch->setFollowersCount($channel['followers_count']);
+                        $ch->setStoriesCount($channel['stories_count']);
+                        $ch->setAvatar($avatar);
 
-                    $this->entityManager->persist($ch);
-                    $this->entityManager->flush();
+                        $this->entityManager->persist($ch);
+                        $this->entityManager->flush();
+                    } else {
+                        $channelStored->setChannelPermalink($channel['permalink']);
+                        $channelStored->setTitle($channel['title']);
+                        $channelStored->setUpdatedAt($channel['updated_at']);
+                        $channelStored->setFollowersCount($channel['followers_count']);
+                        $channelStored->setStoriesCount($channel['stories_count']);
+                        $channelStored->setAvatar($avatar);
+
+                        $this->entityManager->persist($channelStored);
+                        $this->entityManager->flush();
+                    }
                 }
             }
 

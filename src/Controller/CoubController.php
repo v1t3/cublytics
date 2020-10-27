@@ -116,7 +116,7 @@ class CoubController extends AbstractController
                 $result = [
                     'result' => 'error',
                     'error'  => [
-                        'message' => 'Данные отсутствуют'
+                        'message' => 'Данные отсутствуют (Данные начнут поступать в скором времени)'
                     ]
                 ];
             }
