@@ -161,6 +161,7 @@ class ChannelService
             throw new Exception('Не заданы все необходимые параметры');
         }
 
+        # Переведём значение в "настоящий" boolean
         $newVal = ($newVal === 'true');
 
         /**
@@ -177,23 +178,32 @@ class ChannelService
         if ('is_active' === $type) {
             $channel->setIsActive((bool)$newVal);
 
+            # Если канал отмечается неактивным,
+            # то также отключается наблюдение
+            if (false === $newVal) {
+                $channel->setIsWatching(false);
+            }
+
             $this->entityManager->persist($channel);
             $this->entityManager->flush();
-
-            $result = $channel->getIsActive();
-        }
-        if ('is_watching' === $type) {
+        } elseif (
+            'is_watching' === $type
+            && true === $channel->getIsActive()
+        ) {
             $channel->setIsWatching((bool)$newVal);
 
             $this->entityManager->persist($channel);
             $this->entityManager->flush();
-
-            $result = $channel->getIsWatching();
         }
+
+        $result = [
+            'is_active'   => $channel->getIsActive(),
+            'is_watching' => $channel->getIsWatching()
+        ];
 
         return [
             'success' => $newVal === $result,
-            $type     => $result
+            'result'  => $result
         ];
     }
 

@@ -58,9 +58,10 @@ class CoubAuthService
         if (
             '' === (string)$_ENV['COUB_KEY']
             && '' === (string)$_ENV['COUB_SECRET']
+            && '' === (string)$_ENV['APP_HOST']
             && '' === $code
         ) {
-            throw new Exception('Не заданы поля env or code');
+            throw new Exception('Не заданы все поля env or code');
         }
 
         $response = $this->client->request(
@@ -69,7 +70,7 @@ class CoubAuthService
             [
                 'form_params' => [
                     'grant_type'    => 'authorization_code',
-                    'redirect_uri'  => AppRegistry::REDIRECT_CALLBACK,
+                    'redirect_uri'  => $_ENV['APP_HOST'] . AppRegistry::REDIRECT_CALLBACK,
                     'client_id'     => $_ENV['COUB_KEY'],
                     'client_secret' => $_ENV['COUB_SECRET'],
                     'code'          => $code

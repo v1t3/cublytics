@@ -5,7 +5,6 @@ namespace App\Controller;
 
 use App\AppRegistry;
 use App\Entity\Log;
-use App\Repository\UserRepository;
 use App\Service\ChannelService;
 use App\Service\CoubAuthService;
 use App\Service\UserService;
@@ -73,10 +72,11 @@ class CoubAuthController extends AbstractController
             if (
                 'success' !== $reg
                 && '' !== (string)$_ENV['COUB_KEY']
+                && '' !== (string)$_ENV['APP_HOST']
             ) {
                 $url = AppRegistry::REQUEST_AUTHORIZE_APP
                     . '?response_type=code'
-                    . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
+                    . '&redirect_uri=' . $_ENV['APP_HOST'] . AppRegistry::REDIRECT_CALLBACK
                     . '&client_id=' . $_ENV['COUB_KEY'];
 
                 return $this->redirect($url);

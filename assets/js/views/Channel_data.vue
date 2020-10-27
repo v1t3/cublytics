@@ -4,8 +4,8 @@
         <div class="channel-block">
             <div v-if="!channels.length">Каналы отсутсвуют</div>
             <div class="channel-list" v-if="channels.length">
-                <select v-model="channel_active" @change="getActive()">
-                    <option v-for="channel in channels" :key="channel.name">{{ channel.name }}</option>
+                <select v-model="channel_active_id" @change="getActive()">
+                    <option v-for="channel in channels" :value="channel.channel_id">{{ channel.title }}</option>
                 </select>
             </div>
             <div class="channel-info">
@@ -66,6 +66,7 @@
         data() {
             return {
                 channels: [],
+                channel_active_id: '',
                 channel_active: '',
                 channel_name: '',
                 statistic_type: '',
@@ -89,8 +90,12 @@
                     this.$store.state.user.channels.length
                 ) {
                     this.channels = this.$store.state.user.channels;
+                    this.channel_active_id = this.channels[0]['channel_id'];
                     this.channel_active = this.channels[0].name;
                 }
+                console.log('channels', this.channels);
+                console.log('channel_active_id', this.channel_active_id);
+                console.log('channel_active', this.channel_active);
 
                 this.showLoader = false;
             },

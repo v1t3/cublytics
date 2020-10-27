@@ -7,6 +7,7 @@ use App\Entity\ConfirmationRequest;
 use App\Entity\Log;
 use App\Entity\User;
 use App\Repository\ConfirmationRequestRepository;
+use App\Repository\UserRepository;
 use App\Service\ChannelService;
 use App\Service\CodeGenerator;
 use App\Service\Mailer;
@@ -16,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -304,18 +306,66 @@ class UserController extends AbstractController
      *
      * @Route("/api/user/delete_account", name="delete_account")
      *
+     * @param UserService $userService
+     *
+     * @return JsonResponse|RedirectResponse
+     * @throws Exception
      */
-    public function deleteAccount()
+    public function deleteAccount(Request $request)
     {
-        $response = new JsonResponse();
-        $response->setData(
-            [
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        /**
+         * @var $userRepo UserRepository
+         * @var $user     User
+         */
+        $userRepo = $this->entityManager->getRepository(User::class);
+        $user = $userRepo->find($this->getUser()->getId());
+
+        try {
+            if (!$user) {
+                throw new Exception('Пользователь отсутствует');
+            }
+
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
+
+            $this->get('security.token_storage')->setToken(null);
+            $request->getSession()->invalidate();
+
+            $result = [
+                'result'  => 'success',
+                'message' => '',
+                'data'    => ''
+            ];
+        } catch (Exception $exception) {
+            $this->entityManager->clear();
+            $logger = new Log();
+            $logger->setDate(new DateTime('now'));
+            $logger->setType('get_user_settings');
+            if ($user) {
+                $logger->setUser((string)$user->getUserId());
+            }
+            $logger->setStatus(false);
+            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $this->entityManager->persist($logger);
+            $this->entityManager->flush();
+
+            $result = [
                 'result' => 'error',
                 'error'  => [
-                    'message' => 'В разработке',
+                    'message' => $exception->getMessage(),
                 ]
-            ]
-        );
+            ];
+
+            $response = new JsonResponse();
+            $response->setData($result);
+
+            return $response;
+        }
+
+        $response = new JsonResponse();
+        $response->setData($result);
 
         return $response;
     }

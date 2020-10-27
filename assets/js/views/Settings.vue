@@ -43,6 +43,7 @@
                                 <span>Наблюдается:</span>
                                 <input type="checkbox"
                                        v-model="channel.checkboxWatching"
+                                       v-bind:disabled="!channel.checkboxActive"
                                        @change="updateChannel(channel.name, 'is_watching', channel.checkboxWatching)">
                             </label>
                         </div>
@@ -338,14 +339,25 @@
                             data &&
                             'success' === data['result']
                         ) {
-                            let params = [];
-                            params['channel'] = channel;
-                            params['type'] = type;
-                            params['new_val'] = data['data'][type];
+                            let paramsIsActive = [];
+                            let paramsIsWatching = [];
+
+                            paramsIsActive['channel'] = channel;
+                            paramsIsActive['type'] = 'is_active';
+                            paramsIsActive['new_val'] = data['data']['result']['is_active'];
 
                             this.$store.commit(
                                 'updateChannel',
-                                params
+                                paramsIsActive
+                            );
+
+                            paramsIsWatching['channel'] = channel;
+                            paramsIsWatching['type'] = 'is_watching';
+                            paramsIsWatching['new_val'] = data['data']['result']['is_watching'];
+
+                            this.$store.commit(
+                                'updateChannel',
+                                paramsIsWatching
                             );
                         }
                     })
@@ -353,7 +365,7 @@
                         console.error('catch error: ', error);
                     });
             },
-            resendConfirmation: function() {
+            resendConfirmation: function () {
                 axios({
                     method: 'post',
                     url: '/resend_confirmation',
@@ -382,7 +394,7 @@
                         console.error('catch error: ', error);
                     });
             },
-            deleteAccount: function() {
+            deleteAccount: function () {
                 axios({
                     method: 'post',
                     url: '/api/user/delete_account',
@@ -393,12 +405,11 @@
                 })
                     .then((response) => {
                         let data = response['data'];
+                        console.log('data', data);
 
                         if (data) {
                             if ('success' === data['result']) {
-                                this.send_confirm = true;
-                                this.response.result = data['result'];
-                                this.response.message = data['message'];
+                                location.reload();
                             }
 
                             if ('error' === data['result']) {
