@@ -71,18 +71,12 @@ class CoubAuthController extends AbstractController
 
             if (
                 'success' !== $reg
-                && 'dev' === $_ENV['APP_ENV']
-            ) {
-                return $this->redirectToRoute('coub_callback');
-            }
-
-            if (
-                'success' !== $reg
                 && '' !== (string)$_ENV['COUB_KEY']
+                && '' !== (string)$_ENV['APP_HOST']
             ) {
                 $url = AppRegistry::REQUEST_AUTHORIZE_APP
                     . '?response_type=code'
-                    . '&redirect_uri=' . AppRegistry::REDIRECT_CALLBACK
+                    . '&redirect_uri=' . $_ENV['APP_HOST'] . AppRegistry::REDIRECT_CALLBACK
                     . '&client_id=' . $_ENV['COUB_KEY'];
 
                 return $this->redirect($url);
@@ -135,11 +129,11 @@ class CoubAuthController extends AbstractController
     {
         $tokenData = [];
         $userInfo = [];
-        $userSaved = false;
+        $userId = false;
         $code = (string)$request->query->get('code');
 
         try {
-            if ('' !== $code && 'dev' !== $_ENV['APP_ENV']) {
+            if ('' !== $code) {
                 $tokenData = $coubAuthService->getUserToken($code);
 
                 if (empty($tokenData['access_token'])) {
@@ -158,25 +152,23 @@ class CoubAuthController extends AbstractController
                     }
                 }
 
-                $userSaved = $userService->saveUser($tokenData, $userInfo);
+                $userId = $userService->saveUser($tokenData, $userInfo);
             }
 
-            if ('dev' === $_ENV['APP_ENV']) {
-                $userSaved = true;
-                $tokenData['access_token'] = $_ENV['COUB_TEST_TOKEN'];
-            }
-
-            if (!$userSaved) {
+            if (!$userId) {
                 throw new Exception('Ошибка при регистрации пользователя');
             }
 
-            if (isset($userInfo['channels'])) {
+            if (!empty($userInfo['channels'])) {
                 $channelClient->saveUserChannelsList($userInfo);
             }
 
+            # сохранить токен во временную БД
+            $coubAuthService->setUserToken(Security::LAST_USERNAME, $tokenData['access_token']);
+
             $request->getSession()->set(
                 Security::LAST_USERNAME,
-                $tokenData['access_token']
+                $userId
             );
         } catch (Exception $exception) {
             $this->entityManager->clear();

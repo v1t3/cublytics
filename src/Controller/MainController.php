@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -19,9 +18,12 @@ class MainController extends AbstractController
      */
     public function index()
     {
-        return $this->render('main/index.html.twig', [
-            'controller_name' => 'MainController',
-        ]);
+        return $this->render(
+            'main/index.html.twig',
+            [
+                'controller_name' => 'MainController',
+            ]
+        );
     }
 
     /**
@@ -29,9 +31,38 @@ class MainController extends AbstractController
      */
     public function about()
     {
-        return $this->render('main/about.html.twig', [
-            'controller_name' => 'MainController',
-        ]);
+        return $this->render(
+            'main/about.html.twig',
+            [
+                'controller_name' => 'MainController',
+            ]
+        );
+    }
+
+    /**
+     * @Route("/terms", name="terms_page")
+     */
+    public function terms()
+    {
+        return $this->render(
+            'main/terms.html.twig',
+            [
+                'controller_name' => 'MainController',
+            ]
+        );
+    }
+
+    /**
+     * @Route("/agreement", name="agreement_page")
+     */
+    public function agreement()
+    {
+        return $this->render(
+            'main/agreement.html.twig',
+            [
+                'controller_name' => 'MainController',
+            ]
+        );
     }
 
     /**
@@ -39,12 +70,11 @@ class MainController extends AbstractController
      */
     public function admin()
     {
-//        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-//            return new RedirectResponse($this->urlGenerator->generate('app_login_admin'));
-
-
-        return $this->render('main/admin.html.twig', [
-            'controller_name' => 'MainController',
-        ]);
+        return $this->render(
+            'main/admin.html.twig',
+            [
+                'controller_name' => 'MainController',
+            ]
+        );
     }
 }

@@ -17,8 +17,16 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class SpaController extends AbstractController
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private EntityManagerInterface $entityManager;
 
+    /**
+     * SpaController constructor.
+     *
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
@@ -37,7 +45,7 @@ class SpaController extends AbstractController
          * @var $channelRepo ChannelRepository
          */
         $channelRepo = $this->entityManager->getRepository(Channel::class);
-        $channel = $channelRepo->findOneBy(['is_current' => true]);
+        $channel = $channelRepo->findOneBy(['is_current' => true, 'user_id' => $this->getUser()->getUserId()]);
 
         if ($channel) {
             $params = [

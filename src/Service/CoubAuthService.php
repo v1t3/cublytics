@@ -5,8 +5,10 @@ namespace App\Service;
 
 use App\AppRegistry;
 use App\Entity\AccessList;
+use App\Entity\CoubAuthorization;
 use App\Entity\User;
 use App\Repository\AccessListRepository;
+use App\Repository\CoubAuthorizationRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -56,9 +58,10 @@ class CoubAuthService
         if (
             '' === (string)$_ENV['COUB_KEY']
             && '' === (string)$_ENV['COUB_SECRET']
+            && '' === (string)$_ENV['APP_HOST']
             && '' === $code
         ) {
-            throw new Exception('Не заданы поля env or code');
+            throw new Exception('Не заданы все поля env or code');
         }
 
         $response = $this->client->request(
@@ -67,7 +70,7 @@ class CoubAuthService
             [
                 'form_params' => [
                     'grant_type'    => 'authorization_code',
-                    'redirect_uri'  => AppRegistry::REDIRECT_CALLBACK,
+                    'redirect_uri'  => $_ENV['APP_HOST'] . AppRegistry::REDIRECT_CALLBACK,
                     'client_id'     => $_ENV['COUB_KEY'],
                     'client_secret' => $_ENV['COUB_SECRET'],
                     'code'          => $code
@@ -157,4 +160,39 @@ class CoubAuthService
 
         return false;
     }
+
+    /**
+     * @param string $username
+     * @param string $token
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function setUserToken(string $username, string $token)
+    {
+        if ('' !== $username && '' !== $token) {
+            /**
+             * @var $coubAuthRepo CoubAuthorizationRepository
+             */
+            $coubAuthRepo = $this->entityManager->getRepository(CoubAuthorization::class);
+            $coubAuth = $coubAuthRepo->findOneBy(['last_username' => $username]);
+
+            if ($coubAuth) {
+                $coubAuth->setToken($token);
+            } else {
+                $coubAuth = new CoubAuthorization();
+                $coubAuth->setLastUsername($username);
+                $coubAuth->setToken($token);
+            }
+
+            $this->entityManager->persist($coubAuth);
+            $this->entityManager->flush();
+
+            return true;
+        }
+
+        return false;
+    }
+
+
 }

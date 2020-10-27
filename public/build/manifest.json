@@ -1,5 +1,9 @@
 {
   "build/app.css": "/build/app.css",
   "build/app.js": "/build/app.js",
-  "build/img/load.gif": "/build/img/load.gif"
+  "build/img/docker-logo.png": "/build/img/docker-logo.png",
+  "build/img/load.gif": "/build/img/load.gif",
+  "build/img/symfony-logo.png": "/build/img/symfony-logo.png",
+  "build/img/vk-logo.png": "/build/img/vk-logo.png",
+  "build/img/vue-logo.png": "/build/img/vue-logo.png"
 }

@@ -97,7 +97,7 @@ class UserService
      * @param $tokenData
      * @param $userData
      *
-     * @return bool
+     * @return bool|int|null
      * @throws Exception
      */
     public function saveUser($tokenData, $userData)
@@ -107,9 +107,9 @@ class UserService
              * @var $userAccountRepo UserRepository
              */
             $userAccountRepo = $this->entityManager->getRepository('App:User');
-            $userAccount = $userAccountRepo->findOneByUserId($userData['id']);
+            $user = $userAccountRepo->findOneByUserId($userData['id']);
 
-            if (!$userAccount) {
+            if (!$user) {
                 $user = new User();
                 $user->setToken($tokenData['access_token']);
                 $user->setTokenExpiredAt((int)$tokenData['expires_in'] + (int)$tokenData['created_at']);
@@ -121,16 +121,19 @@ class UserService
 
                 $this->entityManager->persist($user);
             } else {
-                $userAccount->setToken($tokenData['access_token']);
-                $userAccount->setTokenExpiredAt((int)$tokenData['expires_in']);
-                $userAccount->setUpdatedAt($userData['updated_at']);
+                $user->setToken($tokenData['access_token']);
+                $user->setTokenExpiredAt((int)$tokenData['expires_in']);
+                $user->setUpdatedAt($userData['updated_at']);
 
-                $this->entityManager->persist($userAccount);
+                $this->entityManager->persist($user);
             }
 
             $this->entityManager->flush();
 
-            return true;
+            # Получить id записанного пользователя
+            $userNew = $userAccountRepo->findOneByUserId($userData['id']);
+
+            return $userNew ? $userNew->getId() : false;
         }
 
         return false;
@@ -204,7 +207,7 @@ class UserService
         $user->setPassword($this->encoder->encodePassword($user, $newPassword));
 
         /**
-         * @var $confirmRepo ConfirmationRequestRepository
+         * @var $confirmRepo      ConfirmationRequestRepository
          * @var $confirmation     ConfirmationRequest
          */
         $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);
@@ -274,7 +277,7 @@ class UserService
         }
 
         /**
-         * @var $confirmRepo ConfirmationRequestRepository
+         * @var $confirmRepo  ConfirmationRequestRepository
          * @var $confirmation ConfirmationRequest
          */
         $confirmRepo = $this->entityManager->getRepository(ConfirmationRequest::class);

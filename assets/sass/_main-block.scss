@@ -13,7 +13,12 @@
     display: flex;
     padding-top: 70px;
     background-color: #3e63c4;
-    height: 100vh;
+    min-height: 100vh;
+}
+
+.default-link {
+    text-decoration: underline;
+    text-transform: initial;
 }
 
 .welcome {
@@ -66,10 +71,5 @@
         font-size: 0.8em;
         max-width: 380px;
         text-align: center;
-
-        a {
-            text-decoration: underline;
-            text-transform: initial;
-        }
     }
 }

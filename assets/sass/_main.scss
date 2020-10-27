@@ -7,7 +7,7 @@ html, body {
 
 body {
     //background: linear-gradient(-45deg, #0d5773, #243ce6);
-    //color: #636b6f;
+    color: #000;
     font-family: 'Nunito', sans-serif;
     font-weight: 200;
     height: 100vh;
@@ -71,7 +71,9 @@ ul {
 }
 
 .content {
-    text-align: center;
+    h1, h2 {
+        text-align: center;
+    }
 }
 
 .title {

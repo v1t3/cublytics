@@ -81,35 +81,44 @@ class ChannelService
             $repo = $this->entityManager->getRepository(Channel::class);
 
             foreach ($channels as $channel) {
-                $channelStored = $repo->findOneByChannelId($channel['id']);
+                if ($this->isChannelExist($channel['permalink'])) {
+                    $channelStored = $repo->findOneByChannelId($channel['id']);
 
-                if (
-                    !$channelStored
-                    && $this->isChannelExist($channel['permalink'])
-                ) {
                     $avatar = str_replace(
                         '%{version}',
                         'profile_pic_big',
                         $channel['avatar_versions']['template']
                     );
 
-                    $ch = new Channel();
-                    $ch->setOwnerId($user);
-                    $ch->setChannelId($channel['id']);
-                    $ch->setChannelPermalink($channel['permalink']);
-                    $ch->setUserId($userId);
-                    $ch->setIsWatching(true);
-                    $ch->setIsActive(true);
-                    $ch->setIsCurrent((int)$channel['id'] === (int)$current);
-                    $ch->setTitle($channel['title']);
-                    $ch->setCreatedAt($channel['created_at']);
-                    $ch->setUpdatedAt($channel['updated_at']);
-                    $ch->setFollowersCount($channel['followers_count']);
-                    $ch->setStoriesCount($channel['stories_count']);
-                    $ch->setAvatar($avatar);
+                    if (!$channelStored) {
+                        $ch = new Channel();
+                        $ch->setOwnerId($user);
+                        $ch->setChannelId($channel['id']);
+                        $ch->setChannelPermalink($channel['permalink']);
+                        $ch->setUserId($userId);
+                        $ch->setIsWatching(true);
+                        $ch->setIsActive(true);
+                        $ch->setIsCurrent((int)$channel['id'] === (int)$current);
+                        $ch->setTitle($channel['title']);
+                        $ch->setCreatedAt($channel['created_at']);
+                        $ch->setUpdatedAt($channel['updated_at']);
+                        $ch->setFollowersCount($channel['followers_count']);
+                        $ch->setStoriesCount($channel['stories_count']);
+                        $ch->setAvatar($avatar);
 
-                    $this->entityManager->persist($ch);
-                    $this->entityManager->flush();
+                        $this->entityManager->persist($ch);
+                        $this->entityManager->flush();
+                    } else {
+                        $channelStored->setChannelPermalink($channel['permalink']);
+                        $channelStored->setTitle($channel['title']);
+                        $channelStored->setUpdatedAt($channel['updated_at']);
+                        $channelStored->setFollowersCount($channel['followers_count']);
+                        $channelStored->setStoriesCount($channel['stories_count']);
+                        $channelStored->setAvatar($avatar);
+
+                        $this->entityManager->persist($channelStored);
+                        $this->entityManager->flush();
+                    }
                 }
             }
 
@@ -161,6 +170,7 @@ class ChannelService
             throw new Exception('Не заданы все необходимые параметры');
         }
 
+        # Переведём значение в "настоящий" boolean
         $newVal = ($newVal === 'true');
 
         /**
@@ -177,23 +187,32 @@ class ChannelService
         if ('is_active' === $type) {
             $channel->setIsActive((bool)$newVal);
 
+            # Если канал отмечается неактивным,
+            # то также отключается наблюдение
+            if (false === $newVal) {
+                $channel->setIsWatching(false);
+            }
+
             $this->entityManager->persist($channel);
             $this->entityManager->flush();
-
-            $result = $channel->getIsActive();
-        }
-        if ('is_watching' === $type) {
+        } elseif (
+            'is_watching' === $type
+            && true === $channel->getIsActive()
+        ) {
             $channel->setIsWatching((bool)$newVal);
 
             $this->entityManager->persist($channel);
             $this->entityManager->flush();
-
-            $result = $channel->getIsWatching();
         }
+
+        $result = [
+            'is_active'   => $channel->getIsActive(),
+            'is_watching' => $channel->getIsWatching()
+        ];
 
         return [
             'success' => $newVal === $result,
-            $type     => $result
+            'result'  => $result
         ];
     }
 

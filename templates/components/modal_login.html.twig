@@ -5,31 +5,32 @@
 
             <!-- Modal Header -->
             <div class="modal-header">
-{#                <h4 class="modal-title">Modal Heading</h4>#}
+                {#                <h4 class="modal-title">Modal Heading</h4>#}
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
 
             <!-- Modal body -->
             <div class="modal-body">
-{#                <div class="welcome">#}
-                    <div class="modal-btn">
-                        <a href="{{ path('app_login_coub') }}" class="btn">
-                            Войти с помощью COUB
-                        </a>
-                    </div>
-                    <div class="welcome-policy">
-                        Авторизуясь, вы соглашаетесь с
-                        <a href="{{ path('about_page') }}">правилами пользования сайтом</a>
-                        и даете
-                        <a href="{{ path('about_page') }}">согласие на обработку персональных данных</a>.
-                    </div>
-{#                </div>#}
+                {#                <div class="welcome">#}
+                <div class="modal-btn">
+                    <a href="{{ path('app_login_coub') }}" class="btn">
+                        Войти с помощью COUB
+                    </a>
+                </div>
+                <div class="welcome-policy">
+                    Авторизуясь, вы соглашаетесь с
+                    <a class="default-link" href="{{ path('about_page') }}">правилами пользования сайтом</a>
+                    и даете
+                    <a class="default-link" href="{{ path('about_page') }}">согласие на обработку персональных
+                        данных</a>.
+                </div>
+                {#                </div>#}
             </div>
 
             <!-- Modal footer -->
-{#            <div class="modal-footer">#}
-{#                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>#}
-{#            </div>#}
+            {#            <div class="modal-footer">#}
+            {#                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>#}
+            {#            </div>#}
 
         </div>
     </div>

@@ -48,7 +48,7 @@ class AppRegistry
     /**
      *
      */
-    public const REDIRECT_CALLBACK = 'https://41b00fa8afca.ngrok.io/auth/callback';
+    public const REDIRECT_CALLBACK = '/auth/callback';
 
     /**
      *
