@@ -20,6 +20,8 @@
 /node_modules/
 /temp/
 /docker/database/data
+/docker/certbot/conf
+/docker/certbot/.well-known
 /docker/logs/
 /dev/
 /.env
