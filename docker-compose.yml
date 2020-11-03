@@ -13,7 +13,6 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      #- ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./docker/database/data:/var/lib/mysql
 
   php-fpm:
@@ -27,6 +26,7 @@ services:
       - DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@database:3306/${DATABASE_NAME}?serverVersion=5.7
     volumes:
       - ./:/var/www/cublytics.ru
+      - /etc/letsencrypt/live/cublytics.ru/:/etc/letsencrypt/live/cublytics.ru/
 
   nginx:
     build:
@@ -37,18 +37,9 @@ services:
       - ./docker/nginx/sites/:/etc/nginx/sites-available
       - ./docker/nginx/conf.d/:/etc/nginx/conf.d
       - ./docker/logs:/var/log/nginx/
-      #- ./docker/certbot/conf:/etc/letsencrypt
-      #- ./docker/certbot/www:/var/www/certbot
+      - /etc/letsencrypt/:/etc/letsencrypt/
     depends_on:
       - php-fpm
     ports:
       - "80:80"
       - "443:443"
-    #command: "/bin/sh -c 'while :; do sleep 6h; nginx -s reload; done'"
-
-#  certbot:
-#    image: certbot/certbot
-#    volumes:
-#      - ./docker/certbot/conf:/etc/letsencrypt
-#      - ./docker/certbot/www:/var/www/certbot
-#    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
