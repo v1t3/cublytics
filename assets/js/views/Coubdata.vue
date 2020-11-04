@@ -129,8 +129,6 @@
                         .then((response) => {
                             let data = response['data'];
 
-                            // console.log('data coub', data);
-
                             if (
                                 data
                                 && 'success' === data['result']

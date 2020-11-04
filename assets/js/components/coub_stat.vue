@@ -188,8 +188,6 @@
                             that.error = '';
                             that.showLoader = false;
 
-                            // console.log('data', data);
-
                             if (data) {
                                 if (typeof data === 'string') {
                                     data = JSON.parse(data);

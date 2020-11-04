@@ -405,7 +405,6 @@
                 })
                     .then((response) => {
                         let data = response['data'];
-                        console.log('data', data);
 
                         if (data) {
                             if ('success' === data['result']) {

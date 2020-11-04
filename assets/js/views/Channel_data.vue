@@ -93,9 +93,6 @@
                     this.channel_active_id = this.channels[0]['channel_id'];
                     this.channel_active = this.channels[0].name;
                 }
-                console.log('channels', this.channels);
-                console.log('channel_active_id', this.channel_active_id);
-                console.log('channel_active', this.channel_active);
 
                 this.showLoader = false;
             },
