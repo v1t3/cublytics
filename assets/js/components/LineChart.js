@@ -7,7 +7,7 @@ export default {
     props: ['options'],
     mounted () {
             // this.chartData создаётся внутри миксина
-        this.renderChart(this.chartData, this.options)
+        this.renderChart(this.chartData, this.options);
     },
     watch: {
         chartData () {

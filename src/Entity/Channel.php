@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\ChannelRepository;
 use DateTime;
 use DateTimeInterface;
+use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 
@@ -552,7 +553,7 @@ class Channel
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new DateTime();
+            $this->date_create = new DateTime('now', new DateTimeZone('Europe/London'));
 
             if (!$this->date_update) {
                 $this->setDateUpdate();
@@ -576,7 +577,7 @@ class Channel
      */
     public function setDateUpdate(): self
     {
-        $this->date_update = new DateTime();
+        $this->date_update = new DateTime('now', new DateTimeZone('Europe/London'));
 
         return $this;
     }

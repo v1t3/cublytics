@@ -130,7 +130,7 @@ class Log
     public function setDate(?DateTimeInterface $date = null): self
     {
         if (!$date) {
-            $date = new DateTime();
+            $date = new DateTime('now', new \DateTimeZone('Europe/London'));
         }
 
         $this->date = $date;
@@ -407,7 +407,7 @@ class Log
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new DateTime();
+            $this->date_create = new DateTime('now', new \DateTimeZone('Europe/London'));
 
             if (!$this->date_update) {
                 $this->setDateUpdate();
@@ -431,7 +431,7 @@ class Log
      */
     public function setDateUpdate(): self
     {
-        $this->date_update = new DateTime();
+        $this->date_update = new DateTime('now', new \DateTimeZone('Europe/London'));
 
         return $this;
     }

@@ -105,7 +105,7 @@ class CoubController extends AbstractController
         try {
             //todo проверка по времени
 
-            $data = $coubService->getCoubStatistic($coubId, $statType);
+            $data = $coubService->getCoubStatistic($request);
 
             if (!empty($data)) {
                 $result = [

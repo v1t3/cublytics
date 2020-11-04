@@ -82,7 +82,7 @@ class ChannelController extends AbstractController
         try {
             //todo проверка по времени
 
-            $data = $channelService->getChannelStatistic($channelName, $statType);
+            $data = $channelService->getChannelStatistic($request);
 
             if (empty($data)) {
                 $coubsOrig = $channelService->getOriginalCoubs($channelName);
@@ -90,7 +90,7 @@ class ChannelController extends AbstractController
                 $coubsOrigSaved = $channelService->saveOriginalCoubs($coubsOrig, $channelName);
 
                 if ($coubsOrigSaved) {
-                    $data = $channelService->getChannelStatistic($channelName, $statType);
+                    $data = $channelService->getChannelStatistic($request);
                 }
             }
 

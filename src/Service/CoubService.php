@@ -7,6 +7,7 @@ use App\Entity\Coub;
 use App\Entity\CoubStat;
 use App\Repository\CoubRepository;
 use App\Repository\CoubStatRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
@@ -75,14 +76,16 @@ class CoubService
     }
 
     /**
-     * @param string $coubId
-     * @param string $statType
+     * @param Request $request
      *
      * @return array
      * @throws Exception
      */
-    public function getCoubStatistic(string $coubId, string $statType)
+    public function getCoubStatistic(Request $request)
     {
+        $coubId = (string)$request->request->get('coub_id');
+        $statType = (string)$request->request->get('statistic_type');
+        $timezone = (string)$request->request->get('timezone');
         $result = [];
 
         if (0 >= (int)$coubId || '' === $statType) {
@@ -119,8 +122,8 @@ class CoubService
                 break;
         }
 
-        $dateStart = new \DateTime("{$ymdStart} 00:00:00");
-        $dateEnd = new \DateTime("{$ymdEnd} 23:59.59");
+        $dateStart = new DateTime("{$ymdStart} 00:00:00");
+        $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
 
         /**
          * @var $coubsStatRepo CoubStatRepository
@@ -135,7 +138,9 @@ class CoubService
             foreach ($coubsStat as $coub) {
                 $result[] = [
                     'coub_id'        => $coub->getCoubId(),
-                    'timestamp'      => $coub->getDateCreate()->format($dateFormat),
+                    'timestamp'      => $coub->getDateCreate()
+                        ->modify($timezone . ' hour')
+                        ->format($dateFormat),
                     'like_count'     => $coub->getLikeCount(),
                     'repost_count'   => $coub->getRepostCount(),
                     'remixes_count'  => $coub->getRemixesCount(),

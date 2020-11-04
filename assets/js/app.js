@@ -57,6 +57,12 @@ const store = new Vuex.Store({
                 }
             }
         },
+
+        setAppTimezone(state, params) {
+            if (state && params) {
+                state.timezone = params;
+            }
+        },
     }
 });
 

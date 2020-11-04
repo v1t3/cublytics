@@ -123,7 +123,7 @@ class CoubAuthorization
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new DateTime();
+            $this->date_create = new DateTime('now', new \DateTimeZone('Europe/London'));
 
             if (!$this->date_update) {
                 $this->setDateUpdate();
@@ -147,7 +147,7 @@ class CoubAuthorization
      */
     public function setDateUpdate(): self
     {
-        $this->date_update = new DateTime();
+        $this->date_update = new DateTime('now', new \DateTimeZone('Europe/London'));
 
         return $this;
     }

@@ -131,7 +131,7 @@ class ConfirmationRequest
     public function setRequestedAt(?DateTimeInterface $requested_at = null): self
     {
         if (!$requested_at) {
-            $requested_at = new DateTime();
+            $requested_at = new DateTime('now', new \DateTimeZone('Europe/London'));
         }
 
         $this->requested_at = $requested_at;

@@ -355,9 +355,9 @@ class CoubStat
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @return DateTime|null
      */
-    public function getDateCreate(): ?DateTimeInterface
+    public function getDateCreate(): ?DateTime
     {
         return $this->date_create;
     }
@@ -369,7 +369,7 @@ class CoubStat
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new DateTime();
+            $this->date_create = new DateTime('now', new \DateTimeZone('Europe/London'));
 
             if (!$this->date_update) {
                 $this->setDateUpdate();
@@ -380,9 +380,9 @@ class CoubStat
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @return DateTime|null
      */
-    public function getDateUpdate(): ?DateTimeInterface
+    public function getDateUpdate(): ?DateTime
     {
         return $this->date_update;
     }
@@ -393,7 +393,7 @@ class CoubStat
      */
     public function setDateUpdate(): self
     {
-        $this->date_update = new DateTime();
+        $this->date_update = new DateTime('now', new \DateTimeZone('Europe/London'));
 
         return $this;
     }

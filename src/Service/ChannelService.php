@@ -277,14 +277,17 @@ class ChannelService
     }
 
     /**
-     * @param string $channelName
-     * @param string $statType
+     * @param Request $request
      *
      * @return array
      * @throws Exception
      */
-    public function getChannelStatistic(string $channelName, string $statType)
+    public function getChannelStatistic(Request $request)
     {
+        $channelName = (string)$request->request->get('channel_name');
+        $statType = (string)$request->request->get('statistic_type');
+        $timezone = (string)$request->request->get('timezone');
+
         $result = [];
 
         if ('' === $channelName || '' === $statType) {
@@ -363,7 +366,9 @@ class ChannelService
 
                     $result['counts'][] = [
                         'coub_id'        => $coubId,
-                        'timestamp'      => $coub->getDateCreate()->format($dateFormat),
+                        'timestamp'      => $coub->getDateCreate()
+                            ->modify($timezone . ' hour')
+                            ->format($dateFormat),
                         'like_count'     => $coub->getLikeCount(),
                         'repost_count'   => $coub->getRepostCount(),
                         'recoubs_count'  => $coub->getRemixesCount(),

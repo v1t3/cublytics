@@ -172,6 +172,7 @@
                     const bodyFormData = new FormData();
                     bodyFormData.set('coub_id', String(this.coub_id));
                     bodyFormData.set('statistic_type', this.statistic_type);
+                    bodyFormData.set('timezone', this.$store.state.timezone);
 
                     axios({
                         method: 'post',
@@ -265,14 +266,30 @@
 
                 dates = this.getDatesRange(this.statistic_type);
 
+                // Забиваем temp dummy данными
+                if (dates && dates.length) {
+                    for (let i = 0, len = dates.length; i < len; i++) {
+                        temp[dates[i]] = [];
+                        temp[dates[i]] = [];
+                        temp[dates[i]]['views_count'] = 0;
+                        temp[dates[i]]['repost_count'] = 0;
+                        temp[dates[i]]['remixes_count'] = 0;
+                        temp[dates[i]]['like_count'] = 0;
+                        temp[dates[i]]['dislikes_count'] = 0;
+                        temp[dates[i]]['is_kd'] = 0;
+                        temp[dates[i]]['featured'] = 0;
+                        temp[dates[i]]['banned'] = 0;
+                    }
+                }
+
                 for (let i = 0, len = data.length; i < len; i++) {
                     let date = data[i]['timestamp'];
 
+                    // Если попадётся дата не из списка
                     if (!dates.includes(date)) {
                         dates.push(date);
                     }
-
-                    if (!temp[date]) {
+                    if (undefined === temp[date] || !temp[date].length) {
                         temp[date] = [];
                         temp[date]['views_count'] = 0;
                         temp[date]['repost_count'] = 0;

@@ -28,6 +28,7 @@
         },
         beforeMount() {
             this.getUserData();
+            this.setAppTimezone();
         },
         methods: {
             getUserData: function () {
@@ -57,6 +58,17 @@
                         console.error('catch error: ', error);
                     });
             },
+
+            setAppTimezone: function () {
+                let defaultTimezone = 3;
+                let timezone = -(new Date().getTimezoneOffset() / 60);
+
+                if (timezone === undefined) {
+                    timezone = defaultTimezone;
+                }
+
+                this.$store.commit('setAppTimezone', timezone);
+            }
         }
 
     }
