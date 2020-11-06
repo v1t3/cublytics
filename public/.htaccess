@@ -2,6 +2,10 @@
 #Deny from all
 #Allow from
 
+<IfModule mod_php7.c>
+    php_value memory_limit 750M
+</IfModule>
+
 <IfModule mod_rewrite.c>
     Options -MultiViews
     RewriteEngine On

@@ -215,7 +215,16 @@ class CoubUpdateCommand extends Command
                     OutputInterface::VERBOSITY_VERBOSE
                 );
 
-                $data = $this->channelService->getOriginalCoubs($permalink);
+                try {
+                    $data = $this->channelService->getOriginalCoubs($permalink);
+                } catch (\Exception $exception) {
+                    $this->output->writeln(
+                        [
+                            '[' . date('Y-m-d H:i:s') . '] Перехвачена ошибка: ' . $exception->getMessage()
+                        ],
+                        OutputInterface::VERBOSITY_VERBOSE
+                    );
+                }
 
                 if (!empty($data)) {
                     $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink, $channel);

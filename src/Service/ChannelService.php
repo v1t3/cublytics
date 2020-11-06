@@ -418,7 +418,10 @@ class ChannelService
             throw new Exception('Ошибка при получении данных data: ' . json_encode($data));
         }
 
-        if (array_key_exists('total_pages', $decodeData)) {
+        if (
+            is_array($decodeData)
+            || array_key_exists('total_pages', $decodeData)
+        ) {
             if (1 < (int)$decodeData['total_pages']) {
                 $urls = [];
                 $allCoubs = [];
@@ -626,6 +629,8 @@ class ChannelService
      */
     public function getInfoByUrls(array $urls): array
     {
+        $result = [];
+
         try {
             $resultTemp = [];
 
@@ -634,18 +639,25 @@ class ChannelService
 
                 foreach ($urlsMulti as $url) {
                     $temp = $this->getInfoMulti($url);
+
                     if (is_array($temp)) {
-                        $resultTemp = $temp;
+                        $resultTemp = (array)$temp;
                     }
                 }
 
                 # сольём массив
-                $result = array_merge([], ...$resultTemp);
+                if (is_array($resultTemp)) {
+                    $result = array_merge([], ...(array)$resultTemp);
+                }
             } else {
                 $result = $this->getInfoMulti($urls);
             }
         } catch (Exception $exception) {
-            throw new Exception($exception);
+            throw new Exception($exception->getMessage());
+        }
+
+        if (!is_array($result)) {
+            $result = [];
         }
 
         return $result;
@@ -671,7 +683,7 @@ class ChannelService
                     curl_setopt($curl_array[$i], CURLOPT_HEADER, 0);
                     curl_setopt($curl_array[$i], CURLOPT_NOBODY, 0);
                     curl_setopt($curl_array[$i], CURLOPT_CONNECTTIMEOUT, 10);
-                    curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 10000);
+                    curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 20000);
                     curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true);
 
                     curl_multi_add_handle($mh, $curl_array[$i]);
