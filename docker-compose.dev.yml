@@ -26,6 +26,7 @@ services:
       - DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@database:3306/${DATABASE_NAME}?serverVersion=5.7
     volumes:
       - ./:/var/www/
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
 
   nginx:
     build:

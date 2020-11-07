@@ -26,6 +26,7 @@ services:
       - DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@database:3306/${DATABASE_NAME}?serverVersion=5.7
     volumes:
       - ./:/var/www/cublytics.ru
+      - /etc/php.ini:/usr/local/etc/php/php.ini
       - /etc/letsencrypt/live/cublytics.ru/:/etc/letsencrypt/live/cublytics.ru/
 
   nginx:
