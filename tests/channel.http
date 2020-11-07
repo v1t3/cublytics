@@ -9,3 +9,17 @@ http://coub.com/api/v2/timeline/channel/avgust.digital
 http://localhost/test/get_headers?page=avgust.digital
 
 ###
+
+POST http://localhost/api/channel/get_channel_stat
+Content-Type: application/x-www-form-urlencoded;
+
+channel_name=avgust.digital
+
+###
+
+POST http://localhost/api/channel/get_channel_stat
+Content-Type: application/x-www-form-urlencoded;
+
+channel_name=kitty.bad.kat
+
+###

@@ -441,8 +441,9 @@ class ChannelService
 
                 # получаем коубы постранично и объединяем в общий массив
                 foreach ($encodeData as $item) {
-                    $decodeTemp = json_decode(html_entity_decode($item), true);
-                    if (is_array($decodeTemp['coubs'])) {
+                    $decodeTemp = json_decode($item, true);
+
+                    if (!empty($decodeTemp['coubs']) && is_array($decodeTemp['coubs'])) {
                         $allCoubs[] = $decodeTemp['coubs'];
                     }
                 }
@@ -451,12 +452,12 @@ class ChannelService
 
                 # уберём дубликаты коубов
                 $result = $this->arrayUniqueKey($result, 'id');
-            } elseif (1 === $decodeData['total_pages']) {
+            } elseif (1 === (int)$decodeData['total_pages']) {
                 $result = $decodeData['coubs'];
             }
         }
 
-        return $result;
+        return is_array($result) ? $result : [];
     }
 
     /**
@@ -599,7 +600,9 @@ class ChannelService
      */
     public function getInfo(string $url)
     {
-        try {
+        $data = [];
+
+        if ('' !== $url) {
             $ch = curl_init();
 
             curl_setopt($ch, CURLOPT_URL, $url);
@@ -614,8 +617,6 @@ class ChannelService
             }
 
             curl_close($ch);
-        } catch (Exception $exception) {
-            throw new Exception($exception);
         }
 
         return $data;
@@ -627,13 +628,11 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    public function getInfoByUrls(array $urls): array
+    public function getInfoByUrls(array $urls)
     {
         $result = [];
 
-        try {
-            $resultTemp = [];
-
+        if (!empty($urls)) {
             if (count($urls) > 50) {
                 $urlsMulti = array_chunk($urls, 50);
 
@@ -641,23 +640,15 @@ class ChannelService
                     $temp = $this->getInfoMulti($url);
 
                     if (is_array($temp)) {
-                        $resultTemp = (array)$temp;
+                        # сольём массив
+                        $result = array_merge($result, $temp);
                     }
                 }
 
-                # сольём массив
-                if (is_array($resultTemp)) {
-                    $result = array_merge([], ...(array)$resultTemp);
-                }
+                return $result;
             } else {
                 $result = $this->getInfoMulti($urls);
             }
-        } catch (Exception $exception) {
-            throw new Exception($exception->getMessage());
-        }
-
-        if (!is_array($result)) {
-            $result = [];
         }
 
         return $result;
@@ -671,41 +662,37 @@ class ChannelService
      */
     private function getInfoMulti($urls): array
     {
-        try {
-            $result = [];
-            $curl_array = [];
+        $result = [];
+        $curl_array = [];
 
-            if (count($urls) > 0) {
-                $mh = curl_multi_init();
+        if (!empty($urls)) {
+            $mh = curl_multi_init();
 
-                foreach ($urls as $i => $url) {
-                    $curl_array[$i] = curl_init($url);
-                    curl_setopt($curl_array[$i], CURLOPT_HEADER, 0);
-                    curl_setopt($curl_array[$i], CURLOPT_NOBODY, 0);
-                    curl_setopt($curl_array[$i], CURLOPT_CONNECTTIMEOUT, 10);
-                    curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 20000);
-                    curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true);
+            foreach ($urls as $i => $url) {
+                $curl_array[$i] = curl_init($url);
+                curl_setopt($curl_array[$i], CURLOPT_HEADER, 0);
+                curl_setopt($curl_array[$i], CURLOPT_NOBODY, 0);
+                curl_setopt($curl_array[$i], CURLOPT_CONNECTTIMEOUT, 10);
+                curl_setopt($curl_array[$i], CURLOPT_TIMEOUT, 10000);
+                curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true);
 
-                    curl_multi_add_handle($mh, $curl_array[$i]);
-                }
-
-                $running = null;
-                do {
-                    curl_multi_exec($mh, $running);
-                } while ($running > 0);
-
-                foreach ($urls as $i => $url) {
-                    $result[] = curl_multi_getcontent($curl_array[$i]);
-                }
-
-                foreach ($urls as $i => $url) {
-                    curl_multi_remove_handle($mh, $curl_array[$i]);
-                }
-
-                curl_multi_close($mh);
+                curl_multi_add_handle($mh, $curl_array[$i]);
             }
-        } catch (Exception $exception) {
-            throw new Exception($exception);
+
+            $running = null;
+            do {
+                curl_multi_exec($mh, $running);
+            } while ($running > 0);
+
+            foreach ($urls as $i => $url) {
+                $result[] = curl_multi_getcontent($curl_array[$i]);
+            }
+
+            foreach ($urls as $i => $url) {
+                curl_multi_remove_handle($mh, $curl_array[$i]);
+            }
+
+            curl_multi_close($mh);
         }
 
         return $result;
