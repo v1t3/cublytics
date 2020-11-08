@@ -47,7 +47,7 @@ class AdminPanelController extends AbstractDashboardController
         return parent::configureUserMenu($user)
             ->setMenuItems(
                 [
-                    MenuItem::section(),
+                    MenuItem::linkToUrl('Личный кабинет', '', '/dashboard'),
                     MenuItem::linkToLogout('Выйти', 'fa fa-sign-out'),
                 ]
             );
