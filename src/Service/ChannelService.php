@@ -325,7 +325,18 @@ class ChannelService
         }
 
         $dateStart = new DateTime("{$ymdStart} 00:00:00");
+        if (0 < $timezone) {
+            $dateStart->modify('-' . $timezone . ' hour');
+        } elseif (0 > $timezone) {
+            $dateStart->modify($timezone . ' hour');
+        }
+
         $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
+        if (0 < $timezone) {
+            $dateEnd->modify('-' . $timezone . ' hour');
+        } elseif (0 > $timezone) {
+            $dateEnd->modify($timezone . ' hour');
+        }
 
         /**
          * @var $channelRepo ChannelRepository
@@ -364,11 +375,16 @@ class ChannelService
                 foreach ($coubsStat as $coub) {
                     $coubId = $coub->getCoubId();
 
+                    $timestamp = $coub->getDateCreate();
+                    if (0 < $timezone) {
+                        $timestamp->modify($timezone . ' hour');
+                    } elseif (0 > $timezone) {
+                        $timestamp->modify('-' . $timezone . ' hour');
+                    }
+
                     $result['counts'][] = [
                         'coub_id'        => $coubId,
-                        'timestamp'      => $coub->getDateCreate()
-                            ->modify($timezone . ' hour')
-                            ->format($dateFormat),
+                        'timestamp'      => $timestamp->format($dateFormat),
                         'like_count'     => $coub->getLikeCount(),
                         'repost_count'   => $coub->getRepostCount(),
                         'recoubs_count'  => $coub->getRemixesCount(),
