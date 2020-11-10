@@ -68,7 +68,6 @@
                 channels: [],
                 channel_active_id: '',
                 channel_active: '',
-                channel_name: '',
                 statistic_type: '',
                 show_stat: true,
                 showLoader: false,
@@ -106,7 +105,14 @@
                 this.show_stat = false;
                 this.showLoader = true;
                 this.$nextTick(function () {
-                    that.channel_name = that.channel_active;
+                    // found active channel name by id
+                    for (let channel of this.channels) {
+                        if (channel.channel_id === this.channel_active_id) {
+                            this.channel_active = channel.name;
+                            break;
+                        }
+                    }
+
                     if (type) {
                         this.$store.commit('setStatisticType', type);
                         that.statistic_type = type;
