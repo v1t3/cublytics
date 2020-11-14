@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\CommandLog;
 use DateTime;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 /**
@@ -14,6 +16,31 @@ use Exception;
 class CommandService
 {
     /**
+     * @var string
+     */
+    private string $command;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
+    /**
+     * @param string $command
+     */
+    public function setEnvironment(string $command): void
+    {
+        $this->command = $command;
+    }
+
+    /**
      * Получить время выполнения скрипта
      *
      * @param bool     $humanize
@@ -22,12 +49,12 @@ class CommandService
      * @return string
      * @throws Exception
      */
-    public static function requestTime(bool $humanize = null, int $decimals = null): string
+    public function requestTime(bool $humanize = null, int $decimals = null): string
     {
         $time = microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
 
         return $humanize
-            ? self::getHumanReadableTime((int)$time)
+            ? $this->getHumanReadableTime((int)$time)
             : number_format($time, $decimals ?? 3);
     }
 
@@ -39,7 +66,7 @@ class CommandService
      * @return string
      * @throws Exception
      */
-    public static function getHumanReadableTime(int $time): string
+    private function getHumanReadableTime(int $time): string
     {
         $timeFrom = new DateTime('@0');
         $timeTo = new DateTime("@$time");
@@ -58,5 +85,49 @@ class CommandService
         }
 
         return $result;
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function writeToLog(array $data): bool
+    {
+        if (empty($data)) {
+            return false;
+        }
+
+        $this->entityManager->clear();
+
+        $logger = new CommandLog();
+
+        $logger->setCommand($this->command);
+
+        if (!empty($data['date'])) {
+            $logger->setDate($data['date']);
+        } else {
+            $logger->setDate(new DateTime());
+        }
+
+        if (!empty($data['status']) && empty($data['error'])) {
+            $logger->setStatus($data['status']);
+        } else {
+            $logger->setStatus(false);
+        }
+
+        if (!empty($data['message'])) {
+            $logger->setMessage($data['message']);
+        }
+
+        if (!empty($data['error'])) {
+            $logger->setError($data['error']);
+        }
+
+        $this->entityManager->persist($logger);
+        $this->entityManager->flush();
+
+        return true;
     }
 }

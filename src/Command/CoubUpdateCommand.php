@@ -12,13 +12,15 @@ use App\Service\ChannelService;
 use App\Service\CommandService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+
+use Throwable;
+
 use function date;
 use function md5;
 
@@ -64,20 +66,27 @@ class CoubUpdateCommand extends Command
     private ChannelService $channelService;
 
     /**
+     * @var \App\Service\CommandService
+     */
+    private CommandService $commandService;
+
+    /**
      * ExportToFileCommand constructor.
      *
-     * @param EntityManagerInterface $entityManager
-     * @param ChannelService         $channelService
+     * @param EntityManagerInterface      $entityManager
+     * @param ChannelService              $channelService
+     * @param \App\Service\CommandService $commandService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        ChannelService $channelService
-    )
-    {
+        ChannelService $channelService,
+        CommandService $commandService
+    ) {
+        parent::__construct();
+
         $this->entityManager = $entityManager;
         $this->channelService = $channelService;
-
-        parent::__construct();
+        $this->commandService = $commandService;
     }
 
     /**
@@ -100,10 +109,12 @@ class CoubUpdateCommand extends Command
      * @param OutputInterface $output
      *
      * @return int
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        //todo Добавить логирование
+        $this->commandService->setEnvironment(self::$defaultName);
+
         try {
             $this->io = new SymfonyStyle($input, $output);
             $this->input = $input;
@@ -136,6 +147,11 @@ class CoubUpdateCommand extends Command
                     '[' . date('Y-m-d H:i:s') . '] Данные для сохранения отсутствуют',
                     OutputInterface::VERBOSITY_VERBOSE
                 );
+                $this->commandService->writeToLog(
+                    [
+                        'message' => 'Данные для сохранения отсутствуют'
+                    ]
+                );
             }
 
             $output->writeln(
@@ -151,12 +167,29 @@ class CoubUpdateCommand extends Command
                 '[' . date('Y-m-d H:i:s') . '] Отключена блокировка ' . self::class,
                 OutputInterface::VERBOSITY_VERBOSE
             );
+            $requestTime = $this->commandService->requestTime(true, 2);
             $output->writeln(
-                '[' . date('Y-m-d H:i:s') . '] Время выполнения: '
-                . CommandService::requestTime(true, 2)
+                '[' . date('Y-m-d H:i:s') . '] Время выполнения: ' . $requestTime
+            );
+            $this->commandService->writeToLog(
+                [
+                    'status'  => true,
+                    'message' => 'Время выполнения: ' . $requestTime
+                ]
             );
         } catch (Exception $exception) {
-            throw new RuntimeException((string)$exception);
+            $output->writeln(
+                '[' . date('Y-m-d H:i:s') . ']'
+                . ' Ошибка во время выполнения: ' . PHP_EOL . $exception->getMessage()
+            );
+            $this->commandService->writeToLog(
+                [
+                    'error' => 'Ошибка во время выполнения. Код: ' . $exception->getCode()
+                        . ' Сообщение: ' . $exception->getMessage()
+                ]
+            );
+
+            return 1;
         }
 
         return 0;
@@ -170,102 +203,134 @@ class CoubUpdateCommand extends Command
      * @return bool
      * @throws Exception
      */
-    private function process($singleChannel = '')
+    private function process($singleChannel = ''): bool
     {
-        /**
-         * @var $channelRepo ChannelRepository
-         */
-        $channelRepo = $this->entityManager->getRepository(Channel::class);
+        try {
+            /**
+             * @var $channelRepo ChannelRepository
+             */
+            $channelRepo = $this->entityManager->getRepository(Channel::class);
 
-        $params = [
-            'is_active'   => true,
-            'is_watching' => true
-        ];
+            $params = [
+                'is_active'   => true,
+                'is_watching' => true
+            ];
 
-        if ('' !== (string)$singleChannel) {
-            $params['channel_permalink'] = $singleChannel;
-        }
+            if ('' !== (string)$singleChannel) {
+                $params['channel_permalink'] = $singleChannel;
+            }
 
-        $channels = $channelRepo->findBy($params);
+            $channels = $channelRepo->findBy($params);
 
-        if (!$channels) {
-            $this->output->writeln(
-                [
-                    '[' . date('Y-m-d H:i:s') . '] Отсутствуют активные каналы для слежения'
-                ],
-                OutputInterface::VERBOSITY_VERBOSE
-            );
-
-            return false;
-        }
-
-        if (is_array($channels)) {
-            # посчитаем количесво обновлённых каналов
-            $updated = 0;
-            foreach ($channels as $channel) {
-                $permalink = $channel->getChannelPermalink();
-                $channelId = $channel->getChannelId();
-
+            if (!$channels) {
                 $this->output->writeln(
                     [
-                        '[' . date('Y-m-d H:i:s') . '] Обработка канала: ' . $permalink
+                        '[' . date('Y-m-d H:i:s') . '] Отсутствуют активные каналы для слежения'
                     ],
                     OutputInterface::VERBOSITY_VERBOSE
                 );
 
-                try {
-                    $data = $this->channelService->getOriginalCoubs($permalink);
-                } catch (Exception $exception) {
-                    $this->output->writeln(
-                        [
-                            '[' . date('Y-m-d H:i:s') . '] Перехвачена ошибка: ' . $exception->getMessage()
-                        ],
-                        OutputInterface::VERBOSITY_VERBOSE
-                    );
-                }
-
-                if (!empty($data)) {
-                    $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink, $channel);
-
-                    if ($saveRes) {
-                        $updated++;
-                        $this->output->writeln(
-                            [
-                                '[' . date('Y-m-d H:i:s') . '] Данные канала обновлены'
-                            ],
-                            OutputInterface::VERBOSITY_VERBOSE
-                        );
-                    }
-
-                    $checkRes = $this->channelService->checkDeletedCoubs($data, $channelId);
-
-                    if ($checkRes) {
-                        $this->output->writeln(
-                            [
-                                '[' . date('Y-m-d H:i:s') . '] Помечены удалённые коубы'
-                            ],
-                            OutputInterface::VERBOSITY_VERBOSE
-                        );
-                    }
-                } else {
-                    $this->output->writeln(
-                        [
-                            '[' . date('Y-m-d H:i:s') . '] коубы не найдены'
-                        ],
-                        OutputInterface::VERBOSITY_VERBOSE
-                    );
-                }
+                return false;
             }
 
-            $this->entityManager->flush();
+            if (is_array($channels)) {
+                # посчитаем количесво обновлённых каналов
+                $updated = 0;
+                foreach ($channels as $channel) {
+                    $permalink = $channel->getChannelPermalink();
+                    $channelId = $channel->getChannelId();
 
+                    $this->output->writeln(
+                        [
+                            '[' . date('Y-m-d H:i:s') . '] Обработка канала: ' . $permalink
+                        ],
+                        OutputInterface::VERBOSITY_VERBOSE
+                    );
+
+                    try {
+                        # получим данные
+                        $data = $this->channelService->getOriginalCoubs($permalink);
+
+                        if (!empty($data)) {
+                            $saveRes = $this->channelService->saveOriginalCoubs($data, $permalink, $channel);
+
+                            if ($saveRes) {
+                                $updated++;
+                                $this->output->writeln(
+                                    [
+                                        '[' . date('Y-m-d H:i:s') . '] Данные канала обновлены'
+                                    ],
+                                    OutputInterface::VERBOSITY_VERBOSE
+                                );
+                            }
+
+                            $checkRes = $this->channelService->checkDeletedCoubs($data, $channelId);
+
+                            if ($checkRes) {
+                                $this->output->writeln(
+                                    [
+                                        '[' . date('Y-m-d H:i:s') . '] Помечены удалённые коубы'
+                                    ],
+                                    OutputInterface::VERBOSITY_VERBOSE
+                                );
+                            }
+                        } else {
+                            $this->output->writeln(
+                                [
+                                    '[' . date('Y-m-d H:i:s') . '] коубы не найдены'
+                                ],
+                                OutputInterface::VERBOSITY_VERBOSE
+                            );
+                        }
+                    } catch (Throwable $exception) {
+                        $this->output->writeln(
+                            [
+                                '[' . date('Y-m-d H:i:s') . ']'
+                                . ' Ошибка при обновлении канала: ' . PHP_EOL . $exception->getMessage()
+                            ],
+                            OutputInterface::VERBOSITY_VERBOSE
+                        );
+                        $this->commandService->writeToLog(
+                            [
+                                'error' => 'Канал: ' . $permalink . ' Код: ' . $exception->getCode()
+                                    . ' Сообщение: ' . $exception->getMessage(),
+                            ]
+                        );
+
+                        continue;
+                    }
+                }
+
+                $this->entityManager->flush();
+
+                $this->output->writeln(
+                    [
+                        '[' . date('Y-m-d H:i:s') . '] Обновлено каналов: ' . $updated
+                    ]
+                );
+                $this->commandService->writeToLog(
+                    [
+                        'status'  => true,
+                        'message' => 'Обновлено каналов: ' . $updated,
+                    ]
+                );
+
+                return true;
+            }
+        } catch (Exception $exception) {
             $this->output->writeln(
                 [
-                    '[' . date('Y-m-d H:i:s') . '] Обновлено каналов: ' . $updated
+                    '[' . date('Y-m-d H:i:s') . ']'
+                    . ' Ошибка при обновлении: ' . PHP_EOL . $exception->getMessage()
+                ],
+                OutputInterface::VERBOSITY_VERBOSE
+            );
+            $this->commandService->writeToLog(
+                [
+                    'error' => 'Ошибка при обновлении. Код: ' . $exception->getCode()
+                        . ' Сообщение: ' . $exception->getMessage(),
                 ]
             );
-
-            return true;
         }
 
         return false;

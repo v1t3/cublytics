@@ -13,7 +13,6 @@ use App\Repository\UserRepository;
 use App\Service\CommandService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
 use function date;
 use function md5;
 
@@ -63,22 +63,28 @@ class CreateAdminCommand extends Command
      * @var UserPasswordEncoderInterface
      */
     private UserPasswordEncoderInterface $encoder;
+    /**
+     * @var \App\Service\CommandService
+     */
+    private CommandService $commandService;
 
     /**
      * ExportToFileCommand constructor.
      *
      * @param EntityManagerInterface       $entityManager
      * @param UserPasswordEncoderInterface $encoder
+     * @param \App\Service\CommandService  $commandService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        UserPasswordEncoderInterface $encoder
-    )
-    {
+        UserPasswordEncoderInterface $encoder,
+        CommandService $commandService
+    ) {
+        parent::__construct();
+
         $this->entityManager = $entityManager;
         $this->encoder = $encoder;
-
-        parent::__construct();
+        $this->commandService = $commandService;
     }
 
     /**
@@ -107,17 +113,19 @@ class CreateAdminCommand extends Command
      * @param OutputInterface $output
      *
      * @return int
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        //todo Добавить логирование
+        $this->commandService->setEnvironment(self::$defaultName);
+        $userName = '';
+        $email = '';
+        $password = '';
+
         try {
             $this->io = new SymfonyStyle($input, $output);
             $this->input = $input;
             $this->output = $output;
-            $userName = '';
-            $password = '';
-            $email = '';
 
             if ($input->getArgument('name')) {
                 $userName = $input->getArgument('name');
@@ -158,12 +166,30 @@ class CreateAdminCommand extends Command
                 '[' . date('Y-m-d H:i:s') . '] Отключена блокировка ' . self::class,
                 OutputInterface::VERBOSITY_VERBOSE
             );
+            $requestTime = $this->commandService->requestTime(true, 2);
             $output->writeln(
-                '[' . date('Y-m-d H:i:s') . '] Время выполнения: '
-                . CommandService::requestTime(true, 2)
+                '[' . date('Y-m-d H:i:s') . '] Время выполнения: ' . $requestTime
+            );
+            $this->commandService->writeToLog(
+                [
+                    'status'  => true,
+                    'message' => 'Время выполнения: ' . $requestTime
+                ]
             );
         } catch (Exception $exception) {
-            throw new RuntimeException((string)$exception);
+            $output->writeln(
+                '[' . date('Y-m-d H:i:s') . ']'
+                . ' Ошибка: ' . PHP_EOL . $exception->getMessage()
+            );
+            $this->commandService->writeToLog(
+                [
+                    'error' => 'Данные:' . $userName . ', ' . $email
+                        . ' Код: ' . $exception->getCode()
+                        . ' Сообщение: ' . $exception->getMessage()
+                ]
+            );
+
+            return 1;
         }
 
         return 0;
@@ -177,18 +203,19 @@ class CreateAdminCommand extends Command
      * @return bool
      * @throws Exception
      */
-    private function process(string $userName, string $password, string $email)
+    private function process(string $userName, string $password, string $email): bool
     {
-        if (
-            '' === (string)$userName
-            || '' === (string)$password
-            || '' === (string)$email
-        ) {
+        if ('' === $userName || '' === $password || '' === $email) {
             $this->output->writeln(
                 [
                     '[' . date('Y-m-d H:i:s') . '] Переданы неверные данные'
                 ],
                 OutputInterface::VERBOSITY_VERBOSE
+            );
+            $this->commandService->writeToLog(
+                [
+                    'error' => 'Переданы неверные данные: ' . $userName . ', ' . $email
+                ]
             );
 
             return false;
@@ -238,6 +265,12 @@ class CreateAdminCommand extends Command
                 '[' . date('Y-m-d H:i:s') . '] Пользователь создан'
             ],
             OutputInterface::VERBOSITY_VERBOSE
+        );
+        $this->commandService->writeToLog(
+            [
+                'status'  => true,
+                'message' => 'Пользователь создан: ' . $userName . ', ' . $email
+            ]
         );
 
         return true;

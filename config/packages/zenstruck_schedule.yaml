@@ -1,0 +1,6 @@
+zenstruck_schedule:
+    schedule_extensions:
+        environments: prod
+    tasks:
+        -   task: app:coub-update
+            frequency: '0 * * * *'

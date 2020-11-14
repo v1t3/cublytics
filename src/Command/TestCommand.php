@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * @usage php bin/console app:test -vvv
+ * @usage php bin/console app:test -vvv -r/--error
  */
 
 namespace App\Command;
@@ -13,8 +13,10 @@ use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+
 use function date;
 use function md5;
 
@@ -51,15 +53,23 @@ class TestCommand extends Command
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
+    /**
+     * @var \App\Service\CommandService
+     */
+    private CommandService $commandService;
 
     /**
      * TestCommand constructor.
      *
-     * @param EntityManagerInterface $entityManager
+     * @param EntityManagerInterface      $entityManager
+     * @param \App\Service\CommandService $commandService
      */
-    public function __construct(EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        CommandService $commandService
+    ) {
         $this->entityManager = $entityManager;
+        $this->commandService = $commandService;
 
         parent::__construct();
     }
@@ -70,7 +80,13 @@ class TestCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Тестовая консольная комманда');
+            ->setDescription('Тестовая консольная комманда')
+            ->addOption(
+                'error',
+                'r',
+                InputOption::VALUE_NONE,
+                'Выбросить исключение'
+            );
     }
 
     /**
@@ -78,9 +94,12 @@ class TestCommand extends Command
      * @param OutputInterface $output
      *
      * @return int
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->commandService->setEnvironment(self::$defaultName);
+
         try {
             $this->io = new SymfonyStyle($input, $output);
             $this->input = $input;
@@ -100,6 +119,18 @@ class TestCommand extends Command
                 OutputInterface::VERBOSITY_VERBOSE
             );
 
+            if ($input->getOption('error')) {
+                throw new RuntimeException('АШИБКА!!1');
+            }
+
+            $this->commandService->writeToLog(
+                [
+                    'status'  => true,
+                    'message' => 'Успешно выполнено',
+                    'error'   => ''
+                ]
+            );
+
             $output->writeln(
                 [
                     '[' . date('Y-m-d H:i:s') . '] Процесс завершен'
@@ -115,10 +146,21 @@ class TestCommand extends Command
             );
             $output->writeln(
                 '[' . date('Y-m-d H:i:s') . '] Время выполнения: '
-                . CommandService::requestTime(true, 2)
+                . $this->commandService->requestTime(true, 2)
             );
         } catch (Exception $exception) {
-            throw new RuntimeException((string)$exception);
+            $output->writeln(
+                '[' . date('Y-m-d H:i:s') . ']'
+                . ' Ошибка во время выполнения: ' . PHP_EOL . $exception->getMessage()
+            );
+            $this->commandService->writeToLog(
+                [
+                    'error' => 'Ошибка во время выполнения. Код: ' . $exception->getCode()
+                        . ' Сообщение: ' . $exception->getMessage()
+                ]
+            );
+
+            return 1;
         }
 
         return 0;

@@ -16,6 +16,7 @@ use DateInterval;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
@@ -167,7 +168,7 @@ class ChannelService
             || '' === $type
             || null === $newVal
         ) {
-            throw new Exception('Не заданы все необходимые параметры');
+            throw new RuntimeException('Не заданы все необходимые параметры');
         }
 
         # Переведём значение в "настоящий" boolean
@@ -181,7 +182,7 @@ class ChannelService
         $channel = $channelRepo->findOneBy(['channel_permalink' => $channelPermalink]);
 
         if (!$channel) {
-            throw new Exception('Канал не найден');
+            throw new RuntimeException('Канал не найден');
         }
 
         if ('is_active' === $type) {
@@ -229,7 +230,7 @@ class ChannelService
         $user = $this->security->getUser();
 
         if (!$user) {
-            throw new Exception('Пользователь не найден');
+            throw new RuntimeException('Пользователь не найден');
         }
 
         $userId = $user->getUserId();
@@ -291,7 +292,7 @@ class ChannelService
         $result = [];
 
         if ('' === $channelName || '' === $statType) {
-            throw new Exception('Не указано поле channel_name или type');
+            throw new RuntimeException('Не указано поле channel_name или type');
         }
 
         $dateFormat = '';
@@ -376,10 +377,12 @@ class ChannelService
                     $coubId = $coub->getCoubId();
 
                     $timestamp = $coub->getDateCreate();
-                    if (0 < $timezone) {
-                        $timestamp->modify($timezone . ' hour');
-                    } elseif (0 > $timezone) {
-                        $timestamp->modify('-' . $timezone . ' hour');
+                    if ($timestamp) {
+                        if (0 < $timezone) {
+                            $timestamp->modify($timezone . ' hour');
+                        } elseif (0 > $timezone) {
+                            $timestamp->modify('-' . $timezone . ' hour');
+                        }
                     }
 
                     $result['counts'][] = [
@@ -405,33 +408,40 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    public function getOriginalCoubs(string $channelName)
+    public function getOriginalCoubs(string $channelName): array
     {
         $result = [];
 
         if ('' === $channelName) {
-            throw new Exception('Не корректно или не заполнено поле channel_name');
+            throw new RuntimeException('Не корректно или не заполнено поле channel_name');
         }
 
         $urlTale = '&per_page=' . AppRegistry::TIMELINE_PER_PAGE . '&order_by=' . AppRegistry::TIMELINE_ORDER_BY;
         //получим основные данные канала
         $data = $this->getInfo(AppRegistry::API_COUB_TIMELINE_LINK . $channelName . '?page=1' . $urlTale);
 
-        if ('' === (string)$data) {
-            throw new Exception('Возвращён пустой ответ');
+        if (empty($data)) {
+            throw new RuntimeException('Возвращён пустой ответ');
         }
         // проверим, что вернулся не html
         if (false !== strpos((string)$data, '<!DOCTYPE html>')) {
-            throw new Exception('Некорректный ответ от сервиса');
+            throw new RuntimeException('Сервис отдал html-страницу');
         }
 
-        $decodeData = json_decode(html_entity_decode($data), true);
+        $decodeData = json_decode(
+            html_entity_decode($data),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
 
         if (
             !is_array($decodeData)
             || !array_key_exists('total_pages', $decodeData)
         ) {
-            throw new Exception('Ошибка при получении данных data: ' . json_encode($data));
+            throw new RuntimeException(
+                'Ошибка при получении данных data: ' . json_encode($data, JSON_THROW_ON_ERROR)
+            );
         }
 
         if (
@@ -660,8 +670,6 @@ class ChannelService
                         $result = array_merge($result, $temp);
                     }
                 }
-
-                return $result;
             } else {
                 $result = $this->getInfoMulti($urls);
             }
@@ -739,7 +747,7 @@ class ChannelService
                 $result[] = $dateMonth;
             }
         } catch (Exception $exception) {
-            throw new Exception($exception);
+            throw new RuntimeException($exception);
         }
 
         return $result;
