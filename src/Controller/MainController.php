@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -16,7 +17,7 @@ class MainController extends AbstractController
     /**
      * @Route("/", name="main")
      */
-    public function index()
+    public function index(): Response
     {
         return $this->render(
             'main/index.html.twig',
@@ -29,7 +30,7 @@ class MainController extends AbstractController
     /**
      * @Route("/about", name="about_page")
      */
-    public function about()
+    public function about(): Response
     {
         return $this->render(
             'main/about.html.twig',
@@ -42,7 +43,7 @@ class MainController extends AbstractController
     /**
      * @Route("/terms", name="terms_page")
      */
-    public function terms()
+    public function terms(): Response
     {
         return $this->render(
             'main/terms.html.twig',
@@ -55,7 +56,7 @@ class MainController extends AbstractController
     /**
      * @Route("/agreement", name="agreement_page")
      */
-    public function agreement()
+    public function agreement(): Response
     {
         return $this->render(
             'main/agreement.html.twig',
@@ -68,7 +69,7 @@ class MainController extends AbstractController
     /**
      * @Route("/admin", name="admin_page")
      */
-    public function admin()
+    public function admin(): Response
     {
         return $this->render(
             'main/admin.html.twig',

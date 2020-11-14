@@ -30,7 +30,7 @@ class ChannelController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getChannelsList(ChannelService $channelService)
+    public function getChannelsList(ChannelService $channelService): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -74,7 +74,7 @@ class ChannelController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getChannelStatistic(Request $request, ChannelService $channelService)
+    public function getChannelStatistic(Request $request, ChannelService $channelService): JsonResponse
     {
         $channelName = (string)$request->request->get('channel_name');
         $statType = (string)$request->request->get('statistic_type');
@@ -147,7 +147,7 @@ class ChannelController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function updateChannelSettings(Request $request, ChannelService $channelService)
+    public function updateChannelSettings(Request $request, ChannelService $channelService): JsonResponse
     {
         try {
             $type = (string)$request->request->get('type');

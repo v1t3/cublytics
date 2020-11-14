@@ -11,6 +11,7 @@ use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Security;
@@ -64,7 +65,7 @@ class UserService
         $temp = '';
 
         try {
-            if ('' === (string)$token) {
+            if ('' === $token) {
                 return $data;
             }
             $url = AppRegistry::REQUEST_USER_INFO . '?access_token=' . $token;
@@ -87,7 +88,7 @@ class UserService
         }
 
         if ('' !== (string)$temp) {
-            $data = json_decode($temp, true);
+            $data = json_decode($temp, true, 512, JSON_THROW_ON_ERROR);
         }
 
         return $data;
@@ -144,7 +145,7 @@ class UserService
      *
      * @return array
      */
-    public function getSettings(User $user)
+    public function getSettings(User $user): array
     {
         $result = [];
 
@@ -166,7 +167,7 @@ class UserService
      * @return string
      * @throws Exception
      */
-    public function updateSettings(Request $request, Mailer $mailer, CodeGenerator $codeGenerator)
+    public function updateSettings(Request $request, Mailer $mailer, CodeGenerator $codeGenerator): string
     {
         $email = (string)$request->request->get('email');
         $password = (string)$request->request->get('password');
@@ -183,22 +184,22 @@ class UserService
         }
 
         if (
-            (!$user->getEmail() && '' === $email)
+            '' === $newPassword
+            || (!$user->getEmail() && '' === $email)
             || ($user->getPassword() && '' === $password)
-            || '' === $newPassword
         ) {
-            throw new Exception('Email или пароль не заполнены');
+            throw new RuntimeException('Email или пароль не заполнены');
         }
 
         if (
             $user->getPassword()
             && !$this->encoder->isPasswordValid($user, $password)
         ) {
-            throw new Exception('Неправильный пароль');
+            throw new RuntimeException('Неправильный пароль');
         }
 
         if ($this->encoder->isPasswordValid($user, $newPassword)) {
-            throw new Exception('Новый пароль совпадает с текущим');
+            throw new RuntimeException('Новый пароль совпадает с текущим');
         }
 
         if ('' !== $email) {
@@ -226,7 +227,7 @@ class UserService
 
                 $mailerResponse = $mailer->sendConfirmationMessage($user, $email, $code);
                 if (!$mailerResponse) {
-                    throw new Exception('Ошибка при отправке письма');
+                    throw new RuntimeException('Ошибка при отправке письма');
                 }
 
                 $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
@@ -245,7 +246,7 @@ class UserService
 
             $mailerResponse = $mailer->sendConfirmationMessage($user, $email, $code);
             if (!$mailerResponse) {
-                throw new Exception('Ошибка при отправке письма');
+                throw new RuntimeException('Ошибка при отправке письма');
             }
 
             $message = 'Письмо с подтверждением отправлено на почту: ' . $email;
@@ -264,7 +265,7 @@ class UserService
      * @return string
      * @throws Exception
      */
-    public function resendConfirmation(Mailer $mailer, CodeGenerator $codeGenerator)
+    public function resendConfirmation(Mailer $mailer, CodeGenerator $codeGenerator): string
     {
         /**
          * @var $user User
@@ -273,7 +274,7 @@ class UserService
         $message = '';
 
         if (!$user) {
-            throw new Exception('Пользователь не найден');
+            throw new RuntimeException('Пользователь не найден');
         }
 
         /**
@@ -285,12 +286,12 @@ class UserService
 
         if ($confirmation) {
             if (true === $confirmation->getConfirmed()) {
-                throw new Exception('Email уже подтверждён');
+                throw new RuntimeException('Email уже подтверждён');
             }
 
             $email = $user->getEmail();
             if ('' === (string)$email) {
-                throw new Exception('Не задан email');
+                throw new RuntimeException('Не задан email');
             }
 
             $confCode = $codeGenerator->getConfirmationCode();
@@ -303,7 +304,7 @@ class UserService
             $mailerResponse = $mailer->sendConfirmationMessage($user, $email, $confCode);
 
             if (!$mailerResponse) {
-                throw new Exception('Ошибка при отправке письма');
+                throw new RuntimeException('Ошибка при отправке письма');
             }
 
             $message = 'Письмо с подтверждением отправлено на почту: ' . $email;

@@ -57,7 +57,7 @@ class Mailer
      * @throws SyntaxError
      * @throws Exception
      */
-    public function sendConfirmationMessage(User $user, string $email, string $code)
+    public function sendConfirmationMessage(User $user, string $email, string $code): bool
     {
         if ('' === $email || '' === $code) {
             throw new Exception('Не заданы обязательные параметры');

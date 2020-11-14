@@ -39,13 +39,14 @@ class SpaController extends AbstractController
      *
      * @return Response
      */
-    public function index($page = '')
+    public function index($page = ''): Response
     {
         /**
          * @var $channelRepo ChannelRepository
          */
         $channelRepo = $this->entityManager->getRepository(Channel::class);
-        $channel = $channelRepo->findOneBy(['is_current' => true, 'user_id' => $this->getUser()->getUserId()]);
+        $userId = $this->getUser() ? $this->getUser()->getUserId() : 0;
+        $channel = $channelRepo->findOneBy(['is_current' => true, 'user_id' => $userId]);
 
         if ($channel) {
             $params = [

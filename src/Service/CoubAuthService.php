@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use RuntimeException;
 
 /**
  * Class CoubAuthService
@@ -58,10 +59,9 @@ class CoubAuthService
         if (
             '' === (string)$_ENV['COUB_KEY']
             && '' === (string)$_ENV['COUB_SECRET']
-            && '' === (string)$_ENV['APP_HOST']
             && '' === $code
         ) {
-            throw new Exception('Не заданы все поля env or code');
+            throw new RuntimeException('Не заданы все поля env or code');
         }
 
         $response = $this->client->request(
@@ -70,7 +70,7 @@ class CoubAuthService
             [
                 'form_params' => [
                     'grant_type'    => 'authorization_code',
-                    'redirect_uri'  => $_ENV['APP_HOST'] . AppRegistry::REDIRECT_CALLBACK,
+                    'redirect_uri'  => AppRegistry::APP_HOST . AppRegistry::REDIRECT_CALLBACK,
                     'client_id'     => $_ENV['COUB_KEY'],
                     'client_secret' => $_ENV['COUB_SECRET'],
                     'code'          => $code
@@ -80,9 +80,14 @@ class CoubAuthService
 
         if ($response->getStatusCode() === 200) {
             try {
-                $responseData = \GuzzleHttp\json_decode($response->getBody()->getContents(), true);
+                $responseData = json_decode(
+                    $response->getBody()->getContents(),
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
+                );
             } catch (Exception $exception) {
-                throw new Exception(
+                throw new RuntimeException(
                     $exception->getCode(),
                     $exception->getMessage()
                 );
@@ -90,13 +95,13 @@ class CoubAuthService
 
             if (!isset($responseData['access_token'])) {
                 if (isset($tokenData['error'])) {
-                    throw new Exception(
+                    throw new RuntimeException(
                         $responseData['error'],
                         $responseData['error_description']
                     );
                 }
 
-                throw new Exception(
+                throw new RuntimeException(
                     'Неизвестный ответ от сервиса'
                 );
             }
@@ -124,7 +129,6 @@ class CoubAuthService
         $channels = [];
 
         if (!empty($data) && !empty($data['channels'])) {
-
             /**
              * @var $userRepo UserRepository
              */
@@ -168,7 +172,7 @@ class CoubAuthService
      * @return bool
      * @throws Exception
      */
-    public function setUserToken(string $username, string $token)
+    public function setUserToken(string $username, string $token): bool
     {
         if ('' !== $username && '' !== $token) {
             /**

@@ -15,6 +15,7 @@ use App\Service\UserService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -51,7 +52,7 @@ class UserController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getData(ChannelService $channelService)
+    public function getData(ChannelService $channelService): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /**
@@ -103,7 +104,7 @@ class UserController extends AbstractController
                     'email'        => $user->getEmail(),
                     'roles'        => $user->getRoles(),
                     'confirmed'    => $confirm ? $confirm->getConfirmed() : false,
-                    'password_set' => ('' !== (string)$user->getPassword()),
+                    'password_set' => ('' !== $user->getPassword()),
                     'channels'     => $channels,
                 ]
             ]
@@ -128,8 +129,7 @@ class UserController extends AbstractController
         UserService $userService,
         Mailer $mailer,
         CodeGenerator $codeGenerator
-    )
-    {
+    ): JsonResponse {
         $result = [
             'result' => 'error',
             'error'  => [
@@ -191,7 +191,7 @@ class UserController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getUserName(Request $request)
+    public function getUserName(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         $user = $this->getUser();
@@ -199,8 +199,11 @@ class UserController extends AbstractController
         try {
             $field = (string)$request->request->get('field');
 
+            if (!$user) {
+                throw new RuntimeException('Пользователь отсутсвует');
+            }
             if ('' === $field && '' === (string)$user->getUsername()) {
-                throw new Exception('Не задано поле field или имя пользователя');
+                throw new RuntimeException('Не задано поле field или имя пользователя');
             }
 
             $data = [
@@ -249,7 +252,7 @@ class UserController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getSettings(UserService $userService)
+    public function getSettings(UserService $userService): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /**
@@ -259,7 +262,7 @@ class UserController extends AbstractController
 
         try {
             if (!$user) {
-                throw new Exception('Пользователь не найден');
+                throw new RuntimeException('Пользователь не найден');
             }
 
             $data = $userService->getSettings($user);
@@ -306,10 +309,10 @@ class UserController extends AbstractController
      *
      * @Route("/api/user/delete_account", name="delete_account")
      *
-     * @param UserService $userService
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return JsonResponse|RedirectResponse
-     * @throws Exception
+     * @throws \Exception
      */
     public function deleteAccount(Request $request)
     {
@@ -320,11 +323,13 @@ class UserController extends AbstractController
          * @var $user     User
          */
         $userRepo = $this->entityManager->getRepository(User::class);
-        $user = $userRepo->find($this->getUser()->getId());
+        if ($this->getUser()) {
+            $user = $userRepo->find($this->getUser()->getId());
+        }
 
         try {
             if (!$user) {
-                throw new Exception('Пользователь отсутствует');
+                throw new RuntimeException('Пользователь отсутствует');
             }
 
             $this->entityManager->remove($user);

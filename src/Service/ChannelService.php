@@ -12,7 +12,6 @@ use App\Repository\ChannelRepository;
 use App\Repository\CoubRepository;
 use App\Repository\CoubStatRepository;
 use App\Repository\UserRepository;
-use DateInterval;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -53,12 +52,11 @@ class ChannelService
      * @return bool
      * @throws Exception
      */
-    public function saveUserChannelsList($data)
+    public function saveUserChannelsList(array $data): bool
     {
         if (
             empty($data)
-            || !isset($data['id'])
-            || !isset($data['channels'])
+            || !isset($data['id'], $data['channels'])
         ) {
             return false;
         }
@@ -136,7 +134,7 @@ class ChannelService
      *
      * @return bool
      */
-    public function isChannelExist($channelName)
+    public function isChannelExist($channelName): bool
     {
         if ('' !== (string)$channelName) {
             $result = get_headers(AppRegistry::HTTPS_COUB . $channelName);
@@ -155,7 +153,7 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    public function updateChannelSettings(Request $request)
+    public function updateChannelSettings(Request $request): array
     {
         $result = null;
 
@@ -186,7 +184,7 @@ class ChannelService
         }
 
         if ('is_active' === $type) {
-            $channel->setIsActive((bool)$newVal);
+            $channel->setIsActive($newVal);
 
             # Если канал отмечается неактивным,
             # то также отключается наблюдение
@@ -200,7 +198,7 @@ class ChannelService
             'is_watching' === $type
             && true === $channel->getIsActive()
         ) {
-            $channel->setIsWatching((bool)$newVal);
+            $channel->setIsWatching($newVal);
 
             $this->entityManager->persist($channel);
             $this->entityManager->flush();
@@ -221,7 +219,7 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    public function getChannelsList()
+    public function getChannelsList(): array
     {
         $channels = [];
         /**
@@ -283,7 +281,7 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    public function getChannelStatistic(Request $request)
+    public function getChannelStatistic(Request $request): array
     {
         $channelName = (string)$request->request->get('channel_name');
         $statType = (string)$request->request->get('statistic_type');
@@ -467,7 +465,7 @@ class ChannelService
 
                 # получаем коубы постранично и объединяем в общий массив
                 foreach ($encodeData as $item) {
-                    $decodeTemp = json_decode($item, true);
+                    $decodeTemp = json_decode($item, true, 512, JSON_THROW_ON_ERROR);
 
                     if (!empty($decodeTemp['coubs']) && is_array($decodeTemp['coubs'])) {
                         $allCoubs[] = $decodeTemp['coubs'];
@@ -494,7 +492,7 @@ class ChannelService
      * @return bool
      * @throws Exception
      */
-    public function saveOriginalCoubs($data, $channelName, $channel = null)
+    public function saveOriginalCoubs($data, $channelName, $channel = null): bool
     {
         if (!$data) {
             return false;
@@ -546,22 +544,20 @@ class ChannelService
 
                         $this->entityManager->persist($coubItem);
                     }
-                } else {
+                } elseif (empty($coub['recoub_to'])) {
                     # Если recoub_to не существует, то coub свой
-                    if (empty($coub['recoub_to'])) {
-                        $coubItem = new Coub();
-                        $coubItem->setOwnerId($channel);
-                        $coubItem->setCoubId($coub['id']);
-                        $coubItem->setChannelId($channelId);
-                        $coubItem->setPermalink($coub['permalink']);
-                        $coubItem->setTitle($coub['title']);
-                        $coubItem->setCreatedAt($coub['created_at']);
-                        $coubItem->setUpdatedAt($coub['updated_at']);
-                        $coubItem->setIsKd($coub['cotd']);
-                        $coubItem->setFeatured($coub['featured']);
-                        $coubItem->setBanned($coub['banned']);
-                        $this->entityManager->persist($coubItem);
-                    }
+                    $coubItem = new Coub();
+                    $coubItem->setOwnerId($channel);
+                    $coubItem->setCoubId($coub['id']);
+                    $coubItem->setChannelId($channelId);
+                    $coubItem->setPermalink($coub['permalink']);
+                    $coubItem->setTitle($coub['title']);
+                    $coubItem->setCreatedAt($coub['created_at']);
+                    $coubItem->setUpdatedAt($coub['updated_at']);
+                    $coubItem->setIsKd($coub['cotd']);
+                    $coubItem->setFeatured($coub['featured']);
+                    $coubItem->setBanned($coub['banned']);
+                    $this->entityManager->persist($coubItem);
                 }
 
                 # Если recoub_to не существует, то coub свой
@@ -654,7 +650,7 @@ class ChannelService
      * @return array
      * @throws Exception
      */
-    public function getInfoByUrls(array $urls)
+    public function getInfoByUrls(array $urls): array
     {
         $result = [];
 
@@ -723,58 +719,6 @@ class ChannelService
     }
 
     /**
-     * @param $min
-     * @param $max
-     *
-     * @return array
-     * @throws Exception
-     */
-    private function fillByMonth($min, $max)
-    {
-        try {
-            $result = [];
-            $diff = $this->getMonthDiff($min, $max);
-
-            // минимальное количество месяцев = 12
-            $diff = ($diff > 12) ? $diff : 12;
-
-            for ($i = 0; $i < $diff; $i++) {
-                $nowTemp = new DateTime();
-                $dateMonth = $nowTemp->sub(new DateInterval('P' . $i . 'M'));
-
-                $dateMonth = $dateMonth->format('m.Y');
-
-                $result[] = $dateMonth;
-            }
-        } catch (Exception $exception) {
-            throw new RuntimeException($exception);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param $min
-     * @param $max
-     *
-     * @return float|int
-     */
-    private function getMonthDiff($min, $max)
-    {
-        try {
-            $min = new DateTime($min);
-            $max = new DateTime($max);
-
-            $diff = $max->diff($min);
-
-            return ($diff->m + 12 * $diff->y);
-        } catch (Exception $e) {
-        }
-
-        return 0;
-    }
-
-    /**
      * @param $array
      * @param $key
      *
@@ -791,7 +735,7 @@ class ChannelService
             foreach ($array as $val) {
                 if (
                     array_key_exists($key, $val)
-                    && !in_array($val[$key], $key_array)
+                    && !in_array((string)$val[$key], $key_array, true)
                 ) {
                     $key_array[$i] = $val[$key];
 
@@ -843,9 +787,11 @@ class ChannelService
                 foreach ($diff as $coubId) {
                     $coub = $coubRepo->findOneBy(['coub_id' => $coubId]);
 
-                    $coub->setDeletedAt(new DateTime());
+                    if ($coub) {
+                        $coub->setDeletedAt(new DateTime());
 
-                    $this->entityManager->persist($coub);
+                        $this->entityManager->persist($coub);
+                    }
                 }
 
                 $this->entityManager->flush();

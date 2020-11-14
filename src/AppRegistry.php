@@ -13,6 +13,11 @@ class AppRegistry
     /**
      *
      */
+    public const APP_HOST = 'https://cublytics.ru';
+
+    /**
+     *
+     */
     public const HTTPS_COUB = 'https://coub.com/';
 
     /**

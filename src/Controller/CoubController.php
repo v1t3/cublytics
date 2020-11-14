@@ -44,7 +44,7 @@ class CoubController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getList(Request $request, CoubService $coubService)
+    public function getList(Request $request, CoubService $coubService): JsonResponse
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         try {
@@ -97,7 +97,7 @@ class CoubController extends AbstractController
      * @return JsonResponse
      * @throws Exception
      */
-    public function getCoubStatistic(Request $request, CoubService $coubService)
+    public function getCoubStatistic(Request $request, CoubService $coubService): JsonResponse
     {
         $coubId = (string)$request->request->get('coub_id');
         $statType = (string)$request->request->get('statistic_type');

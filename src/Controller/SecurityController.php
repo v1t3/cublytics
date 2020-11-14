@@ -88,7 +88,7 @@ class SecurityController extends AbstractController
      *
      * @return RedirectResponse
      */
-    public function logout()
+    public function logout(): RedirectResponse
     {
         return $this->redirectToRoute('main');
     }
@@ -105,7 +105,7 @@ class SecurityController extends AbstractController
      */
     public function confirmEmail(string $code = '')
     {
-        if ('' === (string)$code) {
+        if ('' === $code) {
             return $this->redirectToRoute('main');
         }
 

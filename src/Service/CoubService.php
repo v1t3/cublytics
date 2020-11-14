@@ -10,8 +10,8 @@ use App\Repository\CoubStatRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Security;
 
 class CoubService
 {
@@ -21,18 +21,11 @@ class CoubService
     private EntityManagerInterface $entityManager;
 
     /**
-     * @var Security
-     */
-    private Security $security;
-
-    /**
      * @param EntityManagerInterface $entityManager
-     * @param Security               $security
      */
-    public function __construct(EntityManagerInterface $entityManager, Security $security)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->security = $security;
     }
 
     /**
@@ -41,7 +34,7 @@ class CoubService
      * @return array
      * @throws Exception
      */
-    public function getCoubsList(Request $request)
+    public function getCoubsList(Request $request): array
     {
         $coubs = [];
         $channelId = (string)$request->request->get('channel_id');
@@ -50,7 +43,7 @@ class CoubService
             !$channelId
             || !is_numeric($channelId)
         ) {
-            throw new Exception('Не задан или некорректный id канала ' . $channelId);
+            throw new RuntimeException('Не задан или некорректный id канала ' . $channelId);
         }
         /**
          * @var $channelCoubsRepo CoubRepository
@@ -81,7 +74,7 @@ class CoubService
      * @return array
      * @throws Exception
      */
-    public function getCoubStatistic(Request $request)
+    public function getCoubStatistic(Request $request): array
     {
         $coubId = (string)$request->request->get('coub_id');
         $statType = (string)$request->request->get('statistic_type');
@@ -89,7 +82,7 @@ class CoubService
         $result = [];
 
         if (0 >= (int)$coubId || '' === $statType) {
-            throw new Exception('Не указано поле coub_id или type');
+            throw new RuntimeException('Не указано поле coub_id или type');
         }
 
         $dateFormat = '';
@@ -136,11 +129,13 @@ class CoubService
              * @var $coub CoubStat
              */
             foreach ($coubsStat as $coub) {
+                $timestamp = $coub->getDateCreate();
+                if ($timestamp) {
+                    $timestamp->modify($timezone . ' hour');
+                }
                 $result[] = [
                     'coub_id'        => $coub->getCoubId(),
-                    'timestamp'      => $coub->getDateCreate()
-                        ->modify($timezone . ' hour')
-                        ->format($dateFormat),
+                    'timestamp'      => $timestamp->format($dateFormat),
                     'like_count'     => $coub->getLikeCount(),
                     'repost_count'   => $coub->getRepostCount(),
                     'remixes_count'  => $coub->getRemixesCount(),
@@ -155,5 +150,4 @@ class CoubService
 
         return $result;
     }
-
 }
