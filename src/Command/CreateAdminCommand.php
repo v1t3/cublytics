@@ -10,7 +10,7 @@ use App\Entity\ConfirmationRequest;
 use App\Entity\User;
 use App\Repository\ConfirmationRequestRepository;
 use App\Repository\UserRepository;
-use DateTime;
+use App\Service\CommandService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use RuntimeException;
@@ -23,8 +23,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use function date;
 use function md5;
-use function microtime;
-use function number_format;
 
 /**
  * Class CreateAdminCommand
@@ -162,7 +160,7 @@ class CreateAdminCommand extends Command
             );
             $output->writeln(
                 '[' . date('Y-m-d H:i:s') . '] Время выполнения: '
-                . $this->requestTime(true, 2)
+                . CommandService::requestTime(true, 2)
             );
         } catch (Exception $exception) {
             throw new RuntimeException((string)$exception);
@@ -243,52 +241,5 @@ class CreateAdminCommand extends Command
         );
 
         return true;
-    }
-
-    /**
-     * Получить время выполнения скрипта
-     *
-     * @param bool     $humanize
-     * @param int|null $decimals
-     *
-     * @return string
-     * @throws Exception
-     */
-    private function requestTime(bool $humanize = null, int $decimals = null): string
-    {
-        $time = microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
-
-        return $humanize
-            ? $this->getHumanReadableTime((int)$time)
-            : number_format($time, $decimals ?? 3);
-    }
-
-    /**
-     * Преобразовать в человекочитаемый формат время из микросекунд
-     *
-     * @param int $time
-     *
-     * @return string
-     * @throws Exception
-     */
-    private function getHumanReadableTime(int $time): string
-    {
-        $timeFrom = new DateTime('@0');
-        $timeTo = new DateTime("@$time");
-        $days = $timeFrom->diff($timeTo)->format('%a');
-        $hours = $timeFrom->diff($timeTo)->format('%h');
-        $minutes = $timeFrom->diff($timeTo)->format('%i');
-
-        $result = $timeFrom->diff($timeTo)->format('%s seconds');
-
-        if ($days > 0) {
-            $result = $timeFrom->diff($timeTo)->format('%a days %h hours %i minutes %s seconds');
-        } elseif ($hours > 0) {
-            $result = $timeFrom->diff($timeTo)->format('%h hours, %i minutes %s seconds');
-        } elseif ($minutes > 0) {
-            $result = $timeFrom->diff($timeTo)->format(' %i minutes %s seconds');
-        }
-
-        return $result;
     }
 }
