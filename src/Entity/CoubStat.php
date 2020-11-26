@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CoubStatRepository;
 use DateTime;
-use DateTimeInterface;
+use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 
@@ -369,7 +369,7 @@ class CoubStat
     public function setDateCreate(): self
     {
         if (!$this->date_create) {
-            $this->date_create = new DateTime('now', new \DateTimeZone('Europe/London'));
+            $this->date_create = new DateTime('now', new DateTimeZone('Europe/London'));
 
             if (!$this->date_update) {
                 $this->setDateUpdate();
@@ -393,7 +393,7 @@ class CoubStat
      */
     public function setDateUpdate(): self
     {
-        $this->date_update = new DateTime('now', new \DateTimeZone('Europe/London'));
+        $this->date_update = new DateTime('now', new DateTimeZone('Europe/London'));
 
         return $this;
     }

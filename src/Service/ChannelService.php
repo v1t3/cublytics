@@ -310,12 +310,16 @@ class ChannelService
                 $ymdStart = date('Y-m-d', strtotime('-1 month'));
                 break;
             case 'month6':
-                $dateFormat = 'd.m.Y';
-                $ymdStart = date('Y-m-d', strtotime('-6 month'));
+                $dateFormat = 'm.Y';
+                // получить последний день месяца
+                $ymdStart = date('Y-m-0', strtotime('-6 month'));
+                $ymdEnd = date('Y-m-t');
                 break;
             case 'year':
                 $dateFormat = 'm.Y';
-                $ymdStart = date('Y-m-d', strtotime('-1 year'));
+                // получить последний день месяца
+                $ymdStart = date('Y-m-0', strtotime('-1 year'));
+                $ymdEnd = date('Y-m-t');
                 break;
             case 'all':
                 $dateFormat = 'm.Y';
@@ -324,16 +328,12 @@ class ChannelService
         }
 
         $dateStart = new DateTime("{$ymdStart} 00:00:00");
-        if (0 < $timezone) {
-            $dateStart->modify('-' . $timezone . ' hour');
-        } elseif (0 > $timezone) {
-            $dateStart->modify($timezone . ' hour');
-        }
-
         $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
-        if (0 < $timezone) {
+        if (0 < (int)$timezone) {
+            $dateStart->modify('-' . $timezone . ' hour');
             $dateEnd->modify('-' . $timezone . ' hour');
-        } elseif (0 > $timezone) {
+        } elseif (0 > (int)$timezone) {
+            $dateStart->modify($timezone . ' hour');
             $dateEnd->modify($timezone . ' hour');
         }
 
@@ -376,22 +376,30 @@ class ChannelService
 
                     $timestamp = $coub->getDateCreate();
                     if ($timestamp) {
-                        if (0 < $timezone) {
+                        if (0 < (int)$timezone) {
                             $timestamp->modify($timezone . ' hour');
-                        } elseif (0 > $timezone) {
+                        } elseif (0 > (int)$timezone) {
                             $timestamp->modify('-' . $timezone . ' hour');
                         }
                     }
+                    $ts = $timestamp->format($dateFormat);
 
-                    $result['counts'][] = [
-                        'coub_id'        => $coubId,
-                        'timestamp'      => $timestamp->format($dateFormat),
-                        'like_count'     => $coub->getLikeCount(),
-                        'repost_count'   => $coub->getRepostCount(),
-                        'recoubs_count'  => $coub->getRemixesCount(),
-                        'views_count'    => $coub->getViewsCount(),
-                        'dislikes_count' => $coub->getDislikesCount(),
-                    ];
+                    if (empty($result['counts'][$ts])) {
+                        $result['counts'][$ts] = [
+                            'timestamp'      => $ts,
+                            'like_count'     => $coub->getLikeCount(),
+                            'repost_count'   => $coub->getRepostCount(),
+                            'recoubs_count'  => $coub->getRemixesCount(),
+                            'views_count'    => $coub->getViewsCount(),
+                            'dislikes_count' => $coub->getDislikesCount(),
+                        ];
+                    } else {
+                        $result['counts'][$ts]['like_count'] += $coub->getLikeCount();
+                        $result['counts'][$ts]['repost_count'] += $coub->getRepostCount();
+                        $result['counts'][$ts]['recoubs_count'] += $coub->getRemixesCount();
+                        $result['counts'][$ts]['views_count'] += $coub->getViewsCount();
+                        $result['counts'][$ts]['dislikes_count'] += $coub->getDislikesCount();
+                    }
                 }
             }
         }
