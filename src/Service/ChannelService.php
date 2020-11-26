@@ -285,7 +285,7 @@ class ChannelService
     {
         $channelName = (string)$request->request->get('channel_name');
         $statType = (string)$request->request->get('statistic_type');
-        $timezone = (string)$request->request->get('timezone');
+        $timezone = (int)$request->request->get('timezone');
 
         $result = [];
 
@@ -293,46 +293,15 @@ class ChannelService
             throw new RuntimeException('Не указано поле channel_name или type');
         }
 
-        $dateFormat = '';
-        $ymdStart = date('Y-m-d');
-        $ymdEnd = date('Y-m-d');
+        # Получить форматы
+        $formats = $this->getStatisticFormat($statType);
 
-        switch ($statType) {
-            case 'day':
-                $dateFormat = 'H:00';
-                break;
-            case 'week':
-                $dateFormat = 'd.m';
-                $ymdStart = date('Y-m-d', strtotime('-7 day'));
-                break;
-            case 'month1':
-                $dateFormat = 'd.m';
-                $ymdStart = date('Y-m-d', strtotime('-1 month'));
-                break;
-            case 'month6':
-                $dateFormat = 'm.Y';
-                // получить последний день месяца
-                $ymdStart = date('Y-m-0', strtotime('-6 month'));
-                $ymdEnd = date('Y-m-t');
-                break;
-            case 'year':
-                $dateFormat = 'm.Y';
-                // получить последний день месяца
-                $ymdStart = date('Y-m-0', strtotime('-1 year'));
-                $ymdEnd = date('Y-m-t');
-                break;
-            case 'all':
-                $dateFormat = 'm.Y';
-                $ymdStart = '2010-01-01';
-                break;
-        }
-
-        $dateStart = new DateTime("{$ymdStart} 00:00:00");
-        $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
-        if (0 < (int)$timezone) {
+        $dateStart = new DateTime("{$formats['ymd_start']} 00:00:00");
+        $dateEnd = new DateTime("{$formats['ymd_end']} 23:59.59");
+        if (0 < $timezone) {
             $dateStart->modify('-' . $timezone . ' hour');
             $dateEnd->modify('-' . $timezone . ' hour');
-        } elseif (0 > (int)$timezone) {
+        } elseif (0 > $timezone) {
             $dateStart->modify($timezone . ' hour');
             $dateEnd->modify($timezone . ' hour');
         }
@@ -372,36 +341,104 @@ class ChannelService
                  * @var $coub CoubStat
                  */
                 foreach ($coubsStat as $coub) {
-                    $coubId = $coub->getCoubId();
+                    $dateCreate = $coub->getDateCreate();
+                    $dateUpdate = $coub->getDateUpdate();
 
-                    $timestamp = $coub->getDateCreate();
-                    if ($timestamp) {
-                        if (0 < (int)$timezone) {
-                            $timestamp->modify($timezone . ' hour');
-                        } elseif (0 > (int)$timezone) {
-                            $timestamp->modify('-' . $timezone . ' hour');
+                    if ($dateCreate && $dateUpdate) {
+                        # Скорректируем таймзону обратно к локальной
+                        if (0 < $timezone) {
+                            $dateCreate->modify($timezone . ' hour');
+                            $dateUpdate->modify($timezone . ' hour');
+                        } elseif (0 > $timezone) {
+                            $dateCreate->modify('-' . $timezone . ' hour');
+                            $dateUpdate->modify('-' . $timezone . ' hour');
                         }
-                    }
-                    $ts = $timestamp->format($dateFormat);
 
-                    if (empty($result['counts'][$ts])) {
-                        $result['counts'][$ts] = [
-                            'timestamp'      => $ts,
+                        $tempCoub = [
                             'like_count'     => $coub->getLikeCount(),
                             'repost_count'   => $coub->getRepostCount(),
                             'recoubs_count'  => $coub->getRemixesCount(),
                             'views_count'    => $coub->getViewsCount(),
                             'dislikes_count' => $coub->getDislikesCount(),
                         ];
-                    } else {
-                        $result['counts'][$ts]['like_count'] += $coub->getLikeCount();
-                        $result['counts'][$ts]['repost_count'] += $coub->getRepostCount();
-                        $result['counts'][$ts]['recoubs_count'] += $coub->getRemixesCount();
-                        $result['counts'][$ts]['views_count'] += $coub->getViewsCount();
-                        $result['counts'][$ts]['dislikes_count'] += $coub->getDislikesCount();
+
+                        $dateDiff = $dateCreate->diff($dateUpdate)->format($formats['diff_format']);
+
+                        for ($i = 0; $i <= $dateDiff; $i++) {
+                            $time = $dateCreate->format($formats['date_format']);
+
+                            if (!empty($result['counts'][$time])) {
+                                $result['counts'][$time]['like_count'] += $tempCoub['like_count'];
+                                $result['counts'][$time]['repost_count'] += $tempCoub['repost_count'];
+                                $result['counts'][$time]['recoubs_count'] += $tempCoub['recoubs_count'];
+                                $result['counts'][$time]['views_count'] += $tempCoub['views_count'];
+                                $result['counts'][$time]['dislikes_count'] += $tempCoub['dislikes_count'];
+                            } else {
+                                $result['counts'][$time] = $tempCoub;
+                            }
+
+                            $dateCreate->modify('1 ' . $formats['modify_format']);
+                        }
                     }
                 }
             }
+        }
+
+        return $result;
+    }
+
+    private function getStatisticFormat($type)
+    {
+        $result = [
+            'date_format'   => '',
+            'modify_format' => '',
+            'diff_format'   => '',
+            'ymd_start'     => date('Y-m-d'),
+            'ymd_end'       => date('Y-m-d')
+        ];
+
+        switch ($type) {
+            case 'day':
+                $result['date_format'] = 'H:00';
+                $result['modify_format'] = 'hour';
+                $result['diff_format'] = '%h';
+                break;
+            case 'week':
+                $result['date_format'] = 'd.m';
+                $result['modify_format'] = 'day';
+                $result['diff_format'] = '%d';
+                $result['ymd_start'] = date('Y-m-d', strtotime('-7 day'));
+                break;
+            case 'month1':
+                $result['date_format'] = 'd.m';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                $result['ymd_start'] = date('Y-m-d', strtotime('-1 month'));
+                break;
+            case 'month6':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                // получить первый день месяца
+                $result['ymd_start'] = date('Y-m-0', strtotime('-6 month'));
+                // получить последний день месяца
+                $result['ymd_end'] = date('Y-m-t');
+                break;
+            case 'year':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                // получить первый день месяца
+                $result['ymd_start'] = date('Y-m-0', strtotime('-1 year'));
+                // получить последний день месяца
+                $result['ymd_end'] = date('Y-m-t');
+                break;
+            case 'all':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                $result['ymd_start'] = '2010-01-01';
+                break;
         }
 
         return $result;
@@ -518,9 +555,11 @@ class ChannelService
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
             /**
-             * @var $coubRepo CoubRepository
+             * @var $coubRepo     CoubRepository
+             * @var $coubStatRepo CoubStatRepository
              */
             $coubRepo = $this->entityManager->getRepository(Coub::class);
+            $coubStatRepo = $this->entityManager->getRepository(CoubStat::class);
 
             $tempChannel = [
                 'views_count'    => 0,
@@ -534,13 +573,14 @@ class ChannelService
             ];
 
             foreach ($data as $coub) {
-                /**
-                 * Проверить существует ли текущий coub
-                 *
-                 * @var $coubItem Coub
-                 */
-                $coubItem = $coubRepo->findOneBy(['coub_id' => $coub['id']]);
+                # Если recoub_to существует, то coub не свой, пропускаем
+                if (!empty($coub['recoub_to'])) {
+                    continue;
+                }
 
+                /** @var $coubItem Coub */
+                $coubItem = $coubRepo->findOneBy(['coub_id' => $coub['id']]);
+                # Проверить существует ли текущий coub
                 if ($coubItem) {
                     if ($coubItem->getUpdatedAt() !== (new DateTime($coub['updated_at']))) {
                         $coubItem->setChannelId($channelId);
@@ -552,8 +592,7 @@ class ChannelService
 
                         $this->entityManager->persist($coubItem);
                     }
-                } elseif (empty($coub['recoub_to'])) {
-                    # Если recoub_to не существует, то coub свой
+                } else {
                     $coubItem = new Coub();
                     $coubItem->setOwnerId($channel);
                     $coubItem->setCoubId($coub['id']);
@@ -568,8 +607,29 @@ class ChannelService
                     $this->entityManager->persist($coubItem);
                 }
 
-                # Если recoub_to не существует, то coub свой
-                if (empty($coub['recoub_to'])) {
+                /** @var $coubStatItem CoubStat */
+                $coubStatItem = $coubStatRepo->findOneBy(
+                    [
+                        'coub_id'        => $coub['id'],
+                        'views_count'    => $coub['views_count'],
+                        'like_count'     => $coub['likes_count'],
+                        'repost_count'   => $coub['recoubs_count'],
+                        'remixes_count'  => $coub['remixes_count'],
+                        'dislikes_count' => $coub['dislikes_count'],
+                        'is_kd'          => $coub['cotd'],
+                        'featured'       => $coub['featured'],
+                        'banned'         => $coub['banned'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                # Посмотрим нет ли уже записи с идентичными показателями,
+                # если да, то только обновим
+                if ($coubStatItem) {
+                    $coubStatItem->setDateUpdate();
+                    $this->entityManager->persist($coubStatItem);
+                } else {
                     $coubStatItem = new CoubStat();
                     $coubStatItem->setOwnerId($channel);
                     $coubStatItem->setCoubId($coub['id']);
@@ -583,22 +643,22 @@ class ChannelService
                     $coubStatItem->setFeatured($coub['featured']);
                     $coubStatItem->setBanned($coub['banned']);
                     $this->entityManager->persist($coubStatItem);
+                }
 
-                    // подготовить данные для канала
-                    $tempChannel['views_count'] = (int)$tempChannel['views_count'] + (int)$coub['views_count'];
-                    $tempChannel['likes_count'] = (int)$tempChannel['likes_count'] + (int)$coub['likes_count'];
-                    $tempChannel['reposts_count'] = (int)$tempChannel['reposts_count'] + (int)$coub['recoubs_count'];
-                    $tempChannel['remixes_count'] = (int)$tempChannel['remixes_count'] + (int)$coub['remixes_count'];
-                    $tempChannel['dislikes_count'] = (int)$tempChannel['dislikes_count'] + (int)$coub['dislikes_count'];
-                    if (true === (bool)$coub['cotd']) {
-                        $tempChannel['kd_count']++;
-                    }
-                    if (true === (bool)$coub['featured']) {
-                        $tempChannel['featured_count']++;
-                    }
-                    if (true === (bool)$coub['banned']) {
-                        $tempChannel['banned_count']++;
-                    }
+                // подготовить данные для канала
+                $tempChannel['views_count'] = (int)$tempChannel['views_count'] + (int)$coub['views_count'];
+                $tempChannel['likes_count'] = (int)$tempChannel['likes_count'] + (int)$coub['likes_count'];
+                $tempChannel['reposts_count'] = (int)$tempChannel['reposts_count'] + (int)$coub['recoubs_count'];
+                $tempChannel['remixes_count'] = (int)$tempChannel['remixes_count'] + (int)$coub['remixes_count'];
+                $tempChannel['dislikes_count'] = (int)$tempChannel['dislikes_count'] + (int)$coub['dislikes_count'];
+                if (true === (bool)$coub['cotd']) {
+                    $tempChannel['kd_count']++;
+                }
+                if (true === (bool)$coub['featured']) {
+                    $tempChannel['featured_count']++;
+                }
+                if (true === (bool)$coub['banned']) {
+                    $tempChannel['banned_count']++;
                 }
             }
 

@@ -47,7 +47,7 @@ class ChannelController extends AbstractController
             $this->entityManager->flush();
 
             $result = [
-                'result'  => 'error',
+                'result' => 'error',
                 'error'  => [
                     'message' => $exception->getMessage(),
                 ]
@@ -96,13 +96,13 @@ class ChannelController extends AbstractController
 
             if (!empty($data) && !empty($data['counts'])) {
                 $result = [
-                    'result'  => 'success',
-                    'data'    => $data,
+                    'result' => 'success',
+                    'data'   => $data,
                 ];
             } else {
                 $result = [
-                    'result'  => 'error',
-                    'error'    => [
+                    'result' => 'error',
+                    'error'  => [
                         'message' => 'Данные отсутствуют (Данные начнут поступать в скором времени)',
                     ]
                 ];
@@ -115,12 +115,16 @@ class ChannelController extends AbstractController
             $logger->setChannel($channelName);
             $logger->setStatisticType($statType);
             $logger->setStatus(false);
-            $logger->setError('Код ' . $exception->getCode() . ' - ' . $exception->getMessage());
+            $logger->setError(
+                'Код ' . $exception->getCode()
+                . ' - ' . $exception->getMessage()
+                . ' - ' . $exception->getTraceAsString()
+            );
             $this->entityManager->persist($logger);
             $this->entityManager->flush();
 
             $result = [
-                'result'  => 'error',
+                'result' => 'error',
                 'error'  => [
                     'message' => $exception->getMessage(),
                 ]

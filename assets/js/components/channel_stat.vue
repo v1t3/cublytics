@@ -153,7 +153,7 @@
                         yAxes: [
                             {
                                 ticks: {
-                                    beginAtZero: true
+                                    beginAtZero: false,
                                 },
                             }
                         ]
@@ -282,14 +282,6 @@
                     for (let i = 0, len = dates.length; i < len; i++) {
                         let date = dates[i];
                         temp[date] = [];
-
-                        if (0 === i) {
-                            temp[date]['views_count'] = 0;
-                            temp[date]['repost_count'] = 0;
-                            temp[date]['remixes_count'] = 0;
-                            temp[date]['like_count'] = 0;
-                            temp[date]['dislikes_count'] = 0;
-                        }
 
                         if (undefined !== data[date]) {
                             if (data[date]['views_count']) {
