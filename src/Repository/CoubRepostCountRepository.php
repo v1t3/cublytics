@@ -19,6 +19,21 @@ class CoubRepostCountRepository extends ServiceEntityRepository
         parent::__construct($registry, CoubRepostCount::class);
     }
 
+    public function findByPeriodChannel($channelId, \DateTime $dateStart, \DateTime $dateEnd)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.channel_id = :id')
+            ->andWhere('c.date_create >= :date_start')
+            ->andWhere('c.date_create <= :date_end')
+            ->setParameter('id', $channelId)
+            ->setParameter('date_start', $dateStart)
+            ->setParameter('date_end', $dateEnd)
+            ->orderBy('c.date_create', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return CoubRepostCount[] Returns an array of CoubRepostCount objects
     //  */

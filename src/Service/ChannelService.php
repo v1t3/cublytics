@@ -6,11 +6,21 @@ namespace App\Service;
 use App\AppRegistry;
 use App\Entity\Channel;
 use App\Entity\Coub;
+use App\Entity\CoubDislikesCount;
+use App\Entity\CoubLikeCount;
+use App\Entity\CoubRemixesCount;
+use App\Entity\CoubRepostCount;
 use App\Entity\CoubStat;
+use App\Entity\CoubViewsCount;
 use App\Entity\User;
 use App\Repository\ChannelRepository;
+use App\Repository\CoubDislikesCountRepository;
+use App\Repository\CoubLikeCountRepository;
+use App\Repository\CoubRemixesCountRepository;
 use App\Repository\CoubRepository;
+use App\Repository\CoubRepostCountRepository;
 use App\Repository\CoubStatRepository;
+use App\Repository\CoubViewsCountRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +45,16 @@ class ChannelService
      * @var Security
      */
     private Security $security;
+
+    /**
+     * @var int
+     */
+    private int $timezone = 0;
+
+    /**
+     * @var array
+     */
+    private $formats;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -285,7 +305,7 @@ class ChannelService
     {
         $channelName = (string)$request->request->get('channel_name');
         $statType = (string)$request->request->get('statistic_type');
-        $timezone = (int)$request->request->get('timezone');
+        $this->timezone = (int)$request->request->get('timezone');
 
         $result = [];
 
@@ -294,16 +314,16 @@ class ChannelService
         }
 
         # Получить форматы
-        $formats = $this->getStatisticFormat($statType);
+        $this->formats = $this->getStatisticFormat($statType);
 
-        $dateStart = new DateTime("{$formats['ymd_start']} 00:00:00");
-        $dateEnd = new DateTime("{$formats['ymd_end']} 23:59.59");
-        if (0 < $timezone) {
-            $dateStart->modify('-' . $timezone . ' hour');
-            $dateEnd->modify('-' . $timezone . ' hour');
-        } elseif (0 > $timezone) {
-            $dateStart->modify($timezone . ' hour');
-            $dateEnd->modify($timezone . ' hour');
+        $dateStart = new DateTime("{$this->formats['ymd_start']} 00:00:00");
+        $dateEnd = new DateTime("{$this->formats['ymd_end']} 23:59.59");
+        if (0 < $this->timezone) {
+            $dateStart->modify('-' . $this->timezone . ' hour');
+            $dateEnd->modify('-' . $this->timezone . ' hour');
+        } elseif (0 > $this->timezone) {
+            $dateStart->modify($this->timezone . ' hour');
+            $dateEnd->modify($this->timezone . ' hour');
         }
 
         /**
@@ -329,62 +349,118 @@ class ChannelService
                 'banned_count'    => $channel->getBannedCount(),
             ];
 
+            $result['counts'] = [];
+
             /**
-             * @var $coubsStatRepo CoubStatRepository
-             * @var $coubsStat     CoubStat
+             * @var $coubsViewsRepo CoubViewsCountRepository
+             * @var $coubViews      CoubViewsCount
              */
-            $coubsStatRepo = $this->entityManager->getRepository(CoubStat::class);
-            $coubsStat = $coubsStatRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $coubsViewsRepo = $this->entityManager->getRepository(CoubViewsCount::class);
+            $coubViews = $coubsViewsRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubViews, 'views_count', $result['counts']);
 
-            if (!empty($coubsStat)) {
-                /**
-                 * @var $coub CoubStat
-                 */
-                foreach ($coubsStat as $coub) {
-                    $dateCreate = $coub->getDateCreate();
-                    $dateUpdate = $coub->getDateUpdate();
+            /**
+             * @var $coubsLikeRepo CoubLikeCountRepository
+             * @var $coubLike      CoubLikeCount
+             */
+            $coubsLikeRepo = $this->entityManager->getRepository(CoubLikeCount::class);
+            $coubLike = $coubsLikeRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubLike, 'like_count', $result['counts']);
 
-                    if ($dateCreate && $dateUpdate) {
-                        # Скорректируем таймзону обратно к локальной
-                        if (0 < $timezone) {
-                            $dateCreate->modify($timezone . ' hour');
-                            $dateUpdate->modify($timezone . ' hour');
-                        } elseif (0 > $timezone) {
-                            $dateCreate->modify('-' . $timezone . ' hour');
-                            $dateUpdate->modify('-' . $timezone . ' hour');
+            /**
+             * @var $coubsRepostRepo CoubRepostCountRepository
+             * @var $coubRepost      CoubRepostCount
+             */
+            $coubsRepostRepo = $this->entityManager->getRepository(CoubRepostCount::class);
+            $coubRepost = $coubsRepostRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubRepost, 'repost_count', $result['counts']);
+
+            /**
+             * @var $coubsRemixesRepo CoubRemixesCountRepository
+             * @var $coubRemixes      CoubRemixesCount
+             */
+            $coubsRemixesRepo = $this->entityManager->getRepository(CoubRemixesCount::class);
+            $coubRemixes = $coubsRemixesRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubRemixes, 'remixes_count', $result['counts']);
+
+            /**
+             * @var $coubsDislikesRepo CoubDislikesCountRepository
+             * @var $coubDislikes      CoubDislikesCount
+             */
+            $coubsDislikesRepo = $this->entityManager->getRepository(CoubDislikesCount::class);
+            $coubDislikes = $coubsDislikesRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubDislikes, 'dislikes_count', $result['counts']);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $data
+     * @param $type
+     * @param $parentResult
+     */
+    private function addStatisticCounts($data, $type, &$parentResult)
+    {
+        foreach ($data as $record) {
+            switch ($type) {
+                case 'views_count':
+                    /** @var CoubViewsCount $record */
+                    $tempCount = $record->getViewsCount();
+                    break;
+                case 'like_count':
+                    /** @var CoubLikeCount $record */
+                    $tempCount = $record->getLikeCount();
+                    break;
+                case 'repost_count':
+                    /** @var CoubRepostCount $record */
+                    $tempCount = $record->getRepostCount();
+                    break;
+                case 'remixes_count':
+                    /** @var CoubRemixesCount $record */
+                    $tempCount = $record->getRemixesCount();
+                    break;
+                case 'dislikes_count':
+                    /** @var CoubDislikesCount $record */
+                    $tempCount = $record->getDislikesCount();
+                    break;
+                default:
+                    $tempCount = 0;
+                    break;
+            }
+
+            $dateCreate = $record->getDateCreate();
+            $dateUpdate = $record->getDateUpdate();
+
+            if ($dateCreate && $dateUpdate) {
+                # Скорректируем таймзону обратно к локальной
+                if (0 < $this->timezone) {
+                    $dateCreate->modify($this->timezone . ' hour');
+                    $dateUpdate->modify($this->timezone . ' hour');
+                } elseif (0 > $this->timezone) {
+                    $dateCreate->modify('-' . $this->timezone . ' hour');
+                    $dateUpdate->modify('-' . $this->timezone . ' hour');
+                }
+
+                if (0 < (int)$tempCount) {
+                    $dateDiff = $dateCreate->diff($dateUpdate)->format($this->formats['diff_format']);
+
+                    for ($i = 0; $i <= $dateDiff; $i++) {
+                        $time = $dateCreate->format($this->formats['date_format']);
+                        if (
+                            !empty($parentResult[$time])
+                            && array_key_exists($type, $parentResult[$time])
+                        ) {
+                            $parentResult[$time][$type] += $tempCount;
+                        } else {
+                            $parentResult[$time][$type] = $tempCount;
                         }
 
-                        $tempCoub = [
-                            'like_count'     => $coub->getLikeCount(),
-                            'repost_count'   => $coub->getRepostCount(),
-                            'recoubs_count'  => $coub->getRemixesCount(),
-                            'views_count'    => $coub->getViewsCount(),
-                            'dislikes_count' => $coub->getDislikesCount(),
-                        ];
-
-                        $dateDiff = $dateCreate->diff($dateUpdate)->format($formats['diff_format']);
-
-                        for ($i = 0; $i <= $dateDiff; $i++) {
-                            $time = $dateCreate->format($formats['date_format']);
-
-                            if (!empty($result['counts'][$time])) {
-                                $result['counts'][$time]['like_count'] += $tempCoub['like_count'];
-                                $result['counts'][$time]['repost_count'] += $tempCoub['repost_count'];
-                                $result['counts'][$time]['recoubs_count'] += $tempCoub['recoubs_count'];
-                                $result['counts'][$time]['views_count'] += $tempCoub['views_count'];
-                                $result['counts'][$time]['dislikes_count'] += $tempCoub['dislikes_count'];
-                            } else {
-                                $result['counts'][$time] = $tempCoub;
-                            }
-
-                            $dateCreate->modify('1 ' . $formats['modify_format']);
-                        }
+                        $dateCreate->modify('1 ' . $this->formats['modify_format']);
                     }
                 }
             }
         }
-
-        return $result;
     }
 
     private function getStatisticFormat($type)
