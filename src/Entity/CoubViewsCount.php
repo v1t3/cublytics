@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use Symfony\Component\Validator\Constraints\Date;
 
 /**
  * @ORM\Entity(repositoryClass=CoubViewsCountRepository::class)
@@ -168,12 +169,16 @@ class CoubViewsCount
     }
 
     /**
+     * @param DateTime|null $dateCreate
+     *
      * @return $this
      * @throws Exception
      */
-    public function setDateCreate(): self
+    public function setDateCreate(?DateTime $dateCreate = null): self
     {
-        if (!$this->date_create) {
+        if ($dateCreate) {
+            $this->date_create = $dateCreate;
+        } elseif (!$this->date_create) {
             $this->date_create = new DateTime('now', new DateTimeZone('Europe/London'));
 
             $this->setDateUpdate();
@@ -191,12 +196,18 @@ class CoubViewsCount
     }
 
     /**
+     * @param DateTime|null $dateUpdate
+     *
      * @return $this
      * @throws Exception
      */
-    public function setDateUpdate(): self
+    public function setDateUpdate(?DateTime $dateUpdate = null): self
     {
-        $this->date_update = new DateTime('now', new DateTimeZone('Europe/London'));
+        if ($dateUpdate) {
+            $this->date_update = $dateUpdate;
+        } else {
+            $this->date_update = new DateTime('now', new DateTimeZone('Europe/London'));
+        }
 
         return $this;
     }

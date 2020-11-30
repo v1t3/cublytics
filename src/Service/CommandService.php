@@ -98,6 +98,12 @@ class CommandService
         if (empty($data)) {
             return false;
         }
+        if (!$this->entityManager->isOpen()) {
+            $this->entityManager = $this->entityManager->create(
+                $this->entityManager->getConnection(),
+                $this->entityManager->getConfiguration()
+            );
+        }
 
         $this->entityManager->clear();
 

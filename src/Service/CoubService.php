@@ -13,6 +13,11 @@ use Exception;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class CoubService
+ *
+ * @package App\Service
+ */
 class CoubService
 {
     /**
