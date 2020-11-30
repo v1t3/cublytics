@@ -305,4 +305,69 @@ class StatMigrateService
 
         return $result;
     }
+
+    /**
+     * @return bool
+     */
+    public function clearTables()
+    {
+        $coubsViewsRepo = $this->entityManager->getRepository(CoubViewsCount::class);
+        $coubsLikeRepo = $this->entityManager->getRepository(CoubLikeCount::class);
+        $coubsRepostRepo = $this->entityManager->getRepository(CoubRepostCount::class);
+        $coubsRemixesRepo = $this->entityManager->getRepository(CoubRemixesCount::class);
+        $coubsDislikesRepo = $this->entityManager->getRepository(CoubDislikesCount::class);
+        $coubsKdRepo = $this->entityManager->getRepository(CoubKdCount::class);
+        $coubsFeaturedRepo = $this->entityManager->getRepository(CoubFeaturedCount::class);
+        $coubsBannedRepo = $this->entityManager->getRepository(CoubBannedCount::class);
+
+        $coubViews = $coubsViewsRepo->findAll();
+        foreach ($coubViews as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubLike = $coubsLikeRepo->findAll();
+        foreach ($coubLike as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubRepost = $coubsRepostRepo->findAll();
+        foreach ($coubRepost as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubRemixes = $coubsRemixesRepo->findAll();
+        foreach ($coubRemixes as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubDislikes = $coubsDislikesRepo->findAll();
+        foreach ($coubDislikes as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubKd = $coubsKdRepo->findAll();
+        foreach ($coubKd as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubFeatured = $coubsFeaturedRepo->findAll();
+        foreach ($coubFeatured as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        $coubBanned = $coubsBannedRepo->findAll();
+        foreach ($coubBanned as $item) {
+            $this->entityManager->remove($item);
+        }
+        $this->entityManager->flush();
+
+        return true;
+    }
 }

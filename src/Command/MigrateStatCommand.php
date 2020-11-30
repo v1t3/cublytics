@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * @usage php bin/console app:stat:migrate -vvv --start=START_ID --limit=LIMIT_NUM --max=MAX
+ * @usage php bin/console app:stat:migrate -vvv --start=START_ID --limit=LIMIT_NUM --max=MAX --clear
  */
 
 namespace App\Command;
@@ -105,7 +105,14 @@ class MigrateStatCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'Общее максимальное количество coub-ов'
-            );
+            )
+            ->addOption(
+                'clear',
+                null,
+                InputOption::VALUE_NONE,
+                'Сброс'
+            )
+        ;
     }
 
     /**
@@ -151,8 +158,12 @@ class MigrateStatCommand extends Command
                 OutputInterface::VERBOSITY_VERBOSE
             );
 
-            # Выполнить обработку
-            $this->process($startCoub, $coubLimit, $max);
+            if ($this->input->getOption('clear')) {
+                $this->clear();
+            } else {
+                # Выполнить обработку
+                $this->process($startCoub, $coubLimit, $max);
+            }
 
             $this->output->writeln(
                 [
@@ -187,9 +198,9 @@ class MigrateStatCommand extends Command
     /**
      * @param int $startCoub
      * @param int $coubLimit
+     * @param int $max
      *
      * @return void
-     * @throws Exception
      */
     private function process(int $startCoub = 0, int $coubLimit = 0, int $max = 0)
     {
@@ -241,6 +252,40 @@ class MigrateStatCommand extends Command
                     $active = false;
                 }
             }
+        } catch (Exception $exception) {
+            $this->output->writeln(
+                [
+                    '[' . date('Y-m-d H:i:s') . ']'
+                    . ' Ошибка при обновлении: ' . PHP_EOL . $exception->getMessage()
+                    . ' - Trace:' . $exception->getTraceAsString()
+                    . ' - Line:' . $exception->getLine()
+                ],
+                OutputInterface::VERBOSITY_VERBOSE
+            );
+        }
+    }
+
+    /**
+     *
+     */
+    private function clear()
+    {
+        try {
+            $this->output->writeln(
+                [
+                    '[' . date('Y-m-d H:i:s') . ']' . ' Очистка запущена '
+                ],
+                OutputInterface::VERBOSITY_VERBOSE
+            );
+
+            $this->migrateService->clearTables();
+
+            $this->output->writeln(
+                [
+                    '[' . date('Y-m-d H:i:s') . ']' . ' Очистка завершена '
+                ],
+                OutputInterface::VERBOSITY_VERBOSE
+            );
         } catch (Exception $exception) {
             $this->output->writeln(
                 [
