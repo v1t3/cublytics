@@ -149,8 +149,13 @@
                 ],
                 dataCollectionOptions: {
                     scales: {
+                        xAxes: [],
                         yAxes: [
-                            {ticks: {beginAtZero: true}}
+                            {
+                                ticks: {
+                                    beginAtZero: false,
+                                },
+                            }
                         ]
                     },
                     responsive: true,
@@ -200,6 +205,7 @@
                                 if (typeof data === 'string') {
                                     data = JSON.parse(data);
                                 }
+                                // console.log('data stat', data);
 
                                 if (
                                     undefined !== data['data'] &&
@@ -272,53 +278,32 @@
 
                 dates = this.getDatesRange(this.statistic_type);
 
+                // console.log('dates', dates);
+                // console.log('data', data);
+
                 // Забиваем temp dummy данными
                 if (dates && dates.length) {
                     for (let i = 0, len = dates.length; i < len; i++) {
-                        temp[dates[i]] = [];
-                        // temp[date]['followers_count'] = 0;
-                        temp[dates[i]]['views_count'] = 0;
-                        temp[dates[i]]['repost_count'] = 0;
-                        temp[dates[i]]['remixes_count'] = 0;
-                        temp[dates[i]]['like_count'] = 0;
-                        temp[dates[i]]['dislikes_count'] = 0;
-                    }
-                }
-
-                for (let i = 0, len = data.length; i < len; i++) {
-                    let date = data[i]['timestamp'];
-
-                    // Если попадётся дата не из списка
-                    if (!dates.includes(date)) {
-                        dates.push(date);
-                    }
-                    if (undefined === temp[date] || !temp[date].length) {
+                        let date = dates[i];
                         temp[date] = [];
-                        // temp[date]['followers_count'] = 0;
-                        temp[date]['views_count'] = 0;
-                        temp[date]['repost_count'] = 0;
-                        temp[date]['remixes_count'] = 0;
-                        temp[date]['like_count'] = 0;
-                        temp[date]['dislikes_count'] = 0;
-                    }
 
-                    // if (data[i]['followers_count']) {
-                    //     temp[date]['followers_count'] += +data[i]['followers_count'];
-                    // }
-                    if (data[i]['views_count']) {
-                        temp[date]['views_count'] += +data[i]['views_count'];
-                    }
-                    if (data[i]['repost_count']) {
-                        temp[date]['repost_count'] += +data[i]['repost_count'];
-                    }
-                    if (data[i]['remixes_count']) {
-                        temp[date]['remixes_count'] += +data[i]['remixes_count'];
-                    }
-                    if (data[i]['like_count']) {
-                        temp[date]['like_count'] = +temp[date]['like_count'] + +data[i]['like_count'];
-                    }
-                    if (data[i]['dislikes_count']) {
-                        temp[date]['dislikes_count'] += +data[i]['dislikes_count'];
+                        if (undefined !== data[date]) {
+                            if (data[date]['views_count']) {
+                                temp[date]['views_count'] = +data[date]['views_count'];
+                            }
+                            if (data[date]['repost_count']) {
+                                temp[date]['repost_count'] = +data[date]['repost_count'];
+                            }
+                            if (data[date]['recoubs_count']) {
+                                temp[date]['remixes_count'] = +data[date]['recoubs_count'];
+                            }
+                            if (data[date]['like_count']) {
+                                temp[date]['like_count'] = +data[date]['like_count'];
+                            }
+                            if (data[date]['dislikes_count']) {
+                                temp[date]['dislikes_count'] = +data[date]['dislikes_count'];
+                            }
+                        }
                     }
                 }
 
@@ -329,11 +314,12 @@
                 result['like_count'] = [];
                 result['dislikes_count'] = [];
 
+                // console.log('temp1', temp);
+
                 for (let i = 0, len = dates.length; i < len; i++) {
                     let item = temp[dates[i]];
 
                     if (item) {
-                        // result['followers_count'].push(item['followers_count']);
                         result['views_count'].push(item['views_count']);
                         result['like_count'].push(item['like_count']);
                         result['repost_count'].push(item['repost_count']);
@@ -356,8 +342,12 @@
                     coubsData[type].some(item => item !== 0)
                 ) {
                     datasets.push({
-                        label: label,
-                        backgroundColor: bckndColor || this.generateColor(),
+                        label: label,       // заголовок датасета
+                        backgroundColor: bckndColor || this.generateColor(), // цвет фона
+                        // borderColor: bckndColor || this.generateColor(),     // цвет линии
+                        fill: true,         // отображать фон под линией
+                        spanGaps: true,     // заполнять пустые промежутки
+                        lineTension: 0,     // степень сглаживания углов
                         data: coubsData[type]
                     });
 
@@ -384,7 +374,7 @@
                 return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
             },
 
-            getDatesRange: function(type) {
+            getDatesRange: function (type) {
                 let currentDate, stopDate;
                 let result = [];
                 let dateArray = [];
@@ -423,18 +413,20 @@
 
                             break;
                         case 'month6':
-                            currentDate = moment();
-                            stopDate = moment().add(-6, 'month');
+                            // получить последний день месяца
+                            currentDate = moment().endOf('month');
+                            stopDate = moment().startOf('month').add(-6, 'month');
 
                             while (currentDate >= stopDate) {
-                                dateArray.push(moment(currentDate).format('DD.MM.YYYY'));
-                                currentDate = moment(currentDate).add(-1, 'days');
+                                dateArray.push(moment(currentDate).format('MM.YYYY'));
+                                currentDate = moment(currentDate).add(-1, 'month');
                             }
 
                             break;
                         case 'year':
-                            currentDate = moment();
-                            stopDate = moment().add(-1, 'year');
+                            // получить последний день месяца
+                            currentDate = moment().endOf('month');
+                            stopDate = moment().startOf('month').add(-1, 'year');
 
                             while (currentDate >= stopDate) {
                                 dateArray.push(moment(currentDate).format('MM.YYYY'));

@@ -4,21 +4,80 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Coub;
-use App\Entity\CoubStat;
+use App\Entity\CoubBannedCount;
+use App\Entity\CoubDislikesCount;
+use App\Entity\CoubFeaturedCount;
+use App\Entity\CoubKdCount;
+use App\Entity\CoubLikeCount;
+use App\Entity\CoubRemixesCount;
+use App\Entity\CoubRepostCount;
+use App\Entity\CoubViewsCount;
+use App\Repository\CoubBannedCountRepository;
+use App\Repository\CoubDislikesCountRepository;
+use App\Repository\CoubFeaturedCountRepository;
+use App\Repository\CoubKdCountRepository;
+use App\Repository\CoubLikeCountRepository;
+use App\Repository\CoubRemixesCountRepository;
 use App\Repository\CoubRepository;
-use App\Repository\CoubStatRepository;
+use App\Repository\CoubRepostCountRepository;
+use App\Repository\CoubViewsCountRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class CoubService
+ *
+ * @package App\Service
+ */
 class CoubService
 {
     /**
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $entityManager;
+    /**
+     * @var array
+     */
+    private $formats;
+    /**
+     * @var
+     */
+    private $timezone;
+    /**
+     * @var CoubViewsCountRepository
+     */
+    private $coubsViewsRepo;
+    /**
+     * @var CoubLikeCountRepository
+     */
+    private $coubsLikeRepo;
+    /**
+     * @var CoubRepostCountRepository
+     */
+    private $coubsRepostRepo;
+    /**
+     * @var CoubRemixesCountRepository
+     */
+    private $coubsRemixesRepo;
+    /**
+     * @var CoubDislikesCountRepository
+     */
+    private $coubsDislikesRepo;
+    /**
+     * @var CoubKdCountRepository
+     */
+    private $coubsKdRepo;
+    /**
+     * @var CoubFeaturedCountRepository
+     */
+    private $coubsFeaturedRepo;
+    /**
+     * @var CoubBannedCountRepository
+     */
+    private $coubsBannedRepo;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -26,6 +85,37 @@ class CoubService
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
+    }
+
+    /**
+     * @return void
+     */
+    private function initializeRepositories(): void
+    {
+        if (!$this->coubsViewsRepo) {
+            $this->coubsViewsRepo = $this->entityManager->getRepository(CoubViewsCount::class);
+        }
+        if (!$this->coubsLikeRepo) {
+            $this->coubsLikeRepo = $this->entityManager->getRepository(CoubLikeCount::class);
+        }
+        if (!$this->coubsRepostRepo) {
+            $this->coubsRepostRepo = $this->entityManager->getRepository(CoubRepostCount::class);
+        }
+        if (!$this->coubsRemixesRepo) {
+            $this->coubsRemixesRepo = $this->entityManager->getRepository(CoubRemixesCount::class);
+        }
+        if (!$this->coubsDislikesRepo) {
+            $this->coubsDislikesRepo = $this->entityManager->getRepository(CoubDislikesCount::class);
+        }
+        if (!$this->coubsKdRepo) {
+            $this->coubsKdRepo = $this->entityManager->getRepository(CoubKdCount::class);
+        }
+        if (!$this->coubsFeaturedRepo) {
+            $this->coubsFeaturedRepo = $this->entityManager->getRepository(CoubFeaturedCount::class);
+        }
+        if (!$this->coubsBannedRepo) {
+            $this->coubsBannedRepo = $this->entityManager->getRepository(CoubBannedCount::class);
+        }
     }
 
     /**
@@ -78,74 +168,160 @@ class CoubService
     {
         $coubId = (string)$request->request->get('coub_id');
         $statType = (string)$request->request->get('statistic_type');
-        $timezone = (string)$request->request->get('timezone');
+        $this->timezone = (string)$request->request->get('timezone');
         $result = [];
 
         if (0 >= (int)$coubId || '' === $statType) {
             throw new RuntimeException('Не указано поле coub_id или type');
         }
 
-        $dateFormat = '';
-        $ymdStart = date('Y-m-d');
-        $ymdEnd = date('Y-m-d');
+        # Получить форматы
+        $this->formats = $this->getStatisticFormat($statType);
+        # Иничиализировать репозитории для статистики
+        $this->initializeRepositories();
 
-        switch ($statType) {
-            case 'day':
-                $dateFormat = 'H:00';
-                break;
-            case 'week':
-                $dateFormat = 'd.m';
-                $ymdStart = date('Y-m-d', strtotime('-7 day'));
-                break;
-            case 'month1':
-                $dateFormat = 'd.m';
-                $ymdStart = date('Y-m-d', strtotime('-1 month'));
-                break;
-            case 'month6':
-                $dateFormat = 'd.m.Y';
-                $ymdStart = date('Y-m-d', strtotime('-6 month'));
-                break;
-            case 'year':
-                $dateFormat = 'm.Y';
-                $ymdStart = date('Y-m-d', strtotime('-1 year'));
-                break;
-            case 'all':
-                $dateFormat = 'm.Y';
-                $ymdStart = '2010-01-01';
-                break;
+        $dateStart = new DateTime("{$this->formats['ymd_start']} 00:00:00");
+        $dateEnd = new DateTime("{$this->formats['ymd_end']} 23:59.59");
+        if (0 < $this->timezone) {
+            $dateStart->modify('-' . $this->timezone . ' hour');
+            $dateEnd->modify('-' . $this->timezone . ' hour');
+        } elseif (0 > $this->timezone) {
+            $dateStart->modify($this->timezone . ' hour');
+            $dateEnd->modify($this->timezone . ' hour');
         }
 
-        $dateStart = new DateTime("{$ymdStart} 00:00:00");
-        $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
+        $coubViews = $this->coubsViewsRepo->findByPeriodCoub($coubId, $dateStart, $dateEnd);
+        $this->addStatisticCounts($coubViews, 'views_count', $result);
 
-        /**
-         * @var $coubsStatRepo CoubStatRepository
-         */
-        $coubsStatRepo = $this->entityManager->getRepository(CoubStat::class);
-        $coubsStat = $coubsStatRepo->findByPeriodCoub($coubId, $dateStart, $dateEnd);
+        $coubLike = $this->coubsLikeRepo->findByPeriodCoub($coubId, $dateStart, $dateEnd);
+        $this->addStatisticCounts($coubLike, 'like_count', $result);
 
-        if ($coubsStat) {
-            /**
-             * @var $coub CoubStat
-             */
-            foreach ($coubsStat as $coub) {
-                $timestamp = $coub->getDateCreate();
-                if ($timestamp) {
-                    $timestamp->modify($timezone . ' hour');
-                }
-                $result[] = [
-                    'coub_id'        => $coub->getCoubId(),
-                    'timestamp'      => $timestamp->format($dateFormat),
-                    'like_count'     => $coub->getLikeCount(),
-                    'repost_count'   => $coub->getRepostCount(),
-                    'remixes_count'  => $coub->getRemixesCount(),
-                    'views_count'    => $coub->getViewsCount(),
-                    'dislikes_count' => $coub->getDislikesCount(),
-                    'is_kd'          => $coub->getIsKd(),
-                    'featured'       => $coub->getFeatured(),
-                    'banned'         => $coub->getBanned(),
-                ];
+        $coubRepost = $this->coubsRepostRepo->findByPeriodCoub($coubId, $dateStart, $dateEnd);
+        $this->addStatisticCounts($coubRepost, 'repost_count', $result);
+
+        $coubRemixes = $this->coubsRemixesRepo->findByPeriodCoub($coubId, $dateStart, $dateEnd);
+        $this->addStatisticCounts($coubRemixes, 'remixes_count', $result);
+
+        $coubDislikes = $this->coubsDislikesRepo->findByPeriodCoub($coubId, $dateStart, $dateEnd);
+        $this->addStatisticCounts($coubDislikes, 'dislikes_count', $result);
+
+        return $result;
+    }
+
+    /**
+     * @param $data
+     * @param $type
+     * @param $parentResult
+     */
+    private function addStatisticCounts($data, $type, &$parentResult)
+    {
+        foreach ($data as $record) {
+            switch ($type) {
+                case 'views_count':
+                    /** @var CoubViewsCount $record */
+                    $tempCount = $record->getViewsCount();
+                    break;
+                case 'like_count':
+                    /** @var CoubLikeCount $record */
+                    $tempCount = $record->getLikeCount();
+                    break;
+                case 'repost_count':
+                    /** @var CoubRepostCount $record */
+                    $tempCount = $record->getRepostCount();
+                    break;
+                case 'remixes_count':
+                    /** @var CoubRemixesCount $record */
+                    $tempCount = $record->getRemixesCount();
+                    break;
+                case 'dislikes_count':
+                    /** @var CoubDislikesCount $record */
+                    $tempCount = $record->getDislikesCount();
+                    break;
+                default:
+                    $tempCount = 0;
+                    break;
             }
+
+            $dateCreate = $record->getDateCreate();
+            $dateUpdate = $record->getDateUpdate();
+
+            if ($dateCreate && $dateUpdate) {
+                # Скорректируем таймзону обратно к локальной
+                if (0 < $this->timezone) {
+                    $dateCreate->modify($this->timezone . ' hour');
+                    $dateUpdate->modify($this->timezone . ' hour');
+                } elseif (0 > $this->timezone) {
+                    $dateCreate->modify('-' . $this->timezone . ' hour');
+                    $dateUpdate->modify('-' . $this->timezone . ' hour');
+                }
+
+                if (0 < (int)$tempCount) {
+                    $dateDiff = $dateCreate->diff($dateUpdate)->format($this->formats['diff_format']);
+
+                    for ($i = 0; $i <= $dateDiff; $i++) {
+                        $time = $dateCreate->format($this->formats['date_format']);
+
+                        $parentResult[$time][$type] = $tempCount;
+
+                        $dateCreate->modify('1 ' . $this->formats['modify_format']);
+                    }
+                }
+            }
+        }
+    }
+
+    private function getStatisticFormat($type)
+    {
+        $result = [
+            'date_format'   => '',
+            'modify_format' => '',
+            'diff_format'   => '',
+            'ymd_start'     => date('Y-m-d'),
+            'ymd_end'       => date('Y-m-d')
+        ];
+
+        switch ($type) {
+            case 'day':
+                $result['date_format'] = 'H:00';
+                $result['modify_format'] = 'hour';
+                $result['diff_format'] = '%h';
+                break;
+            case 'week':
+                $result['date_format'] = 'd.m';
+                $result['modify_format'] = 'day';
+                $result['diff_format'] = '%d';
+                $result['ymd_start'] = date('Y-m-d', strtotime('-7 day'));
+                break;
+            case 'month1':
+                $result['date_format'] = 'd.m';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                $result['ymd_start'] = date('Y-m-d', strtotime('-1 month'));
+                break;
+            case 'month6':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                // получить первый день месяца
+                $result['ymd_start'] = date('Y-m-0', strtotime('-6 month'));
+                // получить последний день месяца
+                $result['ymd_end'] = date('Y-m-t');
+                break;
+            case 'year':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                // получить первый день месяца
+                $result['ymd_start'] = date('Y-m-0', strtotime('-1 year'));
+                // получить последний день месяца
+                $result['ymd_end'] = date('Y-m-t');
+                break;
+            case 'all':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                $result['ymd_start'] = '2010-01-01';
+                break;
         }
 
         return $result;

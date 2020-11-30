@@ -6,11 +6,25 @@ namespace App\Service;
 use App\AppRegistry;
 use App\Entity\Channel;
 use App\Entity\Coub;
-use App\Entity\CoubStat;
+use App\Entity\CoubBannedCount;
+use App\Entity\CoubDislikesCount;
+use App\Entity\CoubFeaturedCount;
+use App\Entity\CoubKdCount;
+use App\Entity\CoubLikeCount;
+use App\Entity\CoubRemixesCount;
+use App\Entity\CoubRepostCount;
+use App\Entity\CoubViewsCount;
 use App\Entity\User;
 use App\Repository\ChannelRepository;
+use App\Repository\CoubBannedCountRepository;
+use App\Repository\CoubDislikesCountRepository;
+use App\Repository\CoubFeaturedCountRepository;
+use App\Repository\CoubKdCountRepository;
+use App\Repository\CoubLikeCountRepository;
+use App\Repository\CoubRemixesCountRepository;
 use App\Repository\CoubRepository;
-use App\Repository\CoubStatRepository;
+use App\Repository\CoubRepostCountRepository;
+use App\Repository\CoubViewsCountRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +51,53 @@ class ChannelService
     private Security $security;
 
     /**
+     * @var int
+     */
+    private int $timezone = 0;
+
+    /**
+     * @var array
+     */
+    private $formats;
+
+    /**
+     * @var ChannelRepository
+     */
+    private $channelRepo;
+    /**
+     * @var CoubViewsCountRepository
+     */
+    private $coubsViewsRepo;
+    /**
+     * @var CoubLikeCountRepository
+     */
+    private $coubsLikeRepo;
+    /**
+     * @var CoubRepostCountRepository
+     */
+    private $coubsRepostRepo;
+    /**
+     * @var CoubRemixesCountRepository
+     */
+    private $coubsRemixesRepo;
+    /**
+     * @var CoubDislikesCountRepository
+     */
+    private $coubsDislikesRepo;
+    /**
+     * @var CoubKdCountRepository
+     */
+    private $coubsKdRepo;
+    /**
+     * @var CoubFeaturedCountRepository
+     */
+    private $coubsFeaturedRepo;
+    /**
+     * @var CoubBannedCountRepository
+     */
+    private $coubsBannedRepo;
+
+    /**
      * @param EntityManagerInterface $entityManager
      * @param Security               $security
      */
@@ -44,6 +105,40 @@ class ChannelService
     {
         $this->entityManager = $entityManager;
         $this->security = $security;
+    }
+
+    /**
+     * @return void
+     */
+    private function initializeRepositories(): void
+    {
+        if (!$this->channelRepo) {
+            $this->channelRepo = $this->entityManager->getRepository(Channel::class);
+        }
+        if (!$this->coubsViewsRepo) {
+            $this->coubsViewsRepo = $this->entityManager->getRepository(CoubViewsCount::class);
+        }
+        if (!$this->coubsLikeRepo) {
+            $this->coubsLikeRepo = $this->entityManager->getRepository(CoubLikeCount::class);
+        }
+        if (!$this->coubsRepostRepo) {
+            $this->coubsRepostRepo = $this->entityManager->getRepository(CoubRepostCount::class);
+        }
+        if (!$this->coubsRemixesRepo) {
+            $this->coubsRemixesRepo = $this->entityManager->getRepository(CoubRemixesCount::class);
+        }
+        if (!$this->coubsDislikesRepo) {
+            $this->coubsDislikesRepo = $this->entityManager->getRepository(CoubDislikesCount::class);
+        }
+        if (!$this->coubsKdRepo) {
+            $this->coubsKdRepo = $this->entityManager->getRepository(CoubKdCount::class);
+        }
+        if (!$this->coubsFeaturedRepo) {
+            $this->coubsFeaturedRepo = $this->entityManager->getRepository(CoubFeaturedCount::class);
+        }
+        if (!$this->coubsBannedRepo) {
+            $this->coubsBannedRepo = $this->entityManager->getRepository(CoubBannedCount::class);
+        }
     }
 
     /**
@@ -285,7 +380,7 @@ class ChannelService
     {
         $channelName = (string)$request->request->get('channel_name');
         $statType = (string)$request->request->get('statistic_type');
-        $timezone = (string)$request->request->get('timezone');
+        $this->timezone = (int)$request->request->get('timezone');
 
         $result = [];
 
@@ -293,56 +388,24 @@ class ChannelService
             throw new RuntimeException('Не указано поле channel_name или type');
         }
 
-        $dateFormat = '';
-        $ymdStart = date('Y-m-d');
-        $ymdEnd = date('Y-m-d');
+        # Получить форматы
+        $this->formats = $this->getStatisticFormat($statType);
 
-        switch ($statType) {
-            case 'day':
-                $dateFormat = 'H:00';
-                break;
-            case 'week':
-                $dateFormat = 'd.m';
-                $ymdStart = date('Y-m-d', strtotime('-7 day'));
-                break;
-            case 'month1':
-                $dateFormat = 'd.m';
-                $ymdStart = date('Y-m-d', strtotime('-1 month'));
-                break;
-            case 'month6':
-                $dateFormat = 'd.m.Y';
-                $ymdStart = date('Y-m-d', strtotime('-6 month'));
-                break;
-            case 'year':
-                $dateFormat = 'm.Y';
-                $ymdStart = date('Y-m-d', strtotime('-1 year'));
-                break;
-            case 'all':
-                $dateFormat = 'm.Y';
-                $ymdStart = '2010-01-01';
-                break;
+        # Иничиализировать репозитории для статистики
+        $this->initializeRepositories();
+
+        $dateStart = new DateTime("{$this->formats['ymd_start']} 00:00:00");
+        $dateEnd = new DateTime("{$this->formats['ymd_end']} 23:59.59");
+        if (0 < $this->timezone) {
+            $dateStart->modify('-' . $this->timezone . ' hour');
+            $dateEnd->modify('-' . $this->timezone . ' hour');
+        } elseif (0 > $this->timezone) {
+            $dateStart->modify($this->timezone . ' hour');
+            $dateEnd->modify($this->timezone . ' hour');
         }
 
-        $dateStart = new DateTime("{$ymdStart} 00:00:00");
-        if (0 < $timezone) {
-            $dateStart->modify('-' . $timezone . ' hour');
-        } elseif (0 > $timezone) {
-            $dateStart->modify($timezone . ' hour');
-        }
-
-        $dateEnd = new DateTime("{$ymdEnd} 23:59.59");
-        if (0 < $timezone) {
-            $dateEnd->modify('-' . $timezone . ' hour');
-        } elseif (0 > $timezone) {
-            $dateEnd->modify($timezone . ' hour');
-        }
-
-        /**
-         * @var $channelRepo ChannelRepository
-         * @var $channel     Channel
-         */
-        $channelRepo = $this->entityManager->getRepository(Channel::class);
-        $channel = $channelRepo->findOneBy(['channel_permalink' => $channelName]);
+        /** @var $channel Channel */
+        $channel = $this->channelRepo->findOneBy(['channel_permalink' => $channelName]);
 
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
@@ -360,40 +423,147 @@ class ChannelService
                 'banned_count'    => $channel->getBannedCount(),
             ];
 
-            /**
-             * @var $coubsStatRepo CoubStatRepository
-             * @var $coubsStat     CoubStat
-             */
-            $coubsStatRepo = $this->entityManager->getRepository(CoubStat::class);
-            $coubsStat = $coubsStatRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $result['counts'] = [];
 
-            if (!empty($coubsStat)) {
-                /**
-                 * @var $coub CoubStat
-                 */
-                foreach ($coubsStat as $coub) {
-                    $coubId = $coub->getCoubId();
+            $coubViews = $this->coubsViewsRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubViews, 'views_count', $result['counts']);
 
-                    $timestamp = $coub->getDateCreate();
-                    if ($timestamp) {
-                        if (0 < $timezone) {
-                            $timestamp->modify($timezone . ' hour');
-                        } elseif (0 > $timezone) {
-                            $timestamp->modify('-' . $timezone . ' hour');
+            $coubLike = $this->coubsLikeRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubLike, 'like_count', $result['counts']);
+
+            $coubRepost = $this->coubsRepostRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubRepost, 'repost_count', $result['counts']);
+
+            $coubRemixes = $this->coubsRemixesRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubRemixes, 'remixes_count', $result['counts']);
+
+            $coubDislikes = $this->coubsDislikesRepo->findByPeriodChannel($channelId, $dateStart, $dateEnd);
+            $this->addStatisticCounts($coubDislikes, 'dislikes_count', $result['counts']);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $data
+     * @param $type
+     * @param $parentResult
+     */
+    private function addStatisticCounts($data, $type, &$parentResult)
+    {
+        foreach ($data as $record) {
+            switch ($type) {
+                case 'views_count':
+                    /** @var CoubViewsCount $record */
+                    $tempCount = $record->getViewsCount();
+                    break;
+                case 'like_count':
+                    /** @var CoubLikeCount $record */
+                    $tempCount = $record->getLikeCount();
+                    break;
+                case 'repost_count':
+                    /** @var CoubRepostCount $record */
+                    $tempCount = $record->getRepostCount();
+                    break;
+                case 'remixes_count':
+                    /** @var CoubRemixesCount $record */
+                    $tempCount = $record->getRemixesCount();
+                    break;
+                case 'dislikes_count':
+                    /** @var CoubDislikesCount $record */
+                    $tempCount = $record->getDislikesCount();
+                    break;
+                default:
+                    $tempCount = 0;
+                    break;
+            }
+
+            $dateCreate = $record->getDateCreate();
+            $dateUpdate = $record->getDateUpdate();
+
+            if ($dateCreate && $dateUpdate) {
+                # Скорректируем таймзону обратно к локальной
+                if (0 < $this->timezone) {
+                    $dateCreate->modify($this->timezone . ' hour');
+                    $dateUpdate->modify($this->timezone . ' hour');
+                } elseif (0 > $this->timezone) {
+                    $dateCreate->modify('-' . $this->timezone . ' hour');
+                    $dateUpdate->modify('-' . $this->timezone . ' hour');
+                }
+
+                if (0 < (int)$tempCount) {
+                    $dateDiff = $dateCreate->diff($dateUpdate)->format($this->formats['diff_format']);
+
+                    for ($i = 0; $i <= $dateDiff; $i++) {
+                        $time = $dateCreate->format($this->formats['date_format']);
+                        if (
+                            !empty($parentResult[$time])
+                            && array_key_exists($type, $parentResult[$time])
+                        ) {
+                            $parentResult[$time][$type] += $tempCount;
+                        } else {
+                            $parentResult[$time][$type] = $tempCount;
                         }
-                    }
 
-                    $result['counts'][] = [
-                        'coub_id'        => $coubId,
-                        'timestamp'      => $timestamp->format($dateFormat),
-                        'like_count'     => $coub->getLikeCount(),
-                        'repost_count'   => $coub->getRepostCount(),
-                        'recoubs_count'  => $coub->getRemixesCount(),
-                        'views_count'    => $coub->getViewsCount(),
-                        'dislikes_count' => $coub->getDislikesCount(),
-                    ];
+                        $dateCreate->modify('1 ' . $this->formats['modify_format']);
+                    }
                 }
             }
+        }
+    }
+
+    private function getStatisticFormat($type)
+    {
+        $result = [
+            'date_format'   => '',
+            'modify_format' => '',
+            'diff_format'   => '',
+            'ymd_start'     => date('Y-m-d'),
+            'ymd_end'       => date('Y-m-d')
+        ];
+
+        switch ($type) {
+            case 'day':
+                $result['date_format'] = 'H:00';
+                $result['modify_format'] = 'hour';
+                $result['diff_format'] = '%h';
+                break;
+            case 'week':
+                $result['date_format'] = 'd.m';
+                $result['modify_format'] = 'day';
+                $result['diff_format'] = '%d';
+                $result['ymd_start'] = date('Y-m-d', strtotime('-7 day'));
+                break;
+            case 'month1':
+                $result['date_format'] = 'd.m';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                $result['ymd_start'] = date('Y-m-d', strtotime('-1 month'));
+                break;
+            case 'month6':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                // получить первый день месяца
+                $result['ymd_start'] = date('Y-m-0', strtotime('-6 month'));
+                // получить последний день месяца
+                $result['ymd_end'] = date('Y-m-t');
+                break;
+            case 'year':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                // получить первый день месяца
+                $result['ymd_start'] = date('Y-m-0', strtotime('-1 year'));
+                // получить последний день месяца
+                $result['ymd_end'] = date('Y-m-t');
+                break;
+            case 'all':
+                $result['date_format'] = 'm.Y';
+                $result['modify_format'] = 'month';
+                $result['diff_format'] = '%m';
+                $result['ymd_start'] = '2010-01-01';
+                break;
         }
 
         return $result;
@@ -498,20 +668,18 @@ class ChannelService
             return false;
         }
 
+        # Инициализировать репозитории для статистики
+        $this->initializeRepositories();
+
         if (!$channel) {
-            /**
-             * @var $channelRepo ChannelRepository
-             * @var $channel     Channel
-             */
-            $channelRepo = $this->entityManager->getRepository(Channel::class);
-            $channel = $channelRepo->findOneBy(['channel_permalink' => $channelName]);
+            /** @var $channel Channel */
+            $channel = $this->channelRepo->findOneBy(['channel_permalink' => $channelName]);
         }
 
         if ($channel && 0 < (int)$channel->getChannelId()) {
             $channelId = $channel->getChannelId();
-            /**
-             * @var $coubRepo CoubRepository
-             */
+
+            /** @var $coubRepo CoubRepository */
             $coubRepo = $this->entityManager->getRepository(Coub::class);
 
             $tempChannel = [
@@ -526,13 +694,18 @@ class ChannelService
             ];
 
             foreach ($data as $coub) {
-                /**
-                 * Проверить существует ли текущий coub
-                 *
-                 * @var $coubItem Coub
-                 */
-                $coubItem = $coubRepo->findOneBy(['coub_id' => $coub['id']]);
+                # Если recoub_to существует, то coub не свой, пропускаем
+                if (!empty($coub['recoub_to'])) {
+                    continue;
+                }
 
+                /** @var $coubItem Coub */
+                $coubItem = $coubRepo->findOneBy(
+                    [
+                        'coub_id' => $coub['id']
+                    ]
+                );
+                # Проверить существует ли текущий coub
                 if ($coubItem) {
                     if ($coubItem->getUpdatedAt() !== (new DateTime($coub['updated_at']))) {
                         $coubItem->setChannelId($channelId);
@@ -544,8 +717,7 @@ class ChannelService
 
                         $this->entityManager->persist($coubItem);
                     }
-                } elseif (empty($coub['recoub_to'])) {
-                    # Если recoub_to не существует, то coub свой
+                } else {
                     $coubItem = new Coub();
                     $coubItem->setOwnerId($channel);
                     $coubItem->setCoubId($coub['id']);
@@ -560,37 +732,182 @@ class ChannelService
                     $this->entityManager->persist($coubItem);
                 }
 
-                # Если recoub_to не существует, то coub свой
-                if (empty($coub['recoub_to'])) {
-                    $coubStatItem = new CoubStat();
-                    $coubStatItem->setOwnerId($channel);
-                    $coubStatItem->setCoubId($coub['id']);
-                    $coubStatItem->setChannelId($channelId);
-                    $coubStatItem->setViewsCount($coub['views_count']);
-                    $coubStatItem->setLikeCount($coub['likes_count']);
-                    $coubStatItem->setRepostCount($coub['recoubs_count']);
-                    $coubStatItem->setRemixesCount($coub['remixes_count']);
-                    $coubStatItem->setDislikesCount($coub['dislikes_count']);
-                    $coubStatItem->setIsKd($coub['cotd']);
-                    $coubStatItem->setFeatured($coub['featured']);
-                    $coubStatItem->setBanned($coub['banned']);
-                    $this->entityManager->persist($coubStatItem);
+                #region prepare data
+                $coubViews = $this->coubsViewsRepo->findOneBy(
+                    [
+                        'coub_id'     => $coub['id'],
+                        'views_count' => $coub['views_count'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubViews) {
+                    $coubViews->setDateUpdate();
+                } else {
+                    $coubViews = new CoubViewsCount();
+                    $coubViews->setOwnerId($channel);
+                    $coubViews->setCoubId($coub['id']);
+                    $coubViews->setChannelId($channelId);
+                    $coubViews->setViewsCount($coub['views_count']);
+                }
+                $this->entityManager->persist($coubViews);
 
-                    // подготовить данные для канала
-                    $tempChannel['views_count'] = (int)$tempChannel['views_count'] + (int)$coub['views_count'];
-                    $tempChannel['likes_count'] = (int)$tempChannel['likes_count'] + (int)$coub['likes_count'];
-                    $tempChannel['reposts_count'] = (int)$tempChannel['reposts_count'] + (int)$coub['recoubs_count'];
-                    $tempChannel['remixes_count'] = (int)$tempChannel['remixes_count'] + (int)$coub['remixes_count'];
-                    $tempChannel['dislikes_count'] = (int)$tempChannel['dislikes_count'] + (int)$coub['dislikes_count'];
-                    if (true === (bool)$coub['cotd']) {
-                        $tempChannel['kd_count']++;
-                    }
-                    if (true === (bool)$coub['featured']) {
-                        $tempChannel['featured_count']++;
-                    }
-                    if (true === (bool)$coub['banned']) {
-                        $tempChannel['banned_count']++;
-                    }
+                $coubLike = $this->coubsLikeRepo->findOneBy(
+                    [
+                        'coub_id'    => $coub['id'],
+                        'like_count' => $coub['likes_count'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubLike) {
+                    $coubLike->setDateUpdate();
+                } else {
+                    $coubLike = new CoubLikeCount();
+                    $coubLike->setOwnerId($channel);
+                    $coubLike->setCoubId($coub['id']);
+                    $coubLike->setChannelId($channelId);
+                    $coubLike->setLikeCount($coub['likes_count']);
+                }
+                $this->entityManager->persist($coubLike);
+
+                $coubRepost = $this->coubsRepostRepo->findOneBy(
+                    [
+                        'coub_id'      => $coub['id'],
+                        'repost_count' => $coub['recoubs_count'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubRepost) {
+                    $coubRepost->setDateUpdate();
+                } else {
+                    $coubRepost = new CoubRepostCount();
+                    $coubRepost->setOwnerId($channel);
+                    $coubRepost->setCoubId($coub['id']);
+                    $coubRepost->setChannelId($channelId);
+                    $coubRepost->setRepostCount($coub['recoubs_count']);
+                }
+                $this->entityManager->persist($coubRepost);
+
+                $coubRemixes = $this->coubsRemixesRepo->findOneBy(
+                    [
+                        'coub_id'       => $coub['id'],
+                        'remixes_count' => $coub['remixes_count'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubRemixes) {
+                    $coubRemixes->setDateUpdate();
+                } else {
+                    $coubRemixes = new CoubRemixesCount();
+                    $coubRemixes->setOwnerId($channel);
+                    $coubRemixes->setCoubId($coub['id']);
+                    $coubRemixes->setChannelId($channelId);
+                    $coubRemixes->setRemixesCount($coub['remixes_count']);
+                }
+                $this->entityManager->persist($coubRemixes);
+
+                $coubDislikes = $this->coubsDislikesRepo->findOneBy(
+                    [
+                        'coub_id'        => $coub['id'],
+                        'dislikes_count' => $coub['dislikes_count'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubDislikes) {
+                    $coubDislikes->setDateUpdate();
+                } else {
+                    $coubDislikes = new CoubDislikesCount();
+                    $coubDislikes->setOwnerId($channel);
+                    $coubDislikes->setCoubId($coub['id']);
+                    $coubDislikes->setChannelId($channelId);
+                    $coubDislikes->setDislikesCount($coub['dislikes_count']);
+                }
+                $this->entityManager->persist($coubDislikes);
+
+                $coubKd = $this->coubsKdRepo->findOneBy(
+                    [
+                        'coub_id' => $coub['id'],
+                        'is_kd'   => $coub['cotd'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubKd) {
+                    $coubKd->setDateUpdate();
+                } else {
+                    $coubKd = new CoubKdCount();
+                    $coubKd->setOwnerId($channel);
+                    $coubKd->setCoubId($coub['id']);
+                    $coubKd->setChannelId($channelId);
+                    $coubKd->setIsKd($coub['cotd']);
+                }
+                $this->entityManager->persist($coubKd);
+
+                $coubFeatured = $this->coubsFeaturedRepo->findOneBy(
+                    [
+                        'coub_id'  => $coub['id'],
+                        'featured' => $coub['featured'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubFeatured) {
+                    $coubFeatured->setDateUpdate();
+                } else {
+                    $coubFeatured = new CoubFeaturedCount();
+                    $coubFeatured->setOwnerId($channel);
+                    $coubFeatured->setCoubId($coub['id']);
+                    $coubFeatured->setChannelId($channelId);
+                    $coubFeatured->setFeatured($coub['featured']);
+                }
+                $this->entityManager->persist($coubFeatured);
+
+                $coubBanned = $this->coubsBannedRepo->findOneBy(
+                    [
+                        'coub_id' => $coub['id'],
+                        'banned'  => $coub['banned'],
+                    ],
+                    [
+                        'id' => 'DESC'
+                    ]
+                );
+                if ($coubBanned) {
+                    $coubBanned->setDateUpdate();
+                } else {
+                    $coubBanned = new CoubBannedCount();
+                    $coubBanned->setOwnerId($channel);
+                    $coubBanned->setCoubId($coub['id']);
+                    $coubBanned->setChannelId($channelId);
+                    $coubBanned->setBanned($coub['banned']);
+                }
+                $this->entityManager->persist($coubBanned);
+                #endregion prepare data
+
+                // подготовить данные для канала
+                $tempChannel['views_count'] = (int)$tempChannel['views_count'] + (int)$coub['views_count'];
+                $tempChannel['likes_count'] = (int)$tempChannel['likes_count'] + (int)$coub['likes_count'];
+                $tempChannel['reposts_count'] = (int)$tempChannel['reposts_count'] + (int)$coub['recoubs_count'];
+                $tempChannel['remixes_count'] = (int)$tempChannel['remixes_count'] + (int)$coub['remixes_count'];
+                $tempChannel['dislikes_count'] = (int)$tempChannel['dislikes_count'] + (int)$coub['dislikes_count'];
+                if (true === (bool)$coub['cotd']) {
+                    $tempChannel['kd_count']++;
+                }
+                if (true === (bool)$coub['featured']) {
+                    $tempChannel['featured_count']++;
+                }
+                if (true === (bool)$coub['banned']) {
+                    $tempChannel['banned_count']++;
                 }
             }
 

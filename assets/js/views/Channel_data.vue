@@ -35,11 +35,6 @@
                           @click="getActive('year')">
                         Год
                     </span>
-                    <span class="statistic-btn_time btn"
-                          v-bind:class="{active: statistic_type === 'all'}"
-                          @click="getActive('all')">
-                        Всё время
-                    </span>
                 </div>
 
                 <channel_stat v-if="show_stat && channel_active"
