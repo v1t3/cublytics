@@ -118,7 +118,6 @@ class ChannelController extends AbstractController
             $logger->setError(
                 'Код ' . $exception->getCode()
                 . ' - ' . $exception->getMessage()
-                . ' - ' . $exception->getTraceAsString()
             );
             $this->entityManager->persist($logger);
             $this->entityManager->flush();
