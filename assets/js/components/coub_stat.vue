@@ -23,18 +23,6 @@
                 <span class="views-total_title">Рекоубы:</span>
                 <span class="views-total_text">{{ coub.recoubs }}</span>
             </div>
-            <div class="views-total_row" v-if="coub.kd">
-                <span class="views-total_title">КД:</span>
-                <span class="views-total_text">{{ coub.kd }}</span>
-            </div>
-            <div class="views-total_row" v-if="coub.featured">
-                <span class="views-total_title">Фич:</span>
-                <span class="views-total_text">{{ coub.featured }}</span>
-            </div>
-            <div class="views-total_row" v-if="coub.banned">
-                <span class="views-total_title">Бан:</span>
-                <span class="views-total_text">{{ coub.banned }}</span>
-            </div>
         </div>
 
         <div class="chart-wrap">
@@ -124,21 +112,21 @@
                         label: 'Рекоубы',
                         color: ''
                     },
-                    {
-                        type: 'is_kd',
-                        label: 'КД',
-                        color: ''
-                    },
-                    {
-                        type: 'featured',
-                        label: 'Фичи',
-                        color: ''
-                    },
-                    {
-                        type: 'banned',
-                        label: 'Баны',
-                        color: ''
-                    }
+                    // {
+                    //     type: 'is_kd',
+                    //     label: 'КД',
+                    //     color: ''
+                    // },
+                    // {
+                    //     type: 'featured',
+                    //     label: 'Фичи',
+                    //     color: ''
+                    // },
+                    // {
+                    //     type: 'banned',
+                    //     label: 'Баны',
+                    //     color: ''
+                    // }
                 ],
                 dataCollectionOptions: {
                     scales: {
@@ -194,22 +182,25 @@
                                     data = JSON.parse(data);
                                 }
 
+                                // console.log('data', data);
+
                                 if (
                                     undefined !== data['data'] &&
-                                    data['data'].length
+                                    Object.keys(data['data']).length
                                 ) {
-                                    let lastCoub = data['data'][data['data'].length - 1];
-
-                                    this.coub = {
-                                        views: lastCoub['views_count'],
-                                        likes: lastCoub['like_count'],
-                                        dislikes: lastCoub['dislikes_count'],
-                                        reposts: lastCoub['repost_count'],
-                                        recoubs: lastCoub['remixes_count'],
-                                        kd: lastCoub['is_kd'],
-                                        featured: lastCoub['featured'],
-                                        banned: lastCoub['banned'],
-                                    };
+                                    //fixme не работает с ассоциативным массивом (объектом) и это глупый кусок
+                                    // let lastCoub = data['data'][data['data'].length - 1];
+                                    //
+                                    // this.coub = {
+                                    //     views: lastCoub['views_count'],
+                                    //     likes: lastCoub['like_count'],
+                                    //     dislikes: lastCoub['dislikes_count'],
+                                    //     reposts: lastCoub['repost_count'],
+                                    //     recoubs: lastCoub['remixes_count'],
+                                    //     // kd: lastCoub['is_kd'],
+                                    //     // featured: lastCoub['featured'],
+                                    //     // banned: lastCoub['banned'],
+                                    // };
 
                                     coubsData = that.getCoubsCount(data['data']);
 
@@ -266,64 +257,32 @@
 
                 dates = this.getDatesRange(this.statistic_type);
 
+                // console.log('dates', dates);
+                // console.log('data getCoubsCount', data);
+
                 // Забиваем temp dummy данными
                 if (dates && dates.length) {
                     for (let i = 0, len = dates.length; i < len; i++) {
-                        temp[dates[i]] = [];
-                        temp[dates[i]] = [];
-                        temp[dates[i]]['views_count'] = 0;
-                        temp[dates[i]]['repost_count'] = 0;
-                        temp[dates[i]]['remixes_count'] = 0;
-                        temp[dates[i]]['like_count'] = 0;
-                        temp[dates[i]]['dislikes_count'] = 0;
-                        temp[dates[i]]['is_kd'] = 0;
-                        temp[dates[i]]['featured'] = 0;
-                        temp[dates[i]]['banned'] = 0;
-                    }
-                }
-
-                for (let i = 0, len = data.length; i < len; i++) {
-                    let date = data[i]['timestamp'];
-
-                    // Если попадётся дата не из списка
-                    if (!dates.includes(date)) {
-                        dates.push(date);
-                    }
-                    if (undefined === temp[date] || !temp[date].length) {
+                        let date = dates[i];
                         temp[date] = [];
-                        temp[date]['views_count'] = 0;
-                        temp[date]['repost_count'] = 0;
-                        temp[date]['remixes_count'] = 0;
-                        temp[date]['like_count'] = 0;
-                        temp[date]['dislikes_count'] = 0;
-                        temp[date]['is_kd'] = 0;
-                        temp[date]['featured'] = 0;
-                        temp[date]['banned'] = 0;
-                    }
 
-                    if (data[i]['views_count']) {
-                        temp[date]['views_count'] += +data[i]['views_count'];
-                    }
-                    if (data[i]['repost_count']) {
-                        temp[date]['repost_count'] += +data[i]['repost_count'];
-                    }
-                    if (data[i]['remixes_count']) {
-                        temp[date]['remixes_count'] += +data[i]['remixes_count'];
-                    }
-                    if (data[i]['like_count']) {
-                        temp[date]['like_count'] = +temp[date]['like_count'] + +data[i]['like_count'];
-                    }
-                    if (data[i]['dislikes_count']) {
-                        temp[date]['dislikes_count'] += +data[i]['dislikes_count'];
-                    }
-                    if (data[i]['is_kd']) {
-                        temp[date]['is_kd']++;
-                    }
-                    if (data[i]['featured']) {
-                        temp[date]['featured']++;
-                    }
-                    if (data[i]['banned']) {
-                        temp[date]['banned']++;
+                        if (undefined !== data[date]) {
+                            if (data[date]['views_count']) {
+                                temp[date]['views_count'] = +data[date]['views_count'];
+                            }
+                            if (data[date]['repost_count']) {
+                                temp[date]['repost_count'] = +data[date]['repost_count'];
+                            }
+                            if (data[date]['recoubs_count']) {
+                                temp[date]['remixes_count'] = +data[date]['recoubs_count'];
+                            }
+                            if (data[date]['like_count']) {
+                                temp[date]['like_count'] = +data[date]['like_count'];
+                            }
+                            if (data[date]['dislikes_count']) {
+                                temp[date]['dislikes_count'] = +data[date]['dislikes_count'];
+                            }
+                        }
                     }
                 }
 
@@ -332,22 +291,18 @@
                 result['remixes_count'] = [];
                 result['like_count'] = [];
                 result['dislikes_count'] = [];
-                result['is_kd'] = [];
-                result['featured'] = [];
-                result['banned'] = [];
+
+                // console.log('temp1', temp);
 
                 for (let i = 0, len = dates.length; i < len; i++) {
                     let item = temp[dates[i]];
 
                     if (item) {
                         result['views_count'].push(item['views_count']);
+                        result['like_count'].push(item['like_count']);
                         result['repost_count'].push(item['repost_count']);
                         result['remixes_count'].push(item['remixes_count']);
-                        result['like_count'].push(item['like_count']);
                         result['dislikes_count'].push(item['dislikes_count']);
-                        result['is_kd'].push(item['is_kd']);
-                        result['featured'].push(item['featured']);
-                        result['banned'].push(item['banned']);
                     }
                 }
 
@@ -389,8 +344,12 @@
                     data[item].some(item => item !== 0)
                 ) {
                     this.tempDataset.push({
-                        label: label,
-                        backgroundColor: this.generateColor(),
+                        label: label,       // заголовок датасета
+                        backgroundColor: bckndColor || this.generateColor(), // цвет фона
+                        // borderColor: bckndColor || this.generateColor(),     // цвет линии
+                        fill: true,         // отображать фон под линией
+                        spanGaps: true,     // заполнять пустые промежутки
+                        lineTension: 0,     // степень сглаживания углов
                         data: data[item]
                     });
                 }
@@ -445,18 +404,20 @@
 
                             break;
                         case 'month6':
-                            currentDate = moment();
-                            stopDate = moment().add(-6, 'month');
+                            // получить последний день месяца
+                            currentDate = moment().endOf('month');
+                            stopDate = moment().startOf('month').add(-6, 'month');
 
                             while (currentDate >= stopDate) {
-                                dateArray.push(moment(currentDate).format('DD.MM.YYYY'));
-                                currentDate = moment(currentDate).add(-1, 'days');
+                                dateArray.push(moment(currentDate).format('MM.YYYY'));
+                                currentDate = moment(currentDate).add(-1, 'month');
                             }
 
                             break;
                         case 'year':
-                            currentDate = moment();
-                            stopDate = moment().add(-1, 'year');
+                            // получить последний день месяца
+                            currentDate = moment().endOf('month');
+                            stopDate = moment().startOf('month').add(-1, 'year');
 
                             while (currentDate >= stopDate) {
                                 dateArray.push(moment(currentDate).format('MM.YYYY'));

@@ -205,6 +205,7 @@
                                 if (typeof data === 'string') {
                                     data = JSON.parse(data);
                                 }
+                                // console.log('data stat', data);
 
                                 if (
                                     undefined !== data['data'] &&
@@ -277,6 +278,9 @@
 
                 dates = this.getDatesRange(this.statistic_type);
 
+                // console.log('dates', dates);
+                // console.log('data', data);
+
                 // Забиваем temp dummy данными
                 if (dates && dates.length) {
                     for (let i = 0, len = dates.length; i < len; i++) {
@@ -309,6 +313,8 @@
                 result['remixes_count'] = [];
                 result['like_count'] = [];
                 result['dislikes_count'] = [];
+
+                // console.log('temp1', temp);
 
                 for (let i = 0, len = dates.length; i < len; i++) {
                     let item = temp[dates[i]];

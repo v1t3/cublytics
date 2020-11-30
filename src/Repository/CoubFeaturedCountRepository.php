@@ -34,6 +34,21 @@ class CoubFeaturedCountRepository extends ServiceEntityRepository
             ;
     }
 
+    public function findByPeriodCoub($coubId, \DateTime $dateStart, \DateTime $dateEnd)
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.coub_id = :id')
+            ->andWhere('c.date_create >= :date_start')
+            ->andWhere('c.date_create <= :date_end')
+            ->setParameter('id', $coubId)
+            ->setParameter('date_start', $dateStart)
+            ->setParameter('date_end', $dateEnd)
+            ->orderBy('c.date_create', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return CoubFeaturedCount[] Returns an array of CoubFeaturedCount objects
     //  */
