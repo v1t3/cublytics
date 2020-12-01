@@ -41,11 +41,6 @@
                   @click="getActiveCoub('year')">
                 Год
             </span>
-            <span class="statistic-btn_time btn"
-                  v-bind:class="{active: statistic_type === 'all'}"
-                  @click="getActiveCoub('all')">
-                Всё время
-            </span>
         </div>
 
         <coub_stat v-if="show_stat && coub_active_id"
