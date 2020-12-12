@@ -97,25 +97,25 @@
                         type: 'like_count',
                         label: 'Лайки',
                         backgroundColor: '#2dcfff',
-                        borderColor: '#145669',
+                        borderColor: '#1b7a96',
                     },
                     {
                         type: 'dislikes_count',
                         label: 'Дизлайки',
                         backgroundColor: '#ff8e2d',
-                        borderColor: '#6d3c11'
+                        borderColor: '#965218'
                     },
                     {
                         type: 'repost_count',
                         label: 'Репосты',
                         backgroundColor: '#2dffb1',
-                        borderColor: '#106546'
+                        borderColor: '#189667'
                     },
                     {
                         type: 'remixes_count',
                         label: 'Рекоубы',
                         backgroundColor: '#7e2dff',
-                        borderColor: '#36126f'
+                        borderColor: '#4a1898'
                     },
                     // {
                     //     type: 'is_kd',

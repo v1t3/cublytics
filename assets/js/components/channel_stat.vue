@@ -104,47 +104,56 @@
                     {
                         type: 'followers_count',
                         label: 'Подписчики',
-                        color: ''
+                        backgroundColor: '#74d8ff',
+                        borderColor: '#498298'
                     },
                     {
                         type: 'views_count',
                         label: 'Просмотры',
-                        color: ''
+                        backgroundColor: '#2d34ff',
+                        borderColor: '#161a73'
                     },
                     {
                         type: 'like_count',
                         label: 'Лайки',
-                        color: ''
+                        backgroundColor: '#2dcfff',
+                        borderColor: '#1b7a96',
                     },
                     {
                         type: 'dislikes_count',
                         label: 'Дизлайки',
-                        color: ''
+                        backgroundColor: '#ff8e2d',
+                        borderColor: '#965218'
                     },
                     {
                         type: 'repost_count',
                         label: 'Репосты',
-                        color: ''
+                        backgroundColor: '#2dffb1',
+                        borderColor: '#189667'
                     },
                     {
                         type: 'remixes_count',
                         label: 'Рекоубы',
-                        color: ''
+                        backgroundColor: '#7e2dff',
+                        borderColor: '#4a1898'
                     },
                     {
                         type: 'is_kd',
                         label: 'КД',
-                        color: ''
+                        backgroundColor: '#ff8a8a',
+                        borderColor: '#984949'
                     },
                     {
                         type: 'featured',
                         label: 'Фичи',
-                        color: ''
+                        backgroundColor: '#c65991',
+                        borderColor: '#bf4c85'
                     },
                     {
                         type: 'banned',
                         label: 'Баны',
-                        color: ''
+                        backgroundColor: '#b674ff',
+                        borderColor: '#7547a7'
                     }
                 ],
                 dataCollectionOptions: {
@@ -234,7 +243,8 @@
                                                 coubsData,
                                                 this.chartsInfo[i]['type'],
                                                 this.chartsInfo[i]['label'],
-                                                this.chartsInfo[i]['color'],
+                                                this.chartsInfo[i]['backgroundColor'],
+                                                this.chartsInfo[i]['borderColor'],
                                             );
                                         }
                                     }
@@ -333,7 +343,7 @@
                 return result;
             },
 
-            pushDataCollection: function (coubsData, type, label, bckndColor = '') {
+            pushDataCollection: function (coubsData, type, label, backgroundColor = '', borderColor = '') {
                 let datasets = [];
                 let temp = {};
 
@@ -342,12 +352,12 @@
                     coubsData[type].some(item => item !== 0)
                 ) {
                     datasets.push({
-                        label: label,       // заголовок датасета
-                        backgroundColor: bckndColor || this.generateColor(), // цвет фона
-                        // borderColor: bckndColor || this.generateColor(),     // цвет линии
-                        fill: true,         // отображать фон под линией
-                        spanGaps: true,     // заполнять пустые промежутки
-                        lineTension: 0,     // степень сглаживания углов
+                        label: label,                                           // заголовок датасета
+                        backgroundColor: backgroundColor || this.generateColor(), // цвет фона
+                        borderColor: borderColor || this.generateColor(),       // цвет линии
+                        fill: true,                                             // отображать фон под линией
+                        spanGaps: true,                                         // заполнять пустые промежутки
+                        lineTension: 0,                                         // степень сглаживания углов
                         data: coubsData[type]
                     });
 
