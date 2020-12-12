@@ -90,27 +90,32 @@
                     {
                         type: 'views_count',
                         label: 'Просмотры',
-                        color: ''
+                        backgroundColor: '#2d34ff',
+                        borderColor: '#161a73'
                     },
                     {
                         type: 'like_count',
                         label: 'Лайки',
-                        color: ''
+                        backgroundColor: '#2dcfff',
+                        borderColor: '#145669',
                     },
                     {
                         type: 'dislikes_count',
                         label: 'Дизлайки',
-                        color: ''
+                        backgroundColor: '#ff8e2d',
+                        borderColor: '#6d3c11'
                     },
                     {
                         type: 'repost_count',
                         label: 'Репосты',
-                        color: ''
+                        backgroundColor: '#2dffb1',
+                        borderColor: '#106546'
                     },
                     {
                         type: 'remixes_count',
                         label: 'Рекоубы',
-                        color: ''
+                        backgroundColor: '#7e2dff',
+                        borderColor: '#36126f'
                     },
                     // {
                     //     type: 'is_kd',
@@ -213,7 +218,8 @@
                                                 coubsData,
                                                 this.chartsInfo[i]['type'],
                                                 this.chartsInfo[i]['label'],
-                                                this.chartsInfo[i]['color'],
+                                                this.chartsInfo[i]['backgroundColor'],
+                                                this.chartsInfo[i]['borderColor'],
                                             );
                                         }
                                     }
@@ -311,7 +317,7 @@
                 return result;
             },
 
-            pushDataCollection: function (coubsData, type, label, bckndColor = '') {
+            pushDataCollection: function (coubsData, type, label, backgroundColor = '', borderColor = '') {
                 let datasets = [];
                 let temp = {};
 
@@ -320,8 +326,12 @@
                     coubsData[type].some(item => item !== 0)
                 ) {
                     datasets.push({
-                        label: label,
-                        backgroundColor: bckndColor || this.generateColor(),
+                        label: label,                                           // заголовок датасета
+                        backgroundColor: backgroundColor || this.generateColor(), // цвет фона
+                        borderColor: borderColor || this.generateColor(),       // цвет линии
+                        fill: true,                                             // отображать фон под линией
+                        spanGaps: true,                                         // заполнять пустые промежутки
+                        lineTension: 0,                                         // степень сглаживания углов
                         data: coubsData[type]
                     });
 
@@ -335,23 +345,6 @@
                     };
 
                     Object.assign(this.charts, temp);
-                }
-            },
-
-            pushToDataset: function (data, item, label) {
-                if (
-                    data[item] &&
-                    data[item].some(item => item !== 0)
-                ) {
-                    this.tempDataset.push({
-                        label: label,       // заголовок датасета
-                        backgroundColor: bckndColor || this.generateColor(), // цвет фона
-                        // borderColor: bckndColor || this.generateColor(),     // цвет линии
-                        fill: true,         // отображать фон под линией
-                        spanGaps: true,     // заполнять пустые промежутки
-                        lineTension: 0,     // степень сглаживания углов
-                        data: data[item]
-                    });
                 }
             },
 
