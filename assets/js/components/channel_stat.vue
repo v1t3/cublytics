@@ -176,7 +176,8 @@
                 lineChart: {
                     // width: 500,
                     // height: 400
-                }
+                },
+                dates: {},
             }
         },
         mounted() {
@@ -278,67 +279,59 @@
 
             getCoubsCount: function (data) {
                 let result = [];
-                let temp = [];
-                let dates = [];
-                const reducer = (accumulator, currentValue) => accumulator + currentValue;
 
                 if (!data) {
                     return [];
                 }
 
-                dates = this.getDatesRange(this.statistic_type);
+                this.setDatesRange(this.statistic_type);
 
-                // console.log('dates', dates);
+                result['dates'] = this.dates;
+
+                // console.log('dates', this.dates);
                 // console.log('data', data);
 
-                // Забиваем temp dummy данными
-                if (dates && dates.length) {
-                    for (let i = 0, len = dates.length; i < len; i++) {
-                        let date = dates[i];
-                        temp[date] = [];
+                if (undefined !== data['views_count']) {
+                    result['views_count'] = this.prepareCount(data['views_count']);
+                }
 
-                        if (undefined !== data[date]) {
-                            if (data[date]['views_count']) {
-                                temp[date]['views_count'] = +data[date]['views_count'];
-                            }
-                            if (data[date]['repost_count']) {
-                                temp[date]['repost_count'] = +data[date]['repost_count'];
-                            }
-                            if (data[date]['recoubs_count']) {
-                                temp[date]['remixes_count'] = +data[date]['recoubs_count'];
-                            }
-                            if (data[date]['like_count']) {
-                                temp[date]['like_count'] = +data[date]['like_count'];
-                            }
-                            if (data[date]['dislikes_count']) {
-                                temp[date]['dislikes_count'] = +data[date]['dislikes_count'];
-                            }
+                if (undefined !== data['like_count']) {
+                    result['like_count'] = this.prepareCount(data['like_count']);
+                }
+
+                if (undefined !== data['repost_count']) {
+                    result['repost_count'] = this.prepareCount(data['repost_count']);
+                }
+
+                if (undefined !== data['recoubs_count']) {
+                    result['recoubs_count'] = this.prepareCount(data['remixes_count']);
+                }
+
+                if (undefined !== data['dislikes_count']) {
+                    result['dislikes_count'] = this.prepareCount(data['dislikes_count']);
+                }
+
+                return result;
+            },
+
+            prepareCount: function (data) {
+                if (!data) {
+                    return [];
+                }
+
+                let result = [];
+
+                if (this.dates.length) {
+                    for (let i = 0, len = this.dates.length; i < len; i++) {
+                        let temp = [];
+
+                        if (data[this.dates[i]]) {
+                            temp = +data[this.dates[i]];
                         }
+
+                        result.push(temp);
                     }
                 }
-
-                // result['followers_count'] = [];
-                result['views_count'] = [];
-                result['repost_count'] = [];
-                result['remixes_count'] = [];
-                result['like_count'] = [];
-                result['dislikes_count'] = [];
-
-                // console.log('temp1', temp);
-
-                for (let i = 0, len = dates.length; i < len; i++) {
-                    let item = temp[dates[i]];
-
-                    if (item) {
-                        result['views_count'].push(item['views_count']);
-                        result['like_count'].push(item['like_count']);
-                        result['repost_count'].push(item['repost_count']);
-                        result['remixes_count'].push(item['remixes_count']);
-                        result['dislikes_count'].push(item['dislikes_count']);
-                    }
-                }
-
-                result['dates'] = dates;
 
                 return result;
             },
@@ -384,7 +377,7 @@
                 return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
             },
 
-            getDatesRange: function (type) {
+            setDatesRange: function (type) {
                 let currentDate, stopDate;
                 let result = [];
                 let dateArray = [];
@@ -451,7 +444,7 @@
                     }
                 }
 
-                return result;
+                this.dates = result;
             },
 
             clearData: function () {

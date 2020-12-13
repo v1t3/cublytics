@@ -502,10 +502,10 @@ class ChannelService
                     for ($i = 0; $i <= $tsDiff; $i++) {
                         $time = $dateCreate->format($this->formats['date_format']);
 
-                        if (!empty($parentResult[$time][$type])) {
-                            $parentResult[$time][$type] += $tempCount;
+                        if (!empty($parentResult[$type][$time])) {
+                            $parentResult[$type][$time] += $tempCount;
                         } else {
-                            $parentResult[$time][$type] = $tempCount;
+                            $parentResult[$type][$time] = $tempCount;
                         }
 
                         $dateCreate->modify('1 hour');
