@@ -288,9 +288,6 @@
 
                 result['dates'] = this.dates;
 
-                // console.log('dates', this.dates);
-                // console.log('data', data);
-
                 if (undefined !== data['views_count']) {
                     result['views_count'] = this.prepareCount(data['views_count']);
                 }
@@ -323,13 +320,11 @@
 
                 if (this.dates.length) {
                     for (let i = 0, len = this.dates.length; i < len; i++) {
-                        let temp = [];
-
                         if (data[this.dates[i]]) {
-                            temp = +data[this.dates[i]];
+                            result.push(+data[this.dates[i]]);
+                        } else {
+                            result.push({});
                         }
-
-                        result.push(temp);
                     }
                 }
 
