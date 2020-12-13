@@ -108,6 +108,8 @@ class ChannelService
     }
 
     /**
+     * Иничиализировать репозитории для статистики
+     *
      * @return void
      */
     private function initializeRepositories(): void
@@ -388,14 +390,13 @@ class ChannelService
             throw new RuntimeException('Не указано поле channel_name или type');
         }
 
-        # Получить форматы
         $this->formats = $this->getStatisticFormat($statType);
 
-        # Иничиализировать репозитории для статистики
         $this->initializeRepositories();
 
         $dateStart = new DateTime("{$this->formats['ymd_start']} 00:00:00");
         $dateEnd = new DateTime("{$this->formats['ymd_end']} 23:59.59");
+        # Скоректировать фильтр без учета локальной таймзоны
         if (0 < $this->timezone) {
             $dateStart->modify('-' . $this->timezone . ' hour');
             $dateEnd->modify('-' . $this->timezone . ' hour');
@@ -612,10 +613,7 @@ class ChannelService
             );
         }
 
-        if (
-            is_array($decodeData)
-            || array_key_exists('total_pages', $decodeData)
-        ) {
+        if (array_key_exists('total_pages', $decodeData)) {
             if (1 < (int)$decodeData['total_pages']) {
                 $urls = [];
                 $allCoubs = [];
@@ -668,7 +666,6 @@ class ChannelService
             return false;
         }
 
-        # Инициализировать репозитории для статистики
         $this->initializeRepositories();
 
         if (!$channel) {
