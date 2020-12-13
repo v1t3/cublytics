@@ -493,20 +493,22 @@ class ChannelService
                 }
 
                 if (0 < (int)$tempCount) {
-                    $dateDiff = $dateCreate->diff($dateUpdate)->format($this->formats['diff_format']);
+                    $tsDiff = $dateUpdate->getTimestamp() - $dateCreate->getTimestamp();
 
-                    for ($i = 0; $i <= $dateDiff; $i++) {
+                    if (0 < $tsDiff) {
+                        $tsDiff = round($tsDiff / 3600);
+                    }
+
+                    for ($i = 0; $i <= $tsDiff; $i++) {
                         $time = $dateCreate->format($this->formats['date_format']);
-                        if (
-                            !empty($parentResult[$time])
-                            && array_key_exists($type, $parentResult[$time])
-                        ) {
+
+                        if (!empty($parentResult[$time][$type])) {
                             $parentResult[$time][$type] += $tempCount;
                         } else {
                             $parentResult[$time][$type] = $tempCount;
                         }
 
-                        $dateCreate->modify('1 ' . $this->formats['modify_format']);
+                        $dateCreate->modify('1 hour');
                     }
                 }
             }
@@ -517,8 +519,6 @@ class ChannelService
     {
         $result = [
             'date_format'   => '',
-            'modify_format' => '',
-            'diff_format'   => '',
             'ymd_start'     => date('Y-m-d'),
             'ymd_end'       => date('Y-m-d')
         ];
@@ -526,25 +526,17 @@ class ChannelService
         switch ($type) {
             case 'day':
                 $result['date_format'] = 'H:00';
-                $result['modify_format'] = 'hour';
-                $result['diff_format'] = '%h';
                 break;
             case 'week':
                 $result['date_format'] = 'd.m';
-                $result['modify_format'] = 'day';
-                $result['diff_format'] = '%d';
                 $result['ymd_start'] = date('Y-m-d', strtotime('-7 day'));
                 break;
             case 'month1':
                 $result['date_format'] = 'd.m';
-                $result['modify_format'] = 'month';
-                $result['diff_format'] = '%m';
                 $result['ymd_start'] = date('Y-m-d', strtotime('-1 month'));
                 break;
             case 'month6':
                 $result['date_format'] = 'm.Y';
-                $result['modify_format'] = 'month';
-                $result['diff_format'] = '%m';
                 // получить первый день месяца
                 $result['ymd_start'] = date('Y-m-0', strtotime('-6 month'));
                 // получить последний день месяца
@@ -552,8 +544,6 @@ class ChannelService
                 break;
             case 'year':
                 $result['date_format'] = 'm.Y';
-                $result['modify_format'] = 'month';
-                $result['diff_format'] = '%m';
                 // получить первый день месяца
                 $result['ymd_start'] = date('Y-m-0', strtotime('-1 year'));
                 // получить последний день месяца
@@ -561,8 +551,6 @@ class ChannelService
                 break;
             case 'all':
                 $result['date_format'] = 'm.Y';
-                $result['modify_format'] = 'month';
-                $result['diff_format'] = '%m';
                 $result['ymd_start'] = '2010-01-01';
                 break;
         }
