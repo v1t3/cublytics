@@ -1,0 +1,16 @@
+
+services:
+  php-fpm:
+    volumes:
+      - ./:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+
+  nginx:
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites/:/etc/nginx/sites-available
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d
+      - ./docker/logs:/var/log/nginx/
+    ports:
+      - "3080:80"

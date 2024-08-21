@@ -1,6 +1,6 @@
 # docker/php-fpm/Dockerfile
 
-FROM php:fpm-alpine
+FROM php:8.1-fpm-alpine
 
 COPY wait-for-it.sh /usr/bin/wait-for-it
 
@@ -9,9 +9,7 @@ RUN apk --update --no-cache add git
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www/cublytics.ru
-
+WORKDIR /var/www/
 CMD composer install ; wait-for-it database:3306 -- bin/console doctrine:migrations:migrate ;  php-fpm
 
 EXPOSE 9000
