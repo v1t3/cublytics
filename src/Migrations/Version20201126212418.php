@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DoctrineMigrations;
+namespace App\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -12,14 +12,8 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20201126212418 extends AbstractMigration
 {
-    public function getDescription() : string
-    {
-        return '';
-    }
-
     public function up(Schema $schema) : void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE coub_banned_count (id INT AUTO_INCREMENT NOT NULL, owner_id INT DEFAULT NULL, coub_id INT NOT NULL, channel_id INT NOT NULL, banned INT DEFAULT NULL, date_create DATETIME DEFAULT NULL, date_update DATETIME DEFAULT NULL, INDEX IDX_7FC4C0837E3C61F9 (owner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE coub_dislikes_count (id INT AUTO_INCREMENT NOT NULL, owner_id INT DEFAULT NULL, coub_id INT NOT NULL, channel_id INT NOT NULL, dislikes_count INT DEFAULT NULL, date_create DATETIME DEFAULT NULL, date_update DATETIME DEFAULT NULL, INDEX IDX_EAEDCEFE7E3C61F9 (owner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE coub_featured_count (id INT AUTO_INCREMENT NOT NULL, owner_id INT DEFAULT NULL, coub_id INT NOT NULL, channel_id INT NOT NULL, featured INT DEFAULT NULL, date_create DATETIME DEFAULT NULL, date_update DATETIME DEFAULT NULL, INDEX IDX_FAA7D2497E3C61F9 (owner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -40,7 +34,6 @@ final class Version20201126212418 extends AbstractMigration
 
     public function down(Schema $schema) : void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP TABLE coub_banned_count');
         $this->addSql('DROP TABLE coub_dislikes_count');
         $this->addSql('DROP TABLE coub_featured_count');

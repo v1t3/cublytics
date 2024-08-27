@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DoctrineMigrations;
+namespace App\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -12,14 +12,8 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20201013175841 extends AbstractMigration
 {
-    public function getDescription() : string
-    {
-        return '';
-    }
-
     public function up(Schema $schema) : void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE channel (id INT AUTO_INCREMENT NOT NULL, owner_id INT DEFAULT NULL, channel_id INT NOT NULL, channel_permalink VARCHAR(255) NOT NULL, user_id INT NOT NULL, is_watching TINYINT(1) NOT NULL, is_current TINYINT(1) DEFAULT NULL, title VARCHAR(255) DEFAULT NULL, avatar VARCHAR(255) DEFAULT NULL, followers_count INT DEFAULT NULL, views_count INT DEFAULT NULL, recoubs_count INT DEFAULT NULL, likes_count INT DEFAULT NULL, stories_count INT DEFAULT NULL, dislikes_count INT DEFAULT NULL, reposts_count INT DEFAULT NULL, remixes_count INT DEFAULT NULL, kd_count INT DEFAULT NULL, featured_count INT DEFAULT NULL, banned_count INT DEFAULT NULL, is_active TINYINT(1) DEFAULT NULL, timestamp DATETIME DEFAULT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME DEFAULT NULL, deleted_at DATETIME DEFAULT NULL, date_create DATETIME DEFAULT NULL, date_update DATETIME DEFAULT NULL, UNIQUE INDEX UNIQ_A2F98E475DFB170D (channel_permalink), INDEX IDX_A2F98E477E3C61F9 (owner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE confirmation_request (id INT AUTO_INCREMENT NOT NULL, owner_id INT DEFAULT NULL, code VARCHAR(255) DEFAULT NULL, confirmed TINYINT(1) DEFAULT NULL, requested_at DATETIME DEFAULT NULL, expires_at DATETIME DEFAULT NULL, INDEX IDX_BD9BA2CC7E3C61F9 (owner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE coub (id INT AUTO_INCREMENT NOT NULL, owner_id INT DEFAULT NULL, coub_id INT NOT NULL, channel_id INT NOT NULL, permalink VARCHAR(255) NOT NULL, title VARCHAR(255) DEFAULT NULL, created_at DATETIME DEFAULT NULL, updated_at DATETIME DEFAULT NULL, deleted_at DATETIME DEFAULT NULL, date_create DATETIME DEFAULT NULL, date_update DATETIME DEFAULT NULL, is_kd TINYINT(1) DEFAULT NULL, featured TINYINT(1) DEFAULT NULL, banned TINYINT(1) DEFAULT NULL, UNIQUE INDEX UNIQ_BAA8862BE78D789C (coub_id), INDEX IDX_BAA8862B7E3C61F9 (owner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -36,7 +30,6 @@ final class Version20201013175841 extends AbstractMigration
 
     public function down(Schema $schema) : void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE coub DROP FOREIGN KEY FK_BAA8862B7E3C61F9');
         $this->addSql('ALTER TABLE coub_stat DROP FOREIGN KEY FK_CAFF32227E3C61F9');
         $this->addSql('ALTER TABLE channel DROP FOREIGN KEY FK_A2F98E477E3C61F9');
