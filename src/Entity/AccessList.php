@@ -53,7 +53,6 @@ class AccessList
     public function __construct()
     {
         $this->setDateCreate();
-        $this->setRequestedAt();
     }
 
     /**

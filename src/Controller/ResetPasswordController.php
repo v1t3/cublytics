@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * @noinspection PhpUnusedAliasInspection
+ */
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -131,7 +135,7 @@ class ResetPasswordController extends AbstractController
 
         $token = $this->getTokenFromSession();
         if (null === $token) {
-            throw $this->createNotFoundException('Ошибка при выполнении запроса');
+            throw $this->createAccessDeniedException('Ошибка при выполнении запроса');
         }
 
         try {
